@@ -1,17 +1,310 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 현실 자산 등급 시뮬레이터 | My Wealth Tier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; }
+        .input-group:focus-within label { color: #2563eb; }
+        /* 캡처 영역 강조를 위한 스타일 */
+        .capture-area { box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+    </style>
 </head>
-<body>
-  <nav style="position: absolute; top: 10px; right: 10px;">
-    <a href="lotto.html">로또 번호 추천</a>
-  </nav>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+<body class="py-8 px-4 md:py-12">
+    <div class="max-w-6xl mx-auto relative">
+        <nav class="absolute top-4 right-4 md:top-8 md:right-4">
+            <a href="lotto.html" class="text-blue-600 hover:text-blue-800 font-semibold">로또 번호 추천</a>
+        </nav>
+        <header class="mb-8 text-center md:text-left">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">💎 나의 10년 후 자산 등급은?</h1>
+            <p class="text-slate-500 mt-3 text-lg">연봉 상승과 '숨만 쉬어도 나가는 돈'을 반영한 현실 시뮬레이터</p>
+        </header>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            <div class="xl:col-span-4 space-y-6 bg-white p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 h-fit">
+                <section>
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-5">수입 및 초기 자산</h3>
+                    <div class="space-y-5">
+                        <div class="input-group">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">현재 세후 연봉 (만원)</label>
+                            <input type="number" id="annualSalary" value="4500" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-semibold text-slate-800">
+                        </div>
+                        <div class="input-group">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">연봉 상승률 (연 %)</label>
+                            <input type="number" id="salaryGrowth" value="3" step="0.5" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-semibold text-slate-800">
+                        </div>
+                        <div class="input-group">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">현재 보유 자산 (만원)</label>
+                            <input type="number" id="initialSeed" value="3000" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-semibold text-slate-800">
+                        </div>
+                    </div>
+                </section>
+                <hr class="border-slate-100">
+                <section>
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-5">필수 고정 지출 (월평균)</h3>
+                    <div class="space-y-5">
+                        <div class="input-group">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">생활비/주거/보험 등 (만원)</label>
+                            <input type="number" id="monthlyExpense" value="200" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all font-semibold text-slate-800">
+                            <p class="text-xs text-slate-400 mt-2 ps-2">💡 솔직하게 적을수록 결과가 정확해집니다.</p>
+                        </div>
+                    </div>
+                </section>
+                <hr class="border-slate-100">
+                <section>
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-5">투자 환경</h3>
+                    <div class="space-y-5">
+                        <div class="input-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-2">투자 수익률 (%)</label>
+                                <input type="number" id="investmentReturn" value="5.0" step="0.1" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 focus:ring-2 focus:ring-blue-500 transition-all font-semibold text-slate-800 text-center">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-2">물가 상승률 (%)</label>
+                                <input type="number" id="inflationRate" value="2.5" step="0.1" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 focus:ring-2 focus:ring-blue-500 transition-all font-semibold text-slate-800 text-center">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="xl:col-span-8 space-y-6">
+                
+                <div id="gradeSection" class="capture-area bg-gradient-to-r from-slate-100 to-slate-200 p-8 rounded-[2.5rem] shadow-lg border border-white/50 text-center transition-all duration-700 transform hover:scale-[1.01]">
+                    <h3 class="text-sm font-bold text-black/50 uppercase tracking-[0.2em] mb-4">10 YEAR WEALTH TIER</h3>
+                    <div class="flex flex-col items-center justify-center">
+                        <div id="gradeBadgeIcon" class="text-6xl md:text-7xl mb-4 drop-shadow-md filter grayscale-0 transition-all duration-700">💎</div>
+                        <h2 id="gradeTitle" class="text-4xl md:text-5xl font-extrabold text-slate-800 mb-2 transition-all duration-700">계산 중...</h2>
+                        <p id="gradeDesc" class="text-slate-700 text-lg font-medium opacity-90 max-w-lg mx-auto transition-all duration-700">잠시만 기다려 주세요.</p>
+                    </div>
+                    <div class="mt-6 inline-block bg-black/10 rounded-full px-6 py-2 text-sm font-bold text-black/60">
+                        📸 이 결과를 캡처해서 공유해보세요!
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                        <p class="text-slate-500 text-sm font-bold">10년 후 명목 자산</p>
+                        <h2 class="text-3xl font-extrabold text-blue-600 mt-2 tracking-tight" id="finalWealthText">-</h2>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                        <p class="text-slate-500 text-sm font-bold">실질 가치 (물가반영)</p>
+                        <h2 class="text-3xl font-extrabold text-slate-700 mt-2 tracking-tight" id="realValueText">-</h2>
+                    </div>
+                    <div class="bg-indigo-600 p-6 rounded-3xl shadow-lg text-white">
+                        <p class="text-indigo-200 text-sm font-bold">현재 월 평균 저축가능액</p>
+                        <h2 class="text-3xl font-extrabold mt-2 tracking-tight" id="netSavingsText">-</h2>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-8">
+                        <h3 class="text-xl font-bold text-slate-800">📉 자산 성장 추이</h3>
+                        <span class="text-xs font-bold px-4 py-2 bg-blue-50 text-blue-600 rounded-full uppercase tracking-wider">10-Year Projection</span>
+                    </div>
+                    <div class="relative h-[350px]">
+                        <canvas id="wealthChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="insightBox" class="bg-amber-50 border-2 border-amber-100/50 p-8 rounded-[2.5rem]">
+                    <h4 class="text-amber-800 font-bold mb-3 flex items-center"><span class="text-2xl mr-2">💡</span> AI 분석 코멘트</h4>
+                    <p id="aiInsight" class="text-amber-900/80 leading-relaxed font-medium">데이터를 분석 중입니다...</p>
+                </div>
+                
+                <div class="bg-slate-100 rounded-2xl h-28 flex flex-col items-center justify-center text-slate-400 text-sm tracking-widest border-2 border-dashed border-slate-300 mx-4">
+                    <span class="font-bold mb-1">SPONSORED</span>
+                    Google AdSense Area
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart;
+
+        function updateSimulation() {
+            // 1. 입력값 가져오기
+            let salary = parseFloat(document.getElementById('annualSalary').value);
+            const salaryGrowth = parseFloat(document.getElementById('salaryGrowth').value) / 100;
+            const initialSeed = parseFloat(document.getElementById('initialSeed').value);
+            const monthlyExpense = parseFloat(document.getElementById('monthlyExpense').value);
+            const investmentReturn = parseFloat(document.getElementById('investmentReturn').value) / 100;
+            const inflationRate = parseFloat(document.getElementById('inflationRate').value) / 100;
+
+            let currentWealth = initialSeed;
+            let realWealth = initialSeed;
+            
+            const labels = [];
+            const nominalData = [];
+            const realData = [];
+            const monthlyReturn = investmentReturn / 12;
+
+            // 2. 10년치 계산 루프
+            for (let year = 0; year <= 10; year++) {
+                labels.push(year === 0 ? '현재' : `${year}년후`);
+                nominalData.push(Math.round(currentWealth));
+                realData.push(Math.round(currentWealth / Math.pow(1 + inflationRate, year)));
+
+                if (year < 10) {
+                    let monthlySalary = salary / 12;
+                    let monthlyNetSavings = monthlySalary - monthlyExpense;
+
+                    for (let m = 0; m < 12; m++) {
+                        // 월별 투자 수익 및 저축 반영
+                        currentWealth *= (1 + monthlyReturn);
+                        if (monthlyNetSavings > 0) {
+                            currentWealth += monthlyNetSavings;
+                        }
+                    }
+                    // 연말 연봉 인상 반영
+                    salary *= (1 + salaryGrowth);
+                }
+            }
+
+            // 3. UI 업데이트 (텍스트 및 차트)
+            const finalNominal = nominalData[10];
+            const finalReal = realData[10];
+            const currentAvgNet = (parseFloat(document.getElementById('annualSalary').value)/12) - monthlyExpense;
+
+            document.getElementById('finalWealthText').innerText = finalNominal.toLocaleString() + " 만원";
+            document.getElementById('realValueText').innerText = finalReal.toLocaleString() + " 만원";
+            document.getElementById('netSavingsText').innerText = Math.round(currentAvgNet).toLocaleString() + " 만원";
+
+            updateChart(labels, nominalData, realData);
+            generateInsight(finalNominal, finalReal, currentAvgNet);
+            
+            // ⭐ 4. 등급 결정 함수 호출 ⭐
+            determineGrade(finalNominal);
+        }
+
+        // ⭐ 신규 추가된 등급 결정 함수 ⭐
+        function determineGrade(finalWealth) {
+            const section = document.getElementById('gradeSection');
+            const badgeIcon = document.getElementById('gradeBadgeIcon');
+            const title = document.getElementById('gradeTitle');
+            const desc = document.getElementById('gradeDesc');
+
+            let grade = {};
+
+            // 등급 기준 (단위: 만원) - 현실적인 직장인 기준 설정
+            if (finalWealth < 10000) { // 1억 미만
+                grade = {
+                    icon: '🥉', title: '브론즈 (Bronze)',
+                    desc: '아직은 준비 단계! 지출을 조금만 줄여도 결과가 크게 바뀝니다.',
+                    bg: 'from-orange-50 via-orange-100 to-amber-100', text: 'text-amber-900'
+                };
+            } else if (finalWealth < 30000) { // 3억 미만
+                grade = {
+                    icon: '🥈', title: '실버 (Silver)',
+                    desc: '꾸준함이 무기! 시드머니가 모이고 있습니다. 투자 공부를 병행해보세요.',
+                    bg: 'from-slate-100 via-slate-200 to-zinc-200', text: 'text-slate-800'
+                };
+            } else if (finalWealth < 60000) { // 6억 미만
+                grade = {
+                    icon: '🥇', title: '골드 (Gold)',
+                    desc: '안정적인 궤도 진입! 노후 준비의 탄탄한 기반을 마련하셨습니다.',
+                    bg: 'from-yellow-50 via-yellow-100 to-amber-200', text: 'text-yellow-900'
+                };
+            } else if (finalWealth < 120000) { // 12억 미만
+                grade = {
+                    icon: '💠', title: '플래티넘 (Platinum)',
+                    desc: '상위권 자산가! 경제적 자유를 향한 고속도로에 올라탔습니다.',
+                    bg: 'from-cyan-50 via-cyan-100 to-blue-200', text: 'text-blue-900'
+                };
+            } else { // 12억 이상
+                grade = {
+                    icon: '💎', title: '다이아몬드 (Diamond)',
+                    desc: 'TOP TIER 달성! 10년 후, 당신은 경제적 자유를 누리게 됩니다.',
+                    bg: 'from-fuchsia-50 via-purple-100 to-indigo-200', text: 'text-purple-900'
+                };
+            }
+
+            // 애니메이션과 함께 UI 업데이트
+            section.className = `capture-area p-8 rounded-[2.5rem] shadow-xl border border-white/50 text-center transition-all duration-700 transform hover:scale-[1.01] bg-gradient-to-r ${grade.bg}`;
+            badgeIcon.innerText = grade.icon;
+            title.innerText = grade.title;
+            title.className = `text-4xl md:text-5xl font-extrabold mb-2 transition-all duration-700 ${grade.text}`;
+            desc.innerText = grade.desc;
+            desc.className = `text-slate-700 text-lg font-medium opacity-90 max-w-lg mx-auto transition-all duration-700 ${grade.text}`;
+        }
+
+        function updateChart(labels, nominalData, realData) {
+            const ctx = document.getElementById('wealthChart').getContext('2d');
+            if (chart) chart.destroy();
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '명목 자산 (통장 찍히는 돈)',
+                            data: nominalData,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                            fill: true,
+                            borderWidth: 4,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            tension: 0.4
+                        },
+                        {
+                            label: '실질 가치 (물가 반영된 돈)',
+                            data: realData,
+                            borderColor: '#64748b',
+                            borderDash: [8, 8],
+                            fill: false,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 10, font: { family: 'Pretendard', weight: '600' } } },
+                        tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', titleFont: { family: 'Pretendard' }, bodyFont: { family: 'Pretendard' }, padding: 12, cornerRadius: 12 }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: false,
+                            grid: { color: '#f1f5f9', drawBorder: false },
+                            ticks: { callback: v => v/10000 + '억', font: { family: 'Pretendard', weight: '600' }, color: '#94a3b8' }
+                        },
+                        x: { grid: { display: false }, ticks: { font: { family: 'Pretendard', weight: '600' }, color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        function generateInsight(final, real, net) {
+            let text = "";
+            if (net < 0) {
+                text = "🚨 비상! 현재 지출이 수입보다 많습니다. 저축은커녕 빚이 늘어날 수 있는 구조입니다. 고정 지출 다이어트가 시급합니다.";
+            } else if (net < 50) {
+                text = `⚠️ 저축 여력이 빠듯합니다. (월 ${Math.round(net)}만원). 예상치 못한 지출이 생기면 계획이 흔들릴 수 있습니다. 부수입이나 지출 통제를 고려해보세요.`;
+            } else if (final > 100000) {
+                text = `✨ 아주 훌륭한 흐름입니다! 이대로라면 10년 후 자산 ${Math.round(final/10000).toFixed(1)}억 원 클럽에 가입합니다. 물가 상승을 이기는 투자를 지속하는 것이 관건입니다.`;
+            } else {
+                text = `💡 긍정적입니다. 꾸준히 자산이 우상향하고 있습니다. 현재의 저축 습관을 유지하되, 투자 수익률을 1~2%만 높여도 결과는 극적으로 바뀔 수 있습니다.`;
+            }
+            document.getElementById('aiInsight').innerText = text;
+        }
+
+        // 이벤트 리스너 등록
+        const ids = ['annualSalary', 'salaryGrowth', 'initialSeed', 'monthlyExpense', 'investmentReturn', 'inflationRate'];
+        ids.forEach(id => document.getElementById(id).addEventListener('input', updateSimulation));
+
+        // 초기 실행
+        updateSimulation();
+    </script>
 </body>
 </html>
