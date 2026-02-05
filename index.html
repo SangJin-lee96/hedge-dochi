@@ -13,10 +13,8 @@
     <meta name="twitter:title" content="2026 현실 자산 등급 시뮬레이터 | My Wealth Tier">
     <meta name="twitter:description" content="나의 10년 후 자산 등급은? 연봉 상승과 '숨만 쉬어도 나가는 돈'을 반영한 현실적인 자산 시뮬레이터. 당신의 미래 자산 등급을 확인해보세요.">
     <meta name="twitter:image" content="https://hedge-dochi.com/og-image.png">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
         body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; }
         .input-group:focus-within label { color: #2563eb; }
         /* 캡처 영역 강조를 위한 스타일 */
@@ -26,6 +24,19 @@
      crossorigin="anonymous"></script>
     <meta name="google-adsense-account" content="ca-pub-4034054558626164">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="canonical" href="https://hedge-dochi.com/index.html">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "url": "https://hedge-dochi.com/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://hedge-dochi.com/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
 </head>
 <body class="py-8 px-4 md:py-12">
     <div class="max-w-6xl mx-auto relative">
@@ -138,6 +149,8 @@
         </div>
     </div>
 
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script>
         let chart;
 
