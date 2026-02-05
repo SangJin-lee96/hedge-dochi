@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="나의 10년 후 자산 등급은? 연봉 상승과 '숨만 쉬어도 나가는 돈'을 반영한 현실적인 자산 시뮬레이터. 당신의 미래 자산 등급을 확인해보세요.">
     <title>2026 현실 자산 등급 시뮬레이터 | My Wealth Tier</title>
+    <meta property="og:title" content="2026 현실 자산 등급 시뮬레이터 | My Wealth Tier">
+    <meta property="og:description" content="나의 10년 후 자산 등급은? 연봉 상승과 '숨만 쉬어도 나가는 돈'을 반영한 현실적인 자산 시뮬레이터. 당신의 미래 자산 등급을 확인해보세요.">
+    <meta property="og:image" content="https://hedge-dochi.com/og-image.jpg">
+    <meta property="og:url" content="https://hedge-dochi.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="2026 현실 자산 등급 시뮬레이터 | My Wealth Tier">
+    <meta name="twitter:description" content="나의 10년 후 자산 등급은? 연봉 상승과 '숨만 쉬어도 나가는 돈'을 반영한 현실적인 자산 시뮬레이터. 당신의 미래 자산 등급을 확인해보세요.">
+    <meta name="twitter:image" content="https://hedge-dochi.com/og-image.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -16,6 +25,7 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4034054558626164"
      crossorigin="anonymous"></script>
     <meta name="google-adsense-account" content="ca-pub-4034054558626164">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body class="py-8 px-4 md:py-12">
     <div class="max-w-6xl mx-auto relative">
@@ -79,12 +89,12 @@
 
             <div class="xl:col-span-8 space-y-6">
                 
-                <div id="gradeSection" class="capture-area bg-gradient-to-r from-slate-100 to-slate-200 p-8 rounded-[2.5rem] shadow-lg border border-white/50 text-center transition-all duration-700 transform hover:scale-[1.01]">
+                <div id="gradeSection" class="capture-area bg-gradient-to-r from-fuchsia-50 via-purple-100 to-indigo-200 p-8 rounded-[2.5rem] shadow-lg border border-white/50 text-center transition-all duration-700 transform hover:scale-[1.01]">
                     <h3 class="text-sm font-bold text-black/50 uppercase tracking-[0.2em] mb-4">10 YEAR WEALTH TIER</h3>
                     <div class="flex flex-col items-center justify-center">
                         <div id="gradeBadgeIcon" class="text-6xl md:text-7xl mb-4 drop-shadow-md filter grayscale-0 transition-all duration-700">💎</div>
-                        <h2 id="gradeTitle" class="text-4xl md:text-5xl font-extrabold text-slate-800 mb-2 transition-all duration-700">계산 중...</h2>
-                        <p id="gradeDesc" class="text-slate-700 text-lg font-medium opacity-90 max-w-lg mx-auto transition-all duration-700">잠시만 기다려 주세요.</p>
+                        <h2 id="gradeTitle" class="text-4xl md:text-5xl font-extrabold text-purple-900 mb-2 transition-all duration-700">다이아몬드 (Diamond)</h2>
+                        <p id="gradeDesc" class="text-purple-900 text-lg font-medium opacity-90 max-w-lg mx-auto transition-all duration-700">TOP TIER 달성! 10년 후, 당신은 경제적 자유를 누리게 됩니다.</p>
                     </div>
                     <div class="mt-6 inline-block bg-black/10 rounded-full px-6 py-2 text-sm font-bold text-black/60">
                         📸 이 결과를 캡처해서 공유해보세요!
@@ -93,15 +103,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                         <p class="text-slate-500 text-sm font-bold">10년 후 명목 자산</p>
-                        <h2 class="text-3xl font-extrabold text-blue-600 mt-2 tracking-tight" id="finalWealthText">-</h2>
+                        <h2 class="text-3xl font-extrabold text-blue-600 mt-2 tracking-tight" id="finalWealthText">120,000 만원</h2>
                     </div>
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                         <p class="text-slate-500 text-sm font-bold">실질 가치 (물가반영)</p>
-                        <h2 class="text-3xl font-extrabold text-slate-700 mt-2 tracking-tight" id="realValueText">-</h2>
+                        <h2 class="text-3xl font-extrabold text-slate-700 mt-2 tracking-tight" id="realValueText">93,654 만원</h2>
                     </div>
                     <div class="bg-indigo-600 p-6 rounded-3xl shadow-lg text-white">
                         <p class="text-indigo-200 text-sm font-bold">현재 월 평균 저축가능액</p>
-                        <h2 class="text-3xl font-extrabold mt-2 tracking-tight" id="netSavingsText">-</h2>
+                        <h2 class="text-3xl font-extrabold mt-2 tracking-tight" id="netSavingsText">175 만원</h2>
                     </div>
                 </div>
 
@@ -117,7 +127,7 @@
 
                 <div id="insightBox" class="bg-amber-50 border-2 border-amber-100/50 p-8 rounded-[2.5rem]">
                     <h4 class="text-amber-800 font-bold mb-3 flex items-center"><span class="text-2xl mr-2">💡</span> AI 분석 코멘트</h4>
-                    <p id="aiInsight" class="text-amber-900/80 leading-relaxed font-medium">데이터를 분석 중입니다...</p>
+                    <p id="aiInsight" class="text-amber-900/80 leading-relaxed font-medium">✨ 아주 훌륭한 흐름입니다! 이대로라면 10년 후 자산 12억 원 클럽에 가입합니다. 물가 상승을 이기는 투자를 지속하는 것이 관건입니다.</p>
                 </div>
                 
                 <div class="bg-slate-100 rounded-2xl h-28 flex flex-col items-center justify-center text-slate-400 text-sm tracking-widest border-2 border-dashed border-slate-300 mx-4">
