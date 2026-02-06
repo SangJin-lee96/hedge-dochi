@@ -73,35 +73,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon: '🥉', title: '브론즈 (Bronze)',
                 desc: '아직은 준비 단계! 지출을 조금만 줄여도 결과가 크게 바뀝니다.',
                 bgClasses: ['from-orange-100', 'via-orange-200', 'to-amber-200', 'dark:from-orange-900', 'dark:via-orange-800', 'dark:to-amber-800'],
-                textColorClass: 'text-amber-900 dark:text-amber-100'
+                textColorClass: 'text-amber-900 dark:text-amber-100',
+                animationClass: 'animate-pulse'
             };
         } else if (finalWealth < 30000) { // 3억 미만
             grade = {
                 icon: '🥈', title: '실버 (Silver)',
                 desc: '꾸준함이 무기! 시드머니가 모이고 있습니다. 투자 공부를 병행해보세요.',
                 bgClasses: ['from-slate-200', 'via-slate-300', 'to-zinc-300', 'dark:from-slate-700', 'dark:via-slate-600', 'dark:to-zinc-600'],
-                textColorClass: 'text-slate-900 dark:text-slate-100'
+                textColorClass: 'text-slate-900 dark:text-slate-100',
+                animationClass: 'animate-bounce'
             };
         } else if (finalWealth < 60000) { // 6억 미만
             grade = {
                 icon: '🥇', title: '골드 (Gold)',
                 desc: '안정적인 궤도 진입! 노후 준비의 탄탄한 기반을 마련하셨습니다.',
                 bgClasses: ['from-yellow-300', 'via-yellow-400', 'to-yellow-500', 'dark:from-yellow-600', 'dark:via-yellow-500', 'dark:to-yellow-400'],
-                textColorClass: 'text-yellow-950 dark:text-black'
+                textColorClass: 'text-yellow-950 dark:text-black',
+                animationClass: 'animate-pulse'
             };
         } else if (finalWealth < 120000) { // 12억 미만
             grade = {
                 icon: '💠', title: '플래티넘 (Platinum)',
                 desc: '상위권 자산가! 경제적 자유를 향한 고속도로에 올라탔습니다.',
                 bgClasses: ['from-cyan-100', 'via-blue-200', 'to-indigo-200', 'dark:from-cyan-800', 'dark:via-blue-800', 'dark:to-indigo-800'],
-                textColorClass: 'text-blue-950 dark:text-cyan-50'
+                textColorClass: 'text-blue-950 dark:text-cyan-50',
+                animationClass: 'animate-pulse'
             };
         } else { // 12억 이상
             grade = {
                 icon: '💎', title: '다이아몬드 (Diamond)',
                 desc: 'TOP TIER 달성! 10년 후, 당신은 경제적 자유를 누리게 됩니다.',
                 bgClasses: ['from-fuchsia-100', 'via-purple-200', 'to-indigo-300', 'dark:from-fuchsia-800', 'dark:via-purple-800', 'dark:to-indigo-800'],
-                textColorClass: 'text-purple-950 dark:text-fuchsia-50'
+                textColorClass: 'text-purple-950 dark:text-fuchsia-50',
+                animationClass: 'animate-bounce'
             };
         }
 
@@ -110,6 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
         section.style.borderColor = `var(--color-grade-section-border)`;
 
         badgeIcon.innerText = grade.icon;
+        badgeIcon.className = `text-6xl md:text-7xl mb-4 drop-shadow-md filter grayscale-0 transition-all duration-700 ${grade.animationClass}`;
+        
         title.innerText = grade.title;
         title.className = `text-4xl md:text-5xl font-extrabold mb-2 transition-all duration-700 ${grade.textColorClass}`;
         title.style.color = ''; 
