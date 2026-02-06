@@ -86,8 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
             grade = {
                 icon: '🥇', title: '골드 (Gold)',
                 desc: '안정적인 궤도 진입! 노후 준비의 탄탄한 기반을 마련하셨습니다.',
-                bgClasses: ['from-yellow-100', 'via-yellow-200', 'to-amber-300', 'dark:from-yellow-900', 'dark:via-amber-800', 'dark:to-yellow-800'],
-                textColorClass: 'text-amber-950 dark:text-yellow-100'
+                bgClasses: ['from-yellow-200', 'via-yellow-400', 'to-yellow-500', 'dark:from-yellow-700', 'dark:via-yellow-600', 'dark:to-yellow-500'],
+                textColorClass: 'text-yellow-950 dark:text-yellow-50'
             };
         } else if (finalWealth < 120000) { // 12억 미만
             grade = {
