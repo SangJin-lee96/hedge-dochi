@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < numGames; i++) {
             const numbers = generatePsychologicalNumbers(numbersToDraw);
             const gameDiv = document.createElement('div');
-            gameDiv.className = 'p-4 border border-slate-200 rounded-2xl flex items-center justify-between';
+            gameDiv.className = 'p-4 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between transition-colors duration-300';
 
             const numbersContainer = document.createElement('div');
             numbersContainer.className = 'flex flex-wrap items-center gap-2';
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (includeBonus && index === numbers.length - 1) {
                     ball.className += ' ml-2 border-2 border-dashed border-red-400';
                     const plusSign = document.createElement('span');
-                    plusSign.className = 'mx-2 font-bold text-xl text-slate-400';
+                    plusSign.className = 'mx-2 font-bold text-xl text-slate-400 dark:text-slate-600';
                     plusSign.textContent = '+';
                     numbersContainer.appendChild(plusSign);
                 }
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const gameLabel = document.createElement('span');
-            gameLabel.className = 'font-bold text-sm text-slate-400 tracking-wider';
+            gameLabel.className = 'font-bold text-sm text-slate-400 dark:text-slate-500 tracking-wider';
             gameLabel.textContent = `GAME ${i + 1}`;
             
             gameDiv.appendChild(gameLabel);
