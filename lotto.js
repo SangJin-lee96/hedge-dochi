@@ -99,10 +99,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 numbersContainer.appendChild(ball);
             });
-            const gameLabel = document.createElement('span');
-            gameLabel.className = 'font-bold text-sm text-slate-400 dark:text-slate-500 tracking-wider';
-            gameLabel.textContent = `GAME ${i + 1}`;
-            gameDiv.appendChild(gameLabel);
+                        const gameLabel = document.createElement('span');
+                        gameLabel.className = 'font-bold text-sm text-slate-400 dark:text-slate-400 tracking-wider';
+                        gameLabel.textContent = `GAME ${i + 1}`;
+                        
+                        gameDiv.appendChild(gameLabel);
+            
             gameDiv.appendChild(numbersContainer);
             resultsDiv.appendChild(gameDiv);
         }
@@ -133,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 numbersContainer.appendChild(ball);
             });
             const gameLabel = document.createElement('span');
-            gameLabel.className = 'font-bold text-sm text-slate-400 dark:text-slate-500 tracking-wider';
+            gameLabel.className = 'font-bold text-sm text-slate-400 dark:text-slate-400 tracking-wider';
             gameLabel.textContent = `GAME ${i + 1}`;
             gameDiv.appendChild(gameLabel);
             gameDiv.appendChild(numbersContainer);

@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 localStorage.setItem('darkMode', 'disabled');
             }
+
+            // 테마 변경 이벤트 발생 (다른 스크립트에서 감지 가능하도록)
+            window.dispatchEvent(new CustomEvent('themeChanged', { detail: { isDark } }));
         });
     }
 });

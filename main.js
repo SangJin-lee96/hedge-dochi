@@ -72,36 +72,36 @@ document.addEventListener('DOMContentLoaded', () => {
             grade = {
                 icon: '🥉', title: '브론즈 (Bronze)',
                 desc: '아직은 준비 단계! 지출을 조금만 줄여도 결과가 크게 바뀝니다.',
-                bgClasses: ['from-orange-50', 'via-orange-100', 'to-amber-100'],
-                textColor: '#d97706' // amber-700
+                bgClasses: ['from-orange-50', 'via-orange-100', 'to-amber-100', 'dark:from-orange-950', 'dark:via-orange-900', 'dark:to-amber-900'],
+                textColorClass: 'text-amber-700 dark:text-amber-200'
             };
         } else if (finalWealth < 30000) { // 3억 미만
             grade = {
                 icon: '🥈', title: '실버 (Silver)',
                 desc: '꾸준함이 무기! 시드머니가 모이고 있습니다. 투자 공부를 병행해보세요.',
-                bgClasses: ['from-slate-100', 'via-slate-200', 'to-zinc-200'],
-                textColor: '#334155' // slate-800
+                bgClasses: ['from-slate-100', 'via-slate-200', 'to-zinc-200', 'dark:from-slate-800', 'dark:via-slate-700', 'dark:to-zinc-700'],
+                textColorClass: 'text-slate-700 dark:text-slate-200'
             };
         } else if (finalWealth < 60000) { // 6억 미만
             grade = {
                 icon: '🥇', title: '골드 (Gold)',
                 desc: '안정적인 궤도 진입! 노후 준비의 탄탄한 기반을 마련하셨습니다.',
-                bgClasses: ['from-yellow-50', 'via-yellow-100', 'to-amber-200'],
-                textColor: '#b45309' // amber-800
+                bgClasses: ['from-yellow-50', 'via-yellow-100', 'to-amber-200', 'dark:from-yellow-950', 'dark:via-yellow-900', 'dark:to-amber-900'],
+                textColorClass: 'text-amber-800 dark:text-yellow-200'
             };
         } else if (finalWealth < 120000) { // 12억 미만
             grade = {
                 icon: '💠', title: '플래티넘 (Platinum)',
                 desc: '상위권 자산가! 경제적 자유를 향한 고속도로에 올라탔습니다.',
-                bgClasses: ['from-cyan-50', 'via-cyan-100', 'to-blue-200'],
-                textColor: '#1e40af' // blue-800
+                bgClasses: ['from-cyan-50', 'via-cyan-100', 'to-blue-200', 'dark:from-cyan-950', 'dark:via-cyan-900', 'dark:to-blue-900'],
+                textColorClass: 'text-blue-800 dark:text-cyan-100'
             };
         } else { // 12억 이상
             grade = {
                 icon: '💎', title: '다이아몬드 (Diamond)',
                 desc: 'TOP TIER 달성! 10년 후, 당신은 경제적 자유를 누리게 됩니다.',
-                bgClasses: ['from-fuchsia-50', 'via-purple-100', 'to-indigo-200'],
-                textColor: '#6d28d9' // violet-700 or purple-700
+                bgClasses: ['from-fuchsia-50', 'via-purple-100', 'to-indigo-200', 'dark:from-fuchsia-950', 'dark:via-purple-900', 'dark:to-indigo-900'],
+                textColorClass: 'text-purple-900 dark:text-fuchsia-100'
             };
         }
 
@@ -111,17 +111,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         badgeIcon.innerText = grade.icon;
         title.innerText = grade.title;
-        title.style.color = grade.textColor;
-        title.className = `text-4xl md:text-5xl font-extrabold mb-2 transition-all duration-700`; 
+        title.className = `text-4xl md:text-5xl font-extrabold mb-2 transition-all duration-700 ${grade.textColorClass}`;
+        title.style.color = ''; // Remove inline style to allow Tailwind class to work
 
         desc.innerText = grade.desc;
-        desc.style.color = grade.textColor;
-        desc.className = `text-lg font-medium opacity-90 max-w-lg mx-auto transition-all duration-700`; 
+        desc.className = `text-lg font-medium opacity-90 max-w-lg mx-auto transition-all duration-700 ${grade.textColorClass}`;
+        desc.style.color = ''; // Remove inline style
     }
 
     function updateChart(labels, nominalData, realData) {
         const ctx = document.getElementById('wealthChart').getContext('2d');
         if (chart) chart.destroy();
+
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+        const tickColor = isDarkMode ? '#94a3b8' : '#64748b';
 
         chart = new Chart(ctx, {
             type: 'line',
@@ -131,8 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     {
                         label: '명목 자산 (통장 찍히는 돈)',
                         data: nominalData,
-                        borderColor: 'var(--color-chart-line-nominal)',
-                        backgroundColor: 'rgba(37, 99, 235, 0.08)', 
+                        borderColor: isDarkMode ? '#60a5fa' : '#2563eb',
+                        backgroundColor: isDarkMode ? 'rgba(96, 165, 250, 0.1)' : 'rgba(37, 99, 235, 0.08)', 
                         fill: true,
                         borderWidth: 4,
                         pointRadius: 0,
@@ -142,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     {
                         label: '실질 가치 (물가 반영된 돈)',
                         data: realData,
-                        borderColor: 'var(--color-chart-line-real)',
+                        borderColor: isDarkMode ? '#94a3b8' : '#64748b',
                         borderDash: [8, 8],
                         fill: false,
                         borderWidth: 2,
@@ -157,16 +161,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 maintainAspectRatio: false,
                 interaction: { intersect: false, mode: 'index' },
                 plugins: {
-                    legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 10, font: { family: 'Pretendard', weight: '600' } } },
-                    tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', titleFont: { family: 'Pretendard' }, bodyFont: { family: 'Pretendard' }, padding: 12, cornerRadius: 12 }
+                    legend: { 
+                        position: 'top', 
+                        align: 'end', 
+                        labels: { 
+                            usePointStyle: true, 
+                            boxWidth: 10, 
+                            font: { family: 'Pretendard', weight: '600' },
+                            color: tickColor
+                        } 
+                    },
+                    tooltip: { 
+                        backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.9)' : 'rgba(0,0,0,0.8)', 
+                        titleFont: { family: 'Pretendard' }, 
+                        bodyFont: { family: 'Pretendard' }, 
+                        padding: 12, 
+                        cornerRadius: 12 
+                    }
                 },
                 scales: {
                     y: { 
                         beginAtZero: false,
-                        grid: { color: 'var(--color-chart-grid)', drawBorder: false },
-                        ticks: { callback: v => v/10000 + '억', font: { family: 'Pretendard', weight: '600' }, color: 'var(--color-chart-ticks)' }
+                        grid: { color: gridColor, drawBorder: false },
+                        ticks: { 
+                            callback: v => v/10000 + '억', 
+                            font: { family: 'Pretendard', weight: '600' }, 
+                            color: tickColor 
+                        }
                     },
-                    x: { grid: { display: false }, ticks: { font: { family: 'Pretendard', weight: '600' }, color: 'var(--color-chart-ticks)' } }
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { 
+                            font: { family: 'Pretendard', weight: '600' }, 
+                            color: tickColor 
+                        } 
+                    }
                 }
             }
         });
@@ -193,6 +222,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // 초기 실행
         updateSimulation();
     }
+
+    // 테마 변경 감지 및 차트 업데이트
+    window.addEventListener('themeChanged', () => {
+        if (document.getElementById('annualSalary')) {
+            updateSimulation();
+        }
+    });
 
     // SNS 공유 함수 추가
     window.shareToX = function() {

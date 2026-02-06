@@ -213,36 +213,36 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-6 rounded-3xl shadow-sm" style="background-color: var(--color-card-background); border-color: var(--color-card-border); border-width: 1px;">
+                    <div class="p-6 rounded-3xl shadow-sm transition-colors duration-300" style="background-color: var(--color-card-background); border-color: var(--color-card-border); border-width: 1px;">
                         <p class="text-sm font-bold" style="color: var(--color-secondary-text);">10년 후 명목 자산</p>
-                        <h2 class="text-3xl font-extrabold text-blue-600 mt-2 tracking-tight" id="finalWealthText">120,000 만원</h2>
+                        <h2 class="text-3xl font-extrabold text-blue-600 dark:text-blue-400 mt-2 tracking-tight transition-colors duration-300" id="finalWealthText">120,000 만원</h2>
                     </div>
-                    <div class="p-6 rounded-3xl shadow-sm" style="background-color: var(--color-card-background); border-color: var(--color-card-border); border-width: 1px;">
+                    <div class="p-6 rounded-3xl shadow-sm transition-colors duration-300" style="background-color: var(--color-card-background); border-color: var(--color-card-border); border-width: 1px;">
                         <p class="text-sm font-bold" style="color: var(--color-secondary-text);">실질 가치 (물가반영)</p>
-                        <h2 class="text-3xl font-extrabold text-slate-700 mt-2 tracking-tight" id="realValueText">93,654 만원</h2>
+                        <h2 class="text-3xl font-extrabold text-slate-700 dark:text-slate-200 mt-2 tracking-tight transition-colors duration-300" id="realValueText">93,654 만원</h2>
                     </div>
-                    <div class="bg-indigo-600 p-6 rounded-3xl shadow-lg text-white">
-                        <p class="text-indigo-200 text-sm font-bold">현재 월 평균 저축가능액</p>
+                    <div class="bg-indigo-600 dark:bg-indigo-900 p-6 rounded-3xl shadow-lg text-white transition-colors duration-300">
+                        <p class="text-indigo-200 dark:text-indigo-300 text-sm font-bold">현재 월 평균 저축가능액</p>
                         <h2 class="text-3xl font-extrabold mt-2 tracking-tight" id="netSavingsText">175 만원</h2>
                     </div>
                 </div>
 
-                <div class="p-8 rounded-[2.5rem] shadow-sm" style="background-color: var(--color-card-background); border-color: var(--color-card-border); border-width: 1px;">
+                <div class="p-8 rounded-[2.5rem] shadow-sm transition-colors duration-300" style="background-color: var(--color-card-background); border-color: var(--color-card-border); border-width: 1px;">
                     <div class="flex justify-between items-center mb-8">
                         <h3 class="text-xl font-bold" style="color: var(--color-primary-text);">📉 자산 성장 추이</h3>
-                        <span class="text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wider" style="background-color: var(--color-nav-link-hover-bg); color: var(--color-nav-link);">10-Year Projection</span>
+                        <span class="text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-colors duration-300" style="background-color: var(--color-nav-link-hover-bg); color: var(--color-nav-link);">10-Year Projection</span>
                     </div>
                     <div class="relative h-[350px]">
                         <canvas id="wealthChart"></canvas>
                     </div>
                 </div>
 
-                <div id="insightBox" class="p-8 rounded-[2.5rem]" style="background-color: var(--color-insight-bg); border-color: var(--color-insight-border); border-width: 2px;">
-                    <h4 class="font-bold mb-3 flex items-center" style="color: var(--color-insight-text-primary);"><span class="text-2xl mr-2">💡</span> AI 분석 코멘트</h4>
-                    <p id="aiInsight" class="leading-relaxed font-medium" style="color: var(--color-insight-text-secondary);">✨ 아주 훌륭한 흐름입니다! 이대로라면 10년 후 자산 12억 원 클럽에 가입합니다. 물가 상승을 이기는 투자를 지속하는 것이 관건입니다.</p>
+                <div id="insightBox" class="p-8 rounded-[2.5rem] transition-colors duration-300" style="background-color: var(--color-insight-bg); border-color: var(--color-insight-border); border-width: 2px;">
+                    <h4 class="font-bold mb-3 flex items-center" style="color: var(--color-insight-text-primary); transition: color 0.3s ease;"><span class="text-2xl mr-2">💡</span> AI 분석 코멘트</h4>
+                    <p id="aiInsight" class="leading-relaxed font-medium" style="color: var(--color-insight-text-secondary); transition: color 0.3s ease;">✨ 아주 훌륭한 흐름입니다! 이대로라면 10년 후 자산 12억 원 클럽에 가입합니다. 물가 상승을 이기는 투자를 지속하는 것이 관건입니다.</p>
                 </div>
                 
-                <div class="rounded-2xl h-28 flex flex-col items-center justify-center text-sm tracking-widest mx-4" style="background-color: var(--color-ad-background); color: var(--color-ad-text); border-color: var(--color-ad-border); border-width: 2px; border-style: dashed;">
+                <div class="rounded-2xl h-28 flex flex-col items-center justify-center text-sm tracking-widest mx-4 transition-colors duration-300" style="background-color: var(--color-ad-background); color: var(--color-ad-text); border-color: var(--color-ad-border); border-width: 2px; border-style: dashed;">
                     <span class="font-bold mb-1">SPONSORED</span>
                     Google AdSense Area
                 </div>
