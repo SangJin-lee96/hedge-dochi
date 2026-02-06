@@ -78,7 +78,12 @@
         </div>
     </div>
 
-    <script src="https://cdn.tailwindcss.com" defer></script>
+    <script>
+        window.tailwind = {
+            darkMode: 'class',
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="dark-mode.js" defer></script>
     <script src="lotto.js" defer></script>
     <footer class="text-center mt-12 py-8 border-t border-slate-200 dark:border-slate-700 transition-colors duration-300">
