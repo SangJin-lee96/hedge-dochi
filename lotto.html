@@ -90,7 +90,20 @@
             </div>
 
             <div class="xl:col-span-8 space-y-6 bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 transition-colors duration-300">
-                <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200 mb-5">🍀 추천 번호 결과</h3>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">🍀 추천 번호 결과</h3>
+                    <div class="flex space-x-2">
+                        <button onclick="shareToX()" class="w-9 h-9 flex items-center justify-center rounded-full bg-black text-white hover:opacity-80 transition-opacity shadow-sm" title="X(Twitter) 공유">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
+                        </button>
+                        <button onclick="shareToFacebook()" class="w-9 h-9 flex items-center justify-center rounded-full bg-[#1877F2] text-white hover:opacity-80 transition-opacity shadow-sm" title="Facebook 공유">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
+                        </button>
+                        <button onclick="copyLink()" class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-500 text-white hover:opacity-80 transition-opacity shadow-sm" title="링크 복사">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                        </button>
+                    </div>
+                </div>
                 <div id="lottoResults" class="space-y-4">
                     <p class="text-slate-500 dark:text-slate-400">생성 버튼을 누르면 AI가 분석한 행운의 번호 조합이 여기에 표시됩니다.</p>
                 </div>

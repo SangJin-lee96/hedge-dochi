@@ -188,10 +188,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 이벤트 리스너 등록
     const ids = ['annualSalary', 'salaryGrowth', 'initialSeed', 'monthlyExpense', 'investmentReturn', 'inflationRate'];
-    // Check if elements exist before adding listeners (in case we are on a different page)
     if (document.getElementById('annualSalary')) {
         ids.forEach(id => document.getElementById(id).addEventListener('input', updateSimulation));
         // 초기 실행
         updateSimulation();
     }
+
+    // SNS 공유 함수 추가
+    window.shareToX = function() {
+        const text = "나의 10년 후 자산 등급은? 현실 자산 시뮬레이터에서 확인해보세요! 💎";
+        const url = window.location.href;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+    };
+
+    window.shareToFacebook = function() {
+        const url = window.location.href;
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+    };
+
+    window.copyLink = function() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            alert("링크가 복사되었습니다!");
+        }).catch(err => {
+            console.error('링크 복사 실패:', err);
+        });
+    };
 });
