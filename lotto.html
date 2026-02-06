@@ -49,24 +49,44 @@
         </header>
 
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <div class="xl:col-span-4 space-y-6 bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 h-fit transition-colors duration-300">
-                <section>
-                    <h3 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-5">추천 설정</h3>
-                    <div class="space-y-5">
-                        <div>
-                            <label for="numGames" class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">게임 수</label>
-                            <input type="number" id="numGames" value="5" min="1" max="20" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-semibold text-slate-800 dark:text-white">
+            <div class="xl:col-span-4 space-y-6">
+                <!-- 로또 설정 카드 -->
+                <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 h-fit transition-colors duration-300">
+                    <section>
+                        <h3 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-5">로또 6/45 설정</h3>
+                        <div class="space-y-5">
+                            <div>
+                                <label for="numGames" class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">게임 수</label>
+                                <input type="number" id="numGames" value="5" min="1" max="20" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-semibold text-slate-800 dark:text-white">
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="includeBonus" class="h-5 w-5 rounded-md border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:bg-slate-700">
+                                <label for="includeBonus" class="ml-3 block text-sm font-bold text-slate-700 dark:text-slate-300">보너스 번호 포함</label>
+                            </div>
                         </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="includeBonus" class="h-5 w-5 rounded-md border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:bg-slate-700">
-                            <label for="includeBonus" class="ml-3 block text-sm font-bold text-slate-700 dark:text-slate-300">보너스 번호 포함</label>
+                    </section>
+                    <hr class="border-slate-100 dark:border-slate-700 my-6 transition-colors duration-300">
+                    <button id="generateLotto" class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-bold py-4 px-4 rounded-2xl transition-all duration-300 shadow-lg shadow-blue-500/30">
+                        로또 번호 생성
+                    </button>
+                </div>
+
+                <!-- 연금복권 설정 카드 -->
+                <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 h-fit transition-colors duration-300">
+                    <section>
+                        <h3 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-5">연금복권 720+ 설정</h3>
+                        <div class="space-y-5">
+                            <div>
+                                <label for="numPensionGames" class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">게임 수</label>
+                                <input type="number" id="numPensionGames" value="5" min="1" max="20" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl p-4 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-semibold text-slate-800 dark:text-white">
+                            </div>
                         </div>
-                    </div>
-                </section>
-                <hr class="border-slate-100 dark:border-slate-700 transition-colors duration-300">
-                <button id="generateLotto" class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-bold py-4 px-4 rounded-2xl transition-all duration-300 shadow-lg shadow-blue-500/30">
-                    행운 번호 생성
-                </button>
+                    </section>
+                    <hr class="border-slate-100 dark:border-slate-700 my-6 transition-colors duration-300">
+                    <button id="generatePension" class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-500 text-white font-bold py-4 px-4 rounded-2xl transition-all duration-300 shadow-lg shadow-purple-500/30">
+                        연금복권 번호 생성
+                    </button>
+                </div>
             </div>
 
             <div class="xl:col-span-8 space-y-6 bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 transition-colors duration-300">

@@ -54,13 +54,45 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
+    const generatePensionButton = document.getElementById('generatePension');
+    const numPensionGamesInput = document.getElementById('numPensionGames');
+
+    /**
+     * 연금복권 번호 생성 함수 (조 + 6자리)
+     * @returns {object} - { group: number, numbers: number[] }
+     */
+    const generatePensionNumbers = () => {
+        const group = Math.floor(Math.random() * 5) + 1;
+        const numbers = [];
+        
+        // 6자리 숫자 생성
+        for (let i = 0; i < 6; i++) {
+            numbers.push(Math.floor(Math.random() * 10));
+        }
+
+        // 심리적 필터: 모두 같은 숫자이거나 단순 계단식인 경우 재생성 (최대 10번 시도)
+        const isRepeating = numbers.every(n => n === numbers[0]);
+        const isSequence = numbers.every((n, i) => i === 0 || n === numbers[i-1] + 1 || n === numbers[i-1] - 1);
+        
+        if (isRepeating || isSequence) {
+            return generatePensionNumbers();
+        }
+
+        return { group, numbers };
+    };
+
     generateButton.addEventListener('click', () => {
         const numGames = parseInt(numGamesInput.value, 10);
         const includeBonus = includeBonusCheckbox.checked;
         const numbersToDraw = includeBonus ? 7 : 6;
 
         resultsDiv.innerHTML = ''; // 이전 결과 지우기
-        resultsDiv.classList.remove('opacity-0');
+        
+        // 결과 제목 추가
+        const title = document.createElement('h4');
+        title.className = 'text-lg font-bold text-blue-600 dark:text-blue-400 mb-4';
+        title.textContent = '📍 로또 6/45 추천 번호';
+        resultsDiv.appendChild(title);
 
         for (let i = 0; i < numGames; i++) {
             const numbers = generatePsychologicalNumbers(numbersToDraw);
@@ -96,4 +128,47 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsDiv.appendChild(gameDiv);
         }
     });
+
+    generatePensionButton.addEventListener('click', () => {
+        const numGames = parseInt(numPensionGamesInput.value, 10);
+        resultsDiv.innerHTML = ''; // 이전 결과 지우기
+
+        // 결과 제목 추가
+        const title = document.createElement('h4');
+        title.className = 'text-lg font-bold text-purple-600 dark:text-purple-400 mb-4';
+        title.textContent = '📍 연금복권 720+ 추천 번호';
+        resultsDiv.appendChild(title);
+
+        for (let i = 0; i < numGames; i++) {
+            const { group, numbers } = generatePensionNumbers();
+            const gameDiv = document.createElement('div');
+            gameDiv.className = 'p-4 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between transition-colors duration-300';
+
+            const numbersContainer = document.createElement('div');
+            numbersContainer.className = 'flex flex-wrap items-center gap-2';
+
+            // 조 번호 표시
+            const groupBall = document.createElement('div');
+            groupBall.className = 'px-4 h-10 flex items-center justify-center rounded-full font-bold text-lg bg-purple-600 text-white mr-2';
+            groupBall.textContent = `${group}조`;
+            numbersContainer.appendChild(groupBall);
+
+            // 6자리 숫자 표시
+            numbers.forEach(num => {
+                const ball = document.createElement('div');
+                ball.className = 'w-10 h-10 flex items-center justify-center rounded-full font-bold text-lg bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600';
+                ball.textContent = num;
+                numbersContainer.appendChild(ball);
+            });
+
+            const gameLabel = document.createElement('span');
+            gameLabel.className = 'font-bold text-sm text-slate-400 dark:text-slate-500 tracking-wider';
+            gameLabel.textContent = `GAME ${i + 1}`;
+            
+            gameDiv.appendChild(gameLabel);
+            gameDiv.appendChild(numbersContainer);
+            resultsDiv.appendChild(gameDiv);
+        }
+    });
 });
+
