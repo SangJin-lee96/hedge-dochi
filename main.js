@@ -244,9 +244,19 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
     };
 
-    window.shareToFacebook = function() {
+    window.shareToThreads = function() {
+        const text = "나의 10년 후 자산 등급은? 현실 자산 시뮬레이터에서 확인해보세요! 💎";
         const url = window.location.href;
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(text)}%20${encodeURIComponent(url)}`, '_blank');
+    };
+
+    window.shareToInstagram = function() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            alert("링크가 복사되었습니다! 인스타그램 스토리에 공유해보세요. 📸");
+        }).catch(err => {
+            console.error('링크 복사 실패:', err);
+        });
     };
 
     window.copyLink = function() {
