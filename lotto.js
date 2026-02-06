@@ -83,17 +83,20 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < numGames; i++) {
             const numbers = generatePsychologicalNumbers(numbersToDraw);
             const gameDiv = document.createElement('div');
-            gameDiv.className = 'p-4 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between transition-colors duration-300';
+            gameDiv.className = 'p-4 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between transition-colors duration-300 animate-fade-in-up';
+            gameDiv.style.animationDelay = `${i * 0.15}s`;
             const numbersContainer = document.createElement('div');
             numbersContainer.className = 'flex flex-wrap items-center gap-2';
             numbers.forEach((num, index) => {
                 const ball = document.createElement('div');
-                ball.className = `w-10 h-10 flex items-center justify-center rounded-full font-bold text-lg ${getBallColor(num)}`;
+                ball.className = `w-10 h-10 flex items-center justify-center rounded-full font-bold text-lg ${getBallColor(num)} animate-bounce`;
+                ball.style.animationDelay = `${index * 0.1}s`;
+                ball.style.animationIterationCount = '2'; // 두 번만 튀게 설정
                 ball.textContent = num;
                 if (includeBonus && index === numbers.length - 1) {
                     ball.className += ' ml-2 border-2 border-dashed border-red-400';
                     const plusSign = document.createElement('span');
-                    plusSign.className = 'mx-2 font-bold text-xl text-slate-400 dark:text-slate-600';
+                    plusSign.className = 'mx-2 font-bold text-xl text-slate-400 dark:text-slate-600 animate-pulse';
                     plusSign.textContent = '+';
                     numbersContainer.appendChild(plusSign);
                 }
@@ -121,16 +124,19 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < numGames; i++) {
             const { group, numbers } = generatePensionNumbers();
             const gameDiv = document.createElement('div');
-            gameDiv.className = 'p-4 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between transition-colors duration-300';
+            gameDiv.className = 'p-4 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between transition-colors duration-300 animate-fade-in-up';
+            gameDiv.style.animationDelay = `${i * 0.15}s`;
             const numbersContainer = document.createElement('div');
             numbersContainer.className = 'flex flex-wrap items-center gap-2';
             const groupBall = document.createElement('div');
-            groupBall.className = 'px-4 h-10 flex items-center justify-center rounded-full font-bold text-lg bg-purple-600 text-white mr-2';
+            groupBall.className = 'px-4 h-10 flex items-center justify-center rounded-full font-bold text-lg bg-purple-600 text-white mr-2 animate-bounce';
             groupBall.textContent = `${group}조`;
             numbersContainer.appendChild(groupBall);
-            numbers.forEach(num => {
+            numbers.forEach((num, index) => {
                 const ball = document.createElement('div');
-                ball.className = 'w-10 h-10 flex items-center justify-center rounded-full font-bold text-lg bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600';
+                ball.className = 'w-10 h-10 flex items-center justify-center rounded-full font-bold text-lg bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600 animate-bounce';
+                ball.style.animationDelay = `${(index + 1) * 0.1}s`;
+                ball.style.animationIterationCount = '2';
                 ball.textContent = num;
                 numbersContainer.appendChild(ball);
             });
