@@ -72,36 +72,36 @@ document.addEventListener('DOMContentLoaded', () => {
             grade = {
                 icon: '🥉', title: '브론즈 (Bronze)',
                 desc: '아직은 준비 단계! 지출을 조금만 줄여도 결과가 크게 바뀝니다.',
-                bgClasses: ['from-orange-50', 'via-orange-100', 'to-amber-100', 'dark:from-orange-950', 'dark:via-orange-900', 'dark:to-amber-900'],
-                textColorClass: 'text-amber-700 dark:text-amber-200'
+                bgClasses: ['from-orange-100', 'via-orange-200', 'to-amber-200', 'dark:from-orange-900', 'dark:via-orange-800', 'dark:to-amber-800'],
+                textColorClass: 'text-amber-900 dark:text-amber-100'
             };
         } else if (finalWealth < 30000) { // 3억 미만
             grade = {
                 icon: '🥈', title: '실버 (Silver)',
                 desc: '꾸준함이 무기! 시드머니가 모이고 있습니다. 투자 공부를 병행해보세요.',
-                bgClasses: ['from-slate-100', 'via-slate-200', 'to-zinc-200', 'dark:from-slate-800', 'dark:via-slate-700', 'dark:to-zinc-700'],
-                textColorClass: 'text-slate-700 dark:text-slate-200'
+                bgClasses: ['from-slate-200', 'via-slate-300', 'to-zinc-300', 'dark:from-slate-700', 'dark:via-slate-600', 'dark:to-zinc-600'],
+                textColorClass: 'text-slate-900 dark:text-slate-100'
             };
         } else if (finalWealth < 60000) { // 6억 미만
             grade = {
                 icon: '🥇', title: '골드 (Gold)',
                 desc: '안정적인 궤도 진입! 노후 준비의 탄탄한 기반을 마련하셨습니다.',
-                bgClasses: ['from-yellow-50', 'via-yellow-100', 'to-amber-200', 'dark:from-yellow-950', 'dark:via-yellow-900', 'dark:to-amber-900'],
-                textColorClass: 'text-amber-800 dark:text-yellow-200'
+                bgClasses: ['from-yellow-100', 'via-yellow-200', 'to-amber-300', 'dark:from-yellow-900', 'dark:via-amber-800', 'dark:to-yellow-800'],
+                textColorClass: 'text-amber-950 dark:text-yellow-100'
             };
         } else if (finalWealth < 120000) { // 12억 미만
             grade = {
                 icon: '💠', title: '플래티넘 (Platinum)',
                 desc: '상위권 자산가! 경제적 자유를 향한 고속도로에 올라탔습니다.',
-                bgClasses: ['from-cyan-50', 'via-cyan-100', 'to-blue-200', 'dark:from-cyan-950', 'dark:via-cyan-900', 'dark:to-blue-900'],
-                textColorClass: 'text-blue-800 dark:text-cyan-100'
+                bgClasses: ['from-cyan-100', 'via-blue-200', 'to-indigo-200', 'dark:from-cyan-800', 'dark:via-blue-800', 'dark:to-indigo-800'],
+                textColorClass: 'text-blue-950 dark:text-cyan-50'
             };
         } else { // 12억 이상
             grade = {
                 icon: '💎', title: '다이아몬드 (Diamond)',
                 desc: 'TOP TIER 달성! 10년 후, 당신은 경제적 자유를 누리게 됩니다.',
-                bgClasses: ['from-fuchsia-50', 'via-purple-100', 'to-indigo-200', 'dark:from-fuchsia-950', 'dark:via-purple-900', 'dark:to-indigo-900'],
-                textColorClass: 'text-purple-900 dark:text-fuchsia-100'
+                bgClasses: ['from-fuchsia-100', 'via-purple-200', 'to-indigo-300', 'dark:from-fuchsia-800', 'dark:via-purple-800', 'dark:to-indigo-800'],
+                textColorClass: 'text-purple-950 dark:text-fuchsia-50'
             };
         }
 
@@ -112,11 +112,11 @@ document.addEventListener('DOMContentLoaded', () => {
         badgeIcon.innerText = grade.icon;
         title.innerText = grade.title;
         title.className = `text-4xl md:text-5xl font-extrabold mb-2 transition-all duration-700 ${grade.textColorClass}`;
-        title.style.color = ''; // Remove inline style to allow Tailwind class to work
+        title.style.color = ''; 
 
         desc.innerText = grade.desc;
         desc.className = `text-lg font-medium opacity-90 max-w-lg mx-auto transition-all duration-700 ${grade.textColorClass}`;
-        desc.style.color = ''; // Remove inline style
+        desc.style.color = ''; 
     }
 
     function updateChart(labels, nominalData, realData) {
