@@ -33,9 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 for (let m = 0; m < 12; m++) {
                     // 월별 투자 수익 및 저축 반영
                     currentWealth *= (1 + monthlyReturn);
-                    if (monthlyNetSavings > 0) {
-                        currentWealth += monthlyNetSavings;
-                    }
+                    currentWealth += monthlyNetSavings;
                 }
                 // 연말 연봉 인상 반영
                 salary *= (1 + salaryGrowth);
@@ -67,6 +65,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ⭐ 등급별 투자 전략 데이터 ⭐
     const strategyData = {
+        '자산 위험': {
+            icon: '⚠️',
+            content: `
+                <div class="space-y-4">
+                    <p class="font-bold text-lg text-red-600 dark:text-red-400">자산이 줄어들고 있습니다! 경고 단계입니다.</p>
+                    <ul class="list-disc pl-5 space-y-2 text-slate-600 dark:text-slate-300">
+                        <li><strong>지출 구조조정:</strong> 현재의 고정 지출은 감당 가능한 수준을 넘어섰습니다. 즉시 '생존 모드'로 전환하여 불필요한 모든 비용을 제거해야 합니다.</li>
+                        <li><strong>부채 관리:</strong> 자산이 마이너스가 되기 시작하면 복리의 마법이 '빚의 굴레'로 바뀝니다. 고금리 부채가 있다면 우선적으로 상환하세요.</li>
+                        <li><strong>추가 소득 창출:</strong> 단순히 아끼는 것만으로는 부족할 수 있습니다. 근로 소득 외에 추가적인 수입원을 반드시 찾아야 합니다.</li>
+                    </ul>
+                </div>`
+        },
         '브론즈': {
             icon: '🥉',
             content: `
@@ -141,7 +151,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let grade = {};
 
         // 등급 기준 (단위: 만원)
-        if (finalWealth < 10000) { // 1억 미만
+        if (finalWealth < 0) {
+            grade = {
+                icon: '⚠️', title: '자산 위험',
+                desc: '현재 구조로는 10년 후 빚만 남게 됩니다. 고정 지출을 대폭 줄이거나 수입을 늘려야 합니다.',
+                bgClasses: ['from-red-500', 'via-red-600', 'to-red-700'],
+                animationClass: 'animate-pulse'
+            };
+        } else if (finalWealth < 10000) { // 1억 미만
             grade = {
                 icon: '🥉', title: '브론즈',
                 desc: '아직은 준비 단계! 지출을 조금만 줄여도 결과가 크게 바뀝니다.',
