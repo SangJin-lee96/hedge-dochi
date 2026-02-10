@@ -34,6 +34,7 @@ let holdings = [
 let chartInstance = null;
 let currentDochiStyle = null;
 let simulationChartInstance = null;
+let isIntegerMode = false; // 정수 매매 모드
 
 // DOM Elements
 const loginBtn = document.getElementById('loginBtn');
@@ -53,6 +54,7 @@ const searchResults = document.getElementById('searchResults');
 const recommendationSection = document.getElementById('recommendationSection');
 const recommendationListBody = document.getElementById('recommendationListBody');
 const recommendationTitle = document.getElementById('recommendationTitle');
+const integerModeToggle = document.getElementById('integerModeToggle');
 
 // Shared Proxy List & Helper
 const getProxies = (targetUrl) => [
@@ -219,99 +221,88 @@ const portfolioPresets = {
     }
 };
 
-// Character Selection Handler (Separated Logic)
 window.selectDochi = (type) => {
     const preset = portfolioPresets[type];
     if (!preset) return;
-
     currentDochiStyle = type;
-    
-    // UI 업데이트 (추천 영역 활성화)
     recommendationSection.classList.remove('hidden');
     recommendationTitle.innerHTML = `<span class="mr-2 text-xl">${preset.icon}</span> ${preset.name}`;
-    
     renderRecommendationList(preset);
     updateSimulationChart();
-    
-    // 스크롤 부드럽게 이동
     recommendationSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
 
-// 추천 리스트 렌더링 (별도 영역)
+// 추천 비중 적용 (Sync Logic)
+window.applyRecommendation = () => {
+    if (!currentDochiStyle) return;
+    const preset = portfolioPresets[currentDochiStyle];
+    if (!confirm(`'${preset.name}'의 추천 비중을 내 자산 목록에 적용하시겠습니까?\n\n없는 섹터(종목)는 자동으로 추가되며, 목표 비중이 일괄 변경됩니다.`)) return;
+
+    // 1. Reset targets
+    holdings.forEach(h => h.targetPercent = 0);
+
+    // 2. Apply or Add
+    preset.composition.forEach(comp => {
+        // 이름이나 티커로 매칭 시도 (단순 매칭)
+        let asset = holdings.find(h => 
+            h.ticker.toUpperCase() === comp.sector.toUpperCase() || 
+            h.name.includes(comp.sector.split(' ')[0]) // "기술성장주" 등으로 매칭 시도
+        );
+        
+        if (asset) {
+            asset.targetPercent = comp.targetPercent;
+        } else {
+            holdings.push({
+                ticker: comp.sector,
+                name: comp.name,
+                qty: 0,
+                price: 0,
+                targetPercent: comp.targetPercent
+            });
+        }
+    });
+    renderAssetList();
+};
+
 function renderRecommendationList(preset) {
     const totalValue = holdings.reduce((sum, h) => sum + (h.qty * h.price), 0);
     recommendationListBody.innerHTML = '';
-    
     preset.composition.forEach(comp => {
         const tr = document.createElement('tr');
         tr.className = "border-b border-indigo-100 dark:border-indigo-800/50 hover:bg-white/50 dark:hover:bg-slate-800/50";
-        
-        const estAmount = totalValue > 0 
-            ? `$${Math.round(totalValue * comp.targetPercent / 100).toLocaleString()}` 
-            : '-';
-
+        const estAmount = totalValue > 0 ? `$${Math.round(totalValue * comp.targetPercent / 100).toLocaleString()}` : '-';
         tr.innerHTML = `
-            <td class="py-2 px-2 align-middle">
-                <div class="font-bold text-indigo-900 dark:text-indigo-200">${comp.sector}</div>
-                <div class="text-xs text-slate-500">${comp.name}</div>
-            </td>
-            <td class="py-2 px-2 align-middle text-right font-bold text-indigo-600 dark:text-indigo-400">
-                ${comp.targetPercent}%
-            </td>
-            <td class="py-2 px-2 align-middle text-right text-slate-600 dark:text-slate-300">
-                ${estAmount}
-            </td>
-        `;
+            <td class="py-2 px-2 align-middle"><div class="font-bold text-indigo-900 dark:text-indigo-200">${comp.sector}</div><div class="text-xs text-slate-500">${comp.name}</div></td>
+            <td class="py-2 px-2 align-middle text-right font-bold text-indigo-600 dark:text-indigo-400">${comp.targetPercent}%</td>
+            <td class="py-2 px-2 align-middle text-right text-slate-600 dark:text-slate-300">${estAmount}</td>`;
         recommendationListBody.appendChild(tr);
     });
 }
 
-// Render User Assets (Pure)
 function renderAssetList() {
     assetListBody.innerHTML = '';
     holdings.forEach((item, index) => {
         const tr = document.createElement('tr');
         tr.className = `border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group`;
-        
-        const assetName = item.name ? `<div class="text-[10px] text-slate-400 truncate max-w-[120px]">${item.name}</div>` : '';
-
         tr.innerHTML = `
             <td class="py-3 px-2 align-middle">
                 <div class="flex flex-col">
                     <div class="flex items-center gap-1">
-                        <input type="text" placeholder="예: AAPL" value="${item.ticker}" class="w-full min-w-[60px] bg-transparent border-b border-transparent focus:border-blue-500 outline-none font-bold text-slate-700 dark:text-slate-200 uppercase" 
-                            onchange="updateHolding(${index}, 'ticker', this.value)"
-                            onblur="validateTicker(${index}, this.value)">
+                        <input type="text" placeholder="예: AAPL" value="${item.ticker}" class="w-full min-w-[60px] bg-transparent border-b border-transparent focus:border-blue-500 outline-none font-bold text-slate-700 dark:text-slate-200 uppercase" onchange="updateHolding(${index}, 'ticker', this.value)" onblur="validateTicker(${index}, this.value)">
                     </div>
-                    ${assetName}
+                    <div class="text-[10px] text-slate-400 truncate max-w-[120px]">${item.name || ''}</div>
                 </div>
             </td>
-            <td class="py-3 px-2 align-middle">
-                <input type="number" placeholder="0" value="${item.qty}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'qty', this.value)">
-            </td>
-            <td class="py-3 px-2 align-middle">
-                <input type="number" placeholder="0" value="${item.price}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'price', this.value)">
-            </td>
-            <td class="py-3 px-2 align-middle">
-                <div class="relative">
-                    <input type="number" placeholder="0" value="${item.targetPercent}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none font-semibold text-blue-600 dark:text-blue-400" onchange="updateHolding(${index}, 'targetPercent', this.value)">
-                    <span class="absolute right-[-10px] top-1/2 -translate-y-1/2 text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">%</span>
-                </div>
-            </td>
-            <td class="py-3 px-2 text-center align-middle">
-                <button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
-            </td>
-        `;
+            <td class="py-3 px-2 align-middle"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'qty', this.value)"></td>
+            <td class="py-3 px-2 align-middle"><input type="number" value="${item.price}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'price', this.value)"></td>
+            <td class="py-3 px-2 align-middle"><div class="relative"><input type="number" value="${item.targetPercent}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none font-semibold text-blue-600 dark:text-blue-400" onchange="updateHolding(${index}, 'targetPercent', this.value)"><span class="absolute right-[-10px] top-1/2 -translate-y-1/2 text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">%</span></div></td>
+            <td class="py-3 px-2 text-center align-middle"><button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></td>`;
         assetListBody.appendChild(tr);
     });
     
-    // 만약 추천 스타일이 활성화되어 있다면 추천 리스트의 '예상 투자금액'도 갱신
     if (currentDochiStyle && !recommendationSection.classList.contains('hidden')) {
         renderRecommendationList(portfolioPresets[currentDochiStyle]);
     }
-    
     updateCalculation();
 }
 
@@ -325,19 +316,40 @@ window.removeAsset = (index) => {
     if(confirm('정말 이 종목을 삭제하시겠습니까?')) { holdings.splice(index, 1); renderAssetList(); }
 };
 
+if (integerModeToggle) {
+    integerModeToggle.addEventListener('change', (e) => {
+        isIntegerMode = e.target.checked;
+        updateCalculation();
+    });
+}
+
 function updateCalculation() {
     let totalValue = 0, totalTargetPercent = 0;
     holdings.forEach(item => { totalValue += item.qty * item.price; totalTargetPercent += item.targetPercent; });
     document.getElementById('totalValueDisplay').innerText = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-    const diffPercent = 100 - totalTargetPercent;
+    
+    // Auto-calculate Cash if < 100%
+    let diffPercent = 100 - totalTargetPercent;
+    // 현금 자동 계산 로직은 보여주기만 하고 실제 배열엔 추가 안함 (복잡도 방지)
+    
     const totalPercentDisplay = document.getElementById('totalPercentDisplay');
     if (Math.abs(diffPercent) < 0.1) totalPercentDisplay.innerHTML = `<span class="text-emerald-500">✨ 목표 비중 합계: 100%</span>`;
-    else totalPercentDisplay.innerHTML = `<span class="text-amber-500 font-bold">⚠️ 내 자산 목표 비중 합계: ${totalTargetPercent.toFixed(1)}%</span>`;
+    else if (diffPercent > 0) totalPercentDisplay.innerHTML = `<span class="text-blue-500 font-bold">⚠️ 합계: ${totalTargetPercent.toFixed(1)}% (나머지 ${diffPercent.toFixed(1)}%는 현금 보유 권장)</span>`;
+    else totalPercentDisplay.innerHTML = `<span class="text-red-500 font-bold">🚫 합계: ${totalTargetPercent.toFixed(1)}% (${Math.abs(diffPercent).toFixed(1)}% 초과)</span>`;
 
     const actionPlanList = document.getElementById('actionPlanList');
     actionPlanList.innerHTML = '';
     let isBalanced = true;
     const chartLabels = [], currentWeights = [], targetWeights = [];
+
+    // 현금 비중이 있다면 차트 및 계산에 포함
+    let cashWeight = 0;
+    if (diffPercent > 0) {
+        cashWeight = diffPercent;
+        chartLabels.push('현금 (Cash)');
+        currentWeights.push('0.0'); // 현재 현금은 모른다고 가정
+        targetWeights.push(cashWeight);
+    }
 
     holdings.forEach(item => {
         const currentVal = item.qty * item.price;
@@ -348,11 +360,27 @@ function updateCalculation() {
 
         if (totalValue > 0) {
             const diffVal = (totalValue * item.targetPercent / 100) - currentVal;
-            if (Math.abs(diffVal / totalValue) > 0.03) {
+            if (Math.abs(diffVal / totalValue) > 0.01) { // 1% 이상 차이나면 액션 제안
                 isBalanced = false;
                 const actionDiv = document.createElement('div');
                 actionDiv.className = "p-4 rounded-xl border flex justify-between items-center " + (diffVal > 0 ? "bg-red-50/50 border-red-100" : "bg-blue-50/50 border-blue-100");
-                actionDiv.innerHTML = `<div><span class="font-bold">${item.ticker}</span></div><div class="text-right"><span class="font-bold ${diffVal > 0 ? 'text-red-600' : 'text-blue-600'}">${diffVal > 0 ? '매수' : '매도'} $${Math.abs(diffVal).toLocaleString()}</span></div>`;
+                
+                let quantityMsg = "";
+                if (item.price > 0) {
+                    let qty = Math.abs(diffVal) / item.price;
+                    if (isIntegerMode) qty = Math.floor(qty); // 정수 매매
+                    else qty = qty.toFixed(2);
+                    quantityMsg = `<span class="block text-xs opacity-70">${qty}주 ${diffVal > 0 ? '매수' : '매도'}</span>`;
+                }
+
+                actionDiv.innerHTML = `
+                    <div><span class="font-bold">${item.ticker}</span></div>
+                    <div class="text-right">
+                        <span class="font-bold ${diffVal > 0 ? 'text-red-600' : 'text-blue-600'}">
+                            ${diffVal > 0 ? '매수' : '매도'} $${Math.abs(diffVal).toLocaleString()}
+                        </span>
+                        ${quantityMsg}
+                    </div>`;
                 actionPlanList.appendChild(actionDiv);
             }
         }
@@ -377,17 +405,44 @@ function updateSimulationChart() {
     const ctx = document.getElementById('simulationChart');
     if (!ctx) return;
     let totalValue = holdings.reduce((sum, h) => sum + (h.qty * h.price), 0) || 10000;
-    const years = Array.from({length: 11}, (_, i) => i), inflationRate = 0.025;
+    const years = Array.from({length: 11}, (_, i) => i);
+    const inflationRate = 0.025; // 2.5% 인플레이션
     const currentReturn = 0.06;
-    const currentData = years.map(y => Math.round(totalValue * Math.pow(1 + currentReturn - inflationRate, y)));
+    
+    // 명목 가치 (Nominal)
+    const currentData = years.map(y => Math.round(totalValue * Math.pow(1 + currentReturn, y)));
+    // 실질 가치 (Real Value - Inflation Adjusted)
+    const realData = years.map(y => Math.round(totalValue * Math.pow(1 + currentReturn - inflationRate, y)));
+    
     let targetReturn = currentDochiStyle ? portfolioPresets[currentDochiStyle].returnRate : 0.07;
-    const recommendedData = years.map(y => Math.round(totalValue * Math.pow(1 + targetReturn - inflationRate, y)));
+    const recommendedData = years.map(y => Math.round(totalValue * Math.pow(1 + targetReturn, y)));
 
     if (simulationChartInstance) simulationChartInstance.destroy();
+    
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const tickColor = isDarkMode ? '#94a3b8' : '#64748b';
+
     simulationChartInstance = new Chart(ctx, {
         type: 'line',
-        data: { labels: years.map(y => `${y}년후`), datasets: [{ label: '현재 경로', data: currentData, borderColor: '#94a3b8', borderDash: [5,5] }, { label: '도치 추천', data: recommendedData, borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)' }] },
-        options: { responsive: true, maintainAspectRatio: false }
+        data: { 
+            labels: years.map(y => `${y}년후`), 
+            datasets: [
+                { label: '현재 경로', data: currentData, borderColor: '#94a3b8', borderDash: [5,5] }, 
+                { label: '실질 가치(물가반영)', data: realData, borderColor: '#f59e0b', borderDash: [2,2], borderWidth: 1 },
+                { label: '도치 추천', data: recommendedData, borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)' }
+            ] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            scales: {
+                y: { ticks: { color: tickColor, callback: v => v/10000 + '만' }, grid: { color: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' } },
+                x: { ticks: { color: tickColor }, grid: { display: false } }
+            },
+            plugins: {
+                legend: { labels: { color: tickColor, font: { family: 'Pretendard' } } }
+            }
+        }
     });
 }
 
