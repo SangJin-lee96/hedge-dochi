@@ -343,6 +343,10 @@ function renderAssetList() {
         const isPreset = item.isPreset;
         tr.className = `border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group ${isPreset ? 'bg-indigo-50/20 dark:bg-indigo-900/10' : ''}`;
         const badge = isPreset ? `<span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400 mb-1 tracking-wider uppercase">Recommended</span>` : `<span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 mb-1 tracking-wider uppercase">My Asset</span>`;
+        
+        // 섹터 정보 표시 추가
+        const sectorDisplay = item.sector ? `<span class="text-[9px] text-indigo-500 dark:text-indigo-400 font-bold mr-1">[${item.sector.split(' ')[0]}]</span>` : '';
+
         tr.innerHTML = `
             <td class="py-3 px-2 align-middle">
                 <div class="flex flex-col">
@@ -350,7 +354,9 @@ function renderAssetList() {
                     <div class="flex items-center gap-1">
                         <input type="text" placeholder="예: AAPL" value="${item.ticker}" class="w-full min-w-[60px] bg-transparent border-b border-transparent focus:border-blue-500 outline-none font-bold text-slate-700 dark:text-slate-200 uppercase" onchange="updateHolding(${index}, 'ticker', this.value)" ${isPreset ? 'readonly' : ''}>
                     </div>
-                    <div class="text-[10px] text-slate-400 truncate max-w-[120px]">${item.name || ''}</div>
+                    <div class="text-[10px] text-slate-400 truncate max-w-[120px]">
+                        ${sectorDisplay}${item.name || ''}
+                    </div>
                 </div>
             </td>
             <td class="py-3 px-2 align-middle"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'qty', this.value)"></td>
@@ -488,7 +494,13 @@ async function loadPortfolio() {
         const docSnap = await getDoc(doc(db, "users", currentUser.uid));
         if (docSnap.exists()) {
             const data = docSnap.data();
-            if (data.holdings) holdings = data.holdings;
+            if (data.holdings) {
+                holdings = data.holdings;
+                // 기존 데이터에 섹터 정보가 없으면 자동 할당
+                holdings.forEach(h => {
+                    if (!h.sector) h.sector = getSector(h.ticker);
+                });
+            }
         }
         renderAssetList();
     } catch (e) {}
