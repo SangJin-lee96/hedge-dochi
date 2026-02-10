@@ -4,7 +4,6 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChang
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
     authDomain: "hedge-dochi.firebaseapp.com",
@@ -15,7 +14,6 @@ const firebaseConfig = {
     measurementId: "G-7Y0G1CVXBR"
 };
 
-// Initialize Firebase
 let app, auth, db, analytics;
 try {
     app = initializeApp(firebaseConfig);
@@ -34,6 +32,8 @@ let holdings = [
     { ticker: "Nasdaq 100", qty: 20, price: 400, targetPercent: 30 }
 ];
 let chartInstance = null;
+let currentDochiStyle = null;
+let simulationChartInstance = null;
 
 // DOM Elements
 const loginBtn = document.getElementById('loginBtn');
@@ -50,6 +50,9 @@ const refreshIcon = document.getElementById('refreshIcon');
 const tickerSearchInput = document.getElementById('tickerSearchInput');
 const searchResultsContainer = document.getElementById('searchResultsContainer');
 const searchResults = document.getElementById('searchResults');
+const recommendationSection = document.getElementById('recommendationSection');
+const recommendationListBody = document.getElementById('recommendationListBody');
+const recommendationTitle = document.getElementById('recommendationTitle');
 
 // Shared Proxy List & Helper
 const getProxies = (targetUrl) => [
@@ -84,12 +87,11 @@ async function fetchWithProxies(targetUrl, timeout = 10000) {
 async function refreshAllPrices() {
     const validHoldings = holdings.filter(h => 
         h.ticker && h.ticker.trim() !== '' && 
-        !['CASH', 'USD', 'KRW', '현금', 'NEW ASSET'].includes(h.ticker.toUpperCase()) &&
-        !h.isPreset // 섹터 템플릿은 가격 조회 제외
+        !['CASH', 'USD', 'KRW', '현금', 'NEW ASSET'].includes(h.ticker.toUpperCase())
     );
 
     if (validHoldings.length === 0) {
-        alert("시세를 불러올 유효한 종목(Ticker)이 없습니다. (현금 및 섹터 가이드 제외)");
+        alert("시세를 불러올 유효한 종목(Ticker)이 없습니다.");
         return;
     }
 
@@ -186,7 +188,7 @@ async function addAssetFromSearch(quote) {
         const result = data?.chart?.result?.[0];
         if (result && result.meta) price = result.meta.regularMarketPrice || result.meta.chartPreviousClose || 0;
     } catch (e) {}
-    holdings.push({ ticker: quote.symbol, name: quote.shortname || quote.longname || quote.symbol, qty: 0, price: price, targetPercent: 0, isPreset: false });
+    holdings.push({ ticker: quote.symbol, name: quote.shortname || quote.longname || quote.symbol, qty: 0, price: price, targetPercent: 0 });
     tickerSearchInput.value = ''; searchResultsContainer.classList.add('hidden'); renderAssetList();
 }
 
@@ -217,47 +219,99 @@ const portfolioPresets = {
     }
 };
 
-let currentDochiStyle = null;
-let simulationChartInstance = null;
-
+// Character Selection Handler (Separated Logic)
 window.selectDochi = (type) => {
     const preset = portfolioPresets[type];
     if (!preset) return;
-    if (!confirm(`'${preset.name}' 스타일의 섹터 비중 가이드를 적용하시겠습니까?\n\n기존 추천 항목은 교체되며, 직접 추가하신 종목은 유지됩니다.`)) return;
+
     currentDochiStyle = type;
-    holdings = holdings.filter(h => !h.isPreset);
-    preset.composition.forEach(comp => {
-        holdings.push({ ticker: comp.sector, name: comp.name, qty: 0, price: 0, targetPercent: comp.targetPercent, isPreset: true });
-    });
-    renderAssetList();
+    
+    // UI 업데이트 (추천 영역 활성화)
+    recommendationSection.classList.remove('hidden');
+    recommendationTitle.innerText = preset.name;
+    
+    renderRecommendationList(preset);
     updateSimulationChart();
+    
+    // 스크롤 부드럽게 이동
+    recommendationSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
 
+// 추천 리스트 렌더링 (별도 영역)
+function renderRecommendationList(preset) {
+    const totalValue = holdings.reduce((sum, h) => sum + (h.qty * h.price), 0);
+    recommendationListBody.innerHTML = '';
+    
+    preset.composition.forEach(comp => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-indigo-100 dark:border-indigo-800/50 hover:bg-white/50 dark:hover:bg-slate-800/50";
+        
+        const estAmount = totalValue > 0 
+            ? `$${Math.round(totalValue * comp.targetPercent / 100).toLocaleString()}` 
+            : '-';
+
+        tr.innerHTML = `
+            <td class="py-2 px-2 align-middle">
+                <div class="font-bold text-indigo-900 dark:text-indigo-200">${comp.sector}</div>
+                <div class="text-xs text-slate-500">${comp.name}</div>
+            </td>
+            <td class="py-2 px-2 align-middle text-right font-bold text-indigo-600 dark:text-indigo-400">
+                ${comp.targetPercent}%
+            </td>
+            <td class="py-2 px-2 align-middle text-right text-slate-600 dark:text-slate-300">
+                ${estAmount}
+            </td>
+        `;
+        recommendationListBody.appendChild(tr);
+    });
+}
+
+// Render User Assets (Pure)
 function renderAssetList() {
     assetListBody.innerHTML = '';
     holdings.forEach((item, index) => {
         const tr = document.createElement('tr');
-        const isPreset = item.isPreset;
-        tr.className = `border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group ${isPreset ? 'bg-indigo-50/20 dark:bg-indigo-900/10' : ''}`;
-        const badge = isPreset 
-            ? `<span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400 mb-1 tracking-wider uppercase">Recommended</span>`
-            : `<span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 mb-1 tracking-wider uppercase">My Asset</span>`;
+        tr.className = `border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group`;
+        
+        const assetName = item.name ? `<div class="text-[10px] text-slate-400 truncate max-w-[120px]">${item.name}</div>` : '';
+
         tr.innerHTML = `
             <td class="py-3 px-2 align-middle">
                 <div class="flex flex-col">
-                    ${badge}
                     <div class="flex items-center gap-1">
-                        <input type="text" value="${item.ticker}" class="w-full min-w-[60px] bg-transparent border-b border-transparent focus:border-blue-500 outline-none font-bold text-slate-700 dark:text-slate-200 uppercase" onchange="updateHolding(${index}, 'ticker', this.value)" ${isPreset ? 'readonly' : ''}>
+                        <input type="text" placeholder="예: AAPL" value="${item.ticker}" class="w-full min-w-[60px] bg-transparent border-b border-transparent focus:border-blue-500 outline-none font-bold text-slate-700 dark:text-slate-200 uppercase" 
+                            onchange="updateHolding(${index}, 'ticker', this.value)"
+                            onblur="validateTicker(${index}, this.value)">
                     </div>
-                    <div class="text-[10px] text-slate-400 truncate max-w-[120px]">${item.name || ''}</div>
+                    ${assetName}
                 </div>
             </td>
-            <td class="py-3 px-2 align-middle"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'qty', this.value)"></td>
-            <td class="py-3 px-2 align-middle"><input type="number" value="${item.price}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'price', this.value)"></td>
-            <td class="py-3 px-2 align-middle"><div class="relative"><input type="number" value="${item.targetPercent}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none font-semibold text-blue-600 dark:text-blue-400" onchange="updateHolding(${index}, 'targetPercent', this.value)"><span class="absolute right-[-10px] top-1/2 -translate-y-1/2 text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">%</span></div></td>
-            <td class="py-3 px-2 text-center align-middle"><button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></td>`;
+            <td class="py-3 px-2 align-middle">
+                <input type="number" placeholder="0" value="${item.qty}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'qty', this.value)">
+            </td>
+            <td class="py-3 px-2 align-middle">
+                <input type="number" placeholder="0" value="${item.price}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'price', this.value)">
+            </td>
+            <td class="py-3 px-2 align-middle">
+                <div class="relative">
+                    <input type="number" placeholder="0" value="${item.targetPercent}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none font-semibold text-blue-600 dark:text-blue-400" onchange="updateHolding(${index}, 'targetPercent', this.value)">
+                    <span class="absolute right-[-10px] top-1/2 -translate-y-1/2 text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">%</span>
+                </div>
+            </td>
+            <td class="py-3 px-2 text-center align-middle">
+                <button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            </td>
+        `;
         assetListBody.appendChild(tr);
     });
+    
+    // 만약 추천 스타일이 활성화되어 있다면 추천 리스트의 '예상 투자금액'도 갱신
+    if (currentDochiStyle && !recommendationSection.classList.contains('hidden')) {
+        renderRecommendationList(portfolioPresets[currentDochiStyle]);
+    }
+    
     updateCalculation();
 }
 
@@ -278,7 +332,7 @@ function updateCalculation() {
     const diffPercent = 100 - totalTargetPercent;
     const totalPercentDisplay = document.getElementById('totalPercentDisplay');
     if (Math.abs(diffPercent) < 0.1) totalPercentDisplay.innerHTML = `<span class="text-emerald-500">✨ 목표 비중 합계: 100%</span>`;
-    else totalPercentDisplay.innerHTML = `<span class="text-amber-500 font-bold">⚠️ 목표 비중 합계: ${totalTargetPercent.toFixed(1)}%</span>`;
+    else totalPercentDisplay.innerHTML = `<span class="text-amber-500 font-bold">⚠️ 내 자산 목표 비중 합계: ${totalTargetPercent.toFixed(1)}%</span>`;
 
     const actionPlanList = document.getElementById('actionPlanList');
     actionPlanList.innerHTML = '';
@@ -371,7 +425,7 @@ async function savePortfolio(silent = false) {
 }
 
 saveBtn.addEventListener('click', () => savePortfolio());
-addAssetBtn.addEventListener('click', () => { holdings.push({ ticker: "", qty: 0, price: 0, targetPercent: 0, isPreset: false }); renderAssetList(); });
+addAssetBtn.addEventListener('click', () => { holdings.push({ ticker: "", qty: 0, price: 0, targetPercent: 0 }); renderAssetList(); });
 
 if (tickerSearchInput) {
     let searchTimer = null;
