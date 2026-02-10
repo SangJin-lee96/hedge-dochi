@@ -41,6 +41,7 @@ let sectorTargets = {
     "원자재 (Gold/Alt)": 0
 };
 
+let targetCapital = 0; // 목표 투자 금액
 let chartInstance = null;
 let tickerChartInstance = null;
 let currentDochiStyle = null;
@@ -62,6 +63,7 @@ const tickerSearchInput = document.getElementById('tickerSearchInput');
 const searchResultsContainer = document.getElementById('searchResultsContainer');
 const searchResults = document.getElementById('searchResults');
 const integerModeToggle = document.getElementById('integerModeToggle');
+const targetCapitalInput = document.getElementById('targetCapitalInput');
 
 // ==========================================
 // 2. Sector Mapping Logic
@@ -85,9 +87,10 @@ function getMappedSector(ticker, quoteType = "", yahooSector = "") {
 }
 
 // ==========================================
-// 3. Hierarchical Logic (Dual-Mode Sync)
+// 3. Hierarchical Logic (Top-Down Focus)
 // ==========================================
 
+// Sector -> Ticker Sync (사용자가 섹터 가이드라인에 맞춰 종목 비중을 자동 배분하고 싶을 때)
 window.distributeSector = (sectorName) => {
     const tickersInSector = holdings.filter(h => h.sector === sectorName);
     if (tickersInSector.length === 0) return;
@@ -103,11 +106,8 @@ window.distributeSector = (sectorName) => {
     updateCalculation();
 };
 
-function syncTickerToSector(sectorName) {
-    const sum = holdings.filter(h => h.sector === sectorName).reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0);
-    sectorTargets[sectorName] = parseFloat(sum.toFixed(2));
-    updateSectorUI();
-}
+// 사용자가 개별 종목 비중을 바꾼다고 섹터 목표가 바뀌지 않음. (Decoupled)
+// 대신 섹터 목표 내에서 현재 할당된 비중 합계를 보여줌.
 
 window.updateSectorTarget = (sectorName, value) => {
     sectorTargets[sectorName] = parseFloat(value) || 0;
@@ -119,14 +119,15 @@ function updateSectorUI() {
     document.getElementById('target_equity').value = sectorTargets["시장지수 (Equity)"];
     document.getElementById('target_bonds').value = sectorTargets["안전자산 (Bonds/Cash)"];
     document.getElementById('target_alt').value = sectorTargets["원자재 (Gold/Alt)"];
-    const total = Object.values(sectorTargets).reduce((a, b) => a + b, 0);
+    
+    const totalGoal = Object.values(sectorTargets).reduce((a, b) => a + b, 0);
     const statusElem = document.getElementById('sectorTotalStatus');
-    if (Math.abs(total - 100) < 0.01) {
-        statusElem.innerText = "Total: 100%";
+    if (Math.abs(totalGoal - 100) < 0.01) {
+        statusElem.innerText = "Target Goal: 100%";
         statusElem.className = "text-sm font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
     } else {
-        statusElem.innerText = `Total: ${total.toFixed(1)}% (Not 100%)`;
-        statusElem.className = "text-sm font-bold px-3 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+        statusElem.innerText = `Target Goal: ${totalGoal.toFixed(1)}% (Not 100%)`;
+        statusElem.className = "text-sm font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
     }
 }
 
@@ -223,47 +224,68 @@ function renderAssetList() {
 window.updateHolding = (index, field, value) => {
     if (field === 'qty' || field === 'price' || field === 'targetPercent') holdings[index][field] = parseFloat(value) || 0;
     else holdings[index][field] = value;
-    if (field === 'targetPercent' || field === 'sector') { syncTickerToSector(holdings[index].sector); }
     updateCalculation();
 };
 
 window.removeAsset = (index) => {
     if(confirm('삭제하시겠습니까?')) {
-        const sector = holdings[index].sector;
         holdings.splice(index, 1);
-        syncTickerToSector(sector);
         renderAssetList();
     }
 };
 
 function updateCalculation() {
-    let totalValue = 0;
+    let currentTotalValue = 0;
     const sectorStats = {
-        "시장지수 (Equity)": { current: 0, target: sectorTargets["시장지수 (Equity)"], key: "equity" },
-        "안전자산 (Bonds/Cash)": { current: 0, target: sectorTargets["안전자산 (Bonds/Cash)"], key: "bonds" },
-        "원자재 (Gold/Alt)": { current: 0, target: sectorTargets["원자재 (Gold/Alt)"], key: "alt" }
+        "시장지수 (Equity)": { current: 0, assignedTarget: 0, goal: sectorTargets["시장지수 (Equity)"], key: "equity" },
+        "안전자산 (Bonds/Cash)": { current: 0, assignedTarget: 0, goal: sectorTargets["안전자산 (Bonds/Cash)"], key: "bonds" },
+        "원자재 (Gold/Alt)": { current: 0, assignedTarget: 0, goal: sectorTargets["원자재 (Gold/Alt)"], key: "alt" }
     };
-    holdings.forEach(h => { const val = h.qty * h.price; totalValue += val; if (sectorStats[h.sector]) sectorStats[h.sector].current += val; });
-    document.getElementById('totalValueDisplay').innerText = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+    holdings.forEach(h => { 
+        const val = h.qty * h.price; 
+        currentTotalValue += val; 
+        if (sectorStats[h.sector]) {
+            sectorStats[h.sector].current += val;
+            sectorStats[h.sector].assignedTarget += (parseFloat(h.targetPercent) || 0);
+        }
+    });
+
+    document.getElementById('totalValueDisplay').innerText = `$${currentTotalValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+    // 리밸런싱 기준 금액 결정: 목표 투자 금액이 있으면 그것을 쓰고, 없으면 현재 총액을 기준으로 함
+    const rebalanceBase = targetCapital > 0 ? targetCapital : currentTotalValue;
+
+    // UI: Sector Progress (Assigned Ticker Targets vs Sector Goal)
     Object.keys(sectorStats).forEach(name => {
         const s = sectorStats[name];
-        const currentPct = totalValue > 0 ? (s.current / totalValue) * 100 : 0;
+        // 현재 실제로 들고 있는 비중 (현재 총액 대비)
+        const currentPct = currentTotalValue > 0 ? (s.current / currentTotalValue) * 100 : 0;
+        
         document.getElementById(`current_${s.key}_pct`).innerText = `${currentPct.toFixed(1)}%`;
-        document.getElementById(`target_${s.key}_pct`).innerText = `${s.target}%`;
+        document.getElementById(`target_${s.key}_pct`).innerText = `${s.goal}%`; // 사용자가 설정한 목표 가이드
+        
         const progCurrent = document.getElementById(`progress_${s.key}_current`);
         const progGap = document.getElementById(`progress_${s.key}_gap`);
-        progCurrent.style.width = `${Math.min(currentPct, s.target)}%`;
-        const gap = s.target - currentPct;
+        
+        // 종목에 할당된 목표(assignedTarget)가 섹터 목표(goal) 내에서 얼마나 차지하는지 시각화
+        progCurrent.style.width = `${Math.min(s.assignedTarget, s.goal)}%`;
+        const gap = s.goal - s.assignedTarget;
         progGap.style.width = `${gap > 0 ? gap : 0}%`;
     });
+
+    // Action Plan Calculation (Based on Target Capital)
     const actionPlanList = document.getElementById('actionPlanList');
     actionPlanList.innerHTML = '';
     let isBalanced = true;
+    
     holdings.forEach(h => {
         const currentVal = h.qty * h.price;
-        const targetVal = totalValue * (h.targetPercent / 100);
+        const targetVal = rebalanceBase * ((parseFloat(h.targetPercent) || 0) / 100);
         const diffVal = targetVal - currentVal;
-        if (Math.abs(diffVal) > (totalValue * 0.01)) {
+        
+        // 1% 이상의 차이가 날 때만 액션 플랜 제시
+        if (Math.abs(diffVal) > (rebalanceBase * 0.01) || (targetCapital > 0 && Math.abs(diffVal) > 1)) {
             isBalanced = false;
             const div = document.createElement('div');
             div.className = `p-4 rounded-xl border flex justify-between items-center ${diffVal > 0 ? "bg-red-50/50 border-red-100" : "bg-blue-50/50 border-blue-100"}`;
@@ -272,29 +294,56 @@ function updateCalculation() {
             actionPlanList.appendChild(div);
         }
     });
-    if (isBalanced) actionPlanList.innerHTML = `<div class="text-center py-10 text-slate-400">✅ 목표 비중 달성!</div>`;
-    updateCharts(sectorStats, totalValue);
+
+    if (isBalanced) {
+        if (targetCapital > currentTotalValue) {
+            const extra = targetCapital - currentTotalValue;
+            actionPlanList.innerHTML = `<div class="text-center py-6 text-emerald-600 font-bold">✅ 개별 종목 비율은 양호합니다.<br><span class="text-sm font-normal">남은 $${extra.toLocaleString()}를 설정된 비중에 맞춰 더 투자하세요.</span></div>`;
+        } else {
+            actionPlanList.innerHTML = `<div class="text-center py-10 text-slate-400">✅ 목표 비중 및 금액 달성!</div>`;
+        }
+    }
+
+    updateCharts(sectorStats, currentTotalValue);
 }
 
 function updateCharts(sectorStats, totalValue) {
     const ctxSector = document.getElementById('portfolioChart');
     const ctxTicker = document.getElementById('tickerChart');
+    if (!ctxSector || !ctxTicker) return;
+
     if (chartInstance) chartInstance.destroy();
     if (tickerChartInstance) tickerChartInstance.destroy();
+    
     const sectorLabels = Object.keys(sectorStats).map(s => s.split(' ')[0]);
     const sectorCurrent = Object.values(sectorStats).map(s => totalValue > 0 ? (s.current / totalValue * 100).toFixed(1) : 0);
-    const sectorTarget = Object.values(sectorStats).map(s => s.target);
+    const sectorTarget = Object.values(sectorStats).map(s => s.goal);
+
     chartInstance = new Chart(ctxSector, {
         type: 'bar',
-        data: { labels: sectorLabels, datasets: [{ label: '현재 (%)', data: sectorCurrent, backgroundColor: 'rgba(99, 102, 241, 0.8)', borderRadius: 8 }, { label: '목표 (%)', data: sectorTarget, borderColor: '#10b981', type: 'line', fill: false, tension: 0.4 }] },
+        data: {
+            labels: sectorLabels,
+            datasets: [
+                { label: '현재 (%)', data: sectorCurrent, backgroundColor: 'rgba(99, 102, 241, 0.8)', borderRadius: 8 },
+                { label: '가이드 목표 (%)', data: sectorTarget, borderColor: '#10b981', type: 'line', fill: false, tension: 0.4 }
+            ]
+        },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { position: 'top' } } }
     });
+
     const tickerLabels = holdings.map(h => h.ticker);
     const tickerCurrent = holdings.map(h => totalValue > 0 ? ((h.qty * h.price) / totalValue * 100).toFixed(1) : 0);
     const tickerTarget = holdings.map(h => h.targetPercent);
+
     tickerChartInstance = new Chart(ctxTicker, {
         type: 'bar',
-        data: { labels: tickerLabels, datasets: [{ label: '현재 (%)', data: tickerCurrent, backgroundColor: 'rgba(244, 63, 94, 0.8)', borderRadius: 8 }, { label: '목표 (%)', data: tickerTarget, borderColor: '#10b981', type: 'line', fill: false, tension: 0.4 }] },
+        data: {
+            labels: tickerLabels,
+            datasets: [
+                { label: '현재 (%)', data: tickerCurrent, backgroundColor: 'rgba(244, 63, 94, 0.8)', borderRadius: 8 },
+                { label: '개별 목표 (%)', data: tickerTarget, borderColor: '#10b981', type: 'line', fill: false, tension: 0.4 }
+            ]
+        },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { position: 'top' } } }
     });
 }
@@ -310,8 +359,9 @@ window.selectDochi = (type) => {
     sectorTargets["시장지수 (Equity)"] = p.equity;
     sectorTargets["안전자산 (Bonds/Cash)"] = p.bonds;
     sectorTargets["원자재 (Gold/Alt)"] = p.alt;
-    updateSectorUI(); updateCalculation();
-    alert(`${type === 'aggressive' ? '공격도치' : type === 'balanced' ? '중도도치' : '수비도치'} 섹터 비중이 설정되었습니다. '하위 종목 균등배분'을 눌러 세부 비중을 정하세요.`);
+    updateSectorUI(); 
+    updateCalculation();
+    alert(`${type === 'aggressive' ? '공격도치' : type === 'balanced' ? '중도도치' : '수비도치'} 섹터 가이드가 설정되었습니다.\n이제 섹터 대시보드에서 '균등배분'을 누르거나 종목별 비중을 직접 설정하세요.`);
 };
 
 onAuthStateChanged(auth, async (user) => {
@@ -333,6 +383,10 @@ async function loadPortfolio() {
             const data = docSnap.data();
             if (data.holdings) holdings = data.holdings;
             if (data.sectorTargets) sectorTargets = data.sectorTargets;
+            if (data.targetCapital) {
+                targetCapital = data.targetCapital;
+                targetCapitalInput.value = targetCapital;
+            }
         }
         updateSectorUI(); renderAssetList();
     } catch (e) { console.error("Load error", e); }
@@ -341,7 +395,13 @@ async function loadPortfolio() {
 async function savePortfolio() {
     if (!currentUser) return;
     try {
-        await setDoc(doc(db, "users", currentUser.uid), { uid: currentUser.uid, holdings: holdings, sectorTargets: sectorTargets, lastUpdated: new Date() });
+        await setDoc(doc(db, "users", currentUser.uid), { 
+            uid: currentUser.uid, 
+            holdings: holdings, 
+            sectorTargets: sectorTargets, 
+            targetCapital: targetCapital,
+            lastUpdated: new Date() 
+        });
         alert("성공적으로 저장되었습니다! 💾");
     } catch (e) { alert("저장 실패"); }
 }
@@ -350,6 +410,12 @@ saveBtn.addEventListener('click', savePortfolio);
 addAssetBtn.addEventListener('click', () => { holdings.push({ ticker: "NEW", name: "", qty: 0, price: 0, targetPercent: 0, sector: "시장지수 (Equity)" }); renderAssetList(); });
 refreshPricesBtn.addEventListener('click', refreshAllPrices);
 if (integerModeToggle) { integerModeToggle.addEventListener('change', (e) => { isIntegerMode = e.target.checked; updateCalculation(); }); }
+if (targetCapitalInput) {
+    targetCapitalInput.addEventListener('input', (e) => {
+        targetCapital = parseFloat(e.target.value) || 0;
+        updateCalculation();
+    });
+}
 
 if (tickerSearchInput) {
     let timer = null;

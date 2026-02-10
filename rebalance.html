@@ -333,15 +333,26 @@
             <div class="lg:col-span-5 space-y-6">
                 <!-- 총 자산 및 리밸런싱 요약 -->
                 <div class="p-8 rounded-3xl shadow-xl border bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-transparent">
-                    <p class="text-indigo-100 text-xs font-bold uppercase tracking-widest mb-1">총 자산 가치 (추정)</p>
-                    <h2 id="totalValueDisplay" class="text-4xl font-black tracking-tight mb-6">$0.00</h2>
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <p class="text-indigo-100 text-xs font-bold uppercase tracking-widest mb-1">현재 총 자산 (Current Total)</p>
+                            <h2 id="totalValueDisplay" class="text-3xl font-black tracking-tight">$0.00</h2>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-indigo-100 text-xs font-bold uppercase tracking-widest mb-1">목표 투자 금액 (Target Capital)</p>
+                            <div class="relative inline-block">
+                                <span class="absolute left-2 top-1/2 -translate-y-1/2 text-indigo-300 font-bold">$</span>
+                                <input type="number" id="targetCapitalInput" class="bg-white/10 border border-white/20 rounded-lg py-1 px-3 pl-6 text-xl font-black text-white w-32 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
                     
                     <div id="rebalanceStatus" class="p-4 bg-white/10 rounded-xl backdrop-blur-md border border-white/20">
                         <div class="flex items-center gap-3">
                             <span id="statusIcon" class="text-2xl">✅</span>
                             <div>
-                                <h4 id="statusTitle" class="font-bold">상태 양호</h4>
-                                <p id="statusDesc" class="text-sm text-indigo-100 opacity-90">현재 포트폴리오 비율이 목표와 일치합니다.</p>
+                                <h4 id="statusTitle" class="font-bold">계산기 준비 완료</h4>
+                                <p id="statusDesc" class="text-sm text-indigo-100 opacity-90">목표 금액과 비중을 설정해 리밸런싱 가이드를 확인하세요.</p>
                             </div>
                         </div>
                     </div>
