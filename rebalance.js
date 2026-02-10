@@ -298,7 +298,7 @@ window.applyRecommendation = () => {
     if (!currentDochiStyle) return;
     const preset = portfolioPresets[currentDochiStyle];
     
-    // 선택된 종목 수집
+    // 1. 선택된 종목 수집
     const selectedTickers = [];
     preset.composition.forEach((comp, idx) => {
         const radios = document.getElementsByName(`rec_radio_${idx}`);
@@ -318,30 +318,37 @@ window.applyRecommendation = () => {
 
     if (selectedTickers.length === 0) return;
 
-    if (!confirm(`선택하신 ${selectedTickers.length}개 대표 종목으로 포트폴리오를 재구성하시겠습니까?\n\n- 기존 목표 비중은 초기화됩니다.\n- 선택한 종목이 목록에 추가됩니다.`)) return;
+    if (!confirm(`'${preset.name}'의 추천 종목으로 교체하시겠습니까?\n\n- 기존에 추천된 종목들은 삭제됩니다.\n- 직접 추가하신 종목은 유지되나 비중(%)은 초기화됩니다.`)) return;
 
-    // 1. Reset targets
+    // 2. 기존 추천 항목(isPreset: true) 완전 제거
+    holdings = holdings.filter(h => !h.isPreset);
+
+    // 3. 모든 자산의 목표 비중을 우선 0으로 초기화 (새로운 비중 체계 적용을 위해)
     holdings.forEach(h => h.targetPercent = 0);
 
-    // 2. Apply Selected Items
+    // 4. 선택된 추천 종목 적용
     selectedTickers.forEach(item => {
         let asset = holdings.find(h => h.ticker.toUpperCase() === item.ticker.toUpperCase());
         
         if (asset) {
+            // 이미 사용자가 가지고 있는 종목인 경우: 비중만 업데이트하고 추천 표식 추가
             asset.targetPercent = item.targetPercent;
+            asset.isPreset = true;
         } else {
+            // 없는 종목인 경우: 새로 추가
             holdings.push({
                 ticker: item.ticker,
                 name: item.name,
                 qty: 0,
-                price: 0, // Will be fetched via refresh
-                targetPercent: item.targetPercent
+                price: 0,
+                targetPercent: item.targetPercent,
+                isPreset: true // 추천 항목임을 표시
             });
         }
     });
     
     renderAssetList();
-    // 새로 추가된 종목의 시세 자동 업데이트 (선택 사항)
+    // 시세 새로고침 (가격이 0인 종목 위주로)
     setTimeout(() => refreshAllPrices(), 500);
 };
 
