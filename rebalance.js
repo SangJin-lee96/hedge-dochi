@@ -67,63 +67,72 @@ async function refreshAllPrices() {
 
     try {
         const symbols = validTickers.join(',');
-        // 캐시 방지를 위한 타임스탬프 추가
-        const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}&_=${Date.now()}`;
+        const timestamp = Date.now();
         
-        // 다중 프록시 전략 (순차 시도)
-        // 1순위: corsproxy.io (빠름, JSON 직접 반환)
-        // 2순위: allorigins.win (느림, JSON 래핑됨, 백업용)
+        // 야후 파이낸스 미러 서버 목록
+        const mirrors = [
+            `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}&_=${timestamp}`,
+            `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}&_=${timestamp}`
+        ];
+        
+        // 가용한 프록시 서버 목록 (순차 시도)
         const proxies = [
-            { name: 'Primary', url: `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`, isDirect: true },
-            { name: 'Backup', url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`, isDirect: false }
+            { name: 'Proxy-1', getUrl: (target) => `https://corsproxy.io/?${encodeURIComponent(target)}`, isDirect: true },
+            { name: 'Proxy-2', getUrl: (target) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`, isDirect: true },
+            { name: 'Proxy-3', getUrl: (target) => `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`, isDirect: false }
         ];
 
         let quotes = null;
         let lastError = null;
-        let successProxy = '';
+        let successInfo = '';
 
-        for (const proxy of proxies) {
-            try {
-                console.log(`Attempting price fetch via ${proxy.name} server...`);
-                
-                const controller = new AbortController();
-                // 백업 서버는 조금 더 길게 대기
-                const timeoutMs = proxy.name === 'Backup' ? 15000 : 8000;
-                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        // 미러 서버와 프록시 서버 조합으로 시도
+        outerLoop: for (const mirror of mirrors) {
+            for (const proxy of proxies) {
+                try {
+                    const requestUrl = proxy.getUrl(mirror);
+                    console.log(`Trying ${proxy.name} with Mirror...`);
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-                const response = await fetch(proxy.url, { signal: controller.signal });
-                clearTimeout(timeoutId);
+                    const response = await fetch(requestUrl, { 
+                        signal: controller.signal,
+                        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                    });
+                    clearTimeout(timeoutId);
 
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-                let data;
-                if (proxy.isDirect) {
-                    data = await response.json();
-                } else {
-                    const raw = await response.json();
-                    if (!raw.contents) throw new Error("No contents");
-                    data = JSON.parse(raw.contents);
+                    let data;
+                    if (proxy.isDirect) {
+                        data = await response.json();
+                    } else {
+                        const raw = await response.json();
+                        if (!raw.contents) throw new Error("Empty contents");
+                        data = JSON.parse(raw.contents);
+                    }
+
+                    quotes = data?.quoteResponse?.result || data?.finance?.result || (Array.isArray(data) ? data : null);
+                    
+                    if (quotes && Array.isArray(quotes) && quotes.length > 0) {
+                        successInfo = `${proxy.name}`;
+                        break outerLoop; // 전체 루프 탈출
+                    }
+                } catch (e) {
+                    console.warn(`${proxy.name} failed:`, e.message);
+                    lastError = e;
+                    continue;
                 }
-
-                // 데이터 파싱 (유연하게)
-                quotes = data?.quoteResponse?.result || data?.finance?.result || (Array.isArray(data) ? data : null);
-                
-                // 에러 필드 체크
-                const apiError = data?.quoteResponse?.error || data?.finance?.error || data?.error;
-                if (apiError) throw new Error(`API Error: ${JSON.stringify(apiError)}`);
-
-                if (quotes && Array.isArray(quotes) && quotes.length > 0) {
-                    successProxy = proxy.name;
-                    break; // 성공!
-                }
-            } catch (e) {
-                console.warn(`${proxy.name} proxy failed:`, e.message);
-                lastError = e;
             }
         }
 
         if (!quotes) {
-            throw lastError || new Error("모든 시세 서버 연결에 실패했습니다.");
+            let errorMsg = lastError?.message || "연결 실패";
+            if (errorMsg.includes("Failed to fetch")) {
+                errorMsg = "브라우저에서 요청이 차단되었습니다. (광고 차단기/AdBlock을 끄고 다시 시도해주세요)";
+            }
+            throw new Error(errorMsg);
         }
 
         // Update holdings
@@ -132,11 +141,9 @@ async function refreshAllPrices() {
             if (!quote || !quote.symbol) return;
             const index = holdings.findIndex(h => h.ticker.toUpperCase() === quote.symbol.toUpperCase());
             if (index !== -1) {
-                // 다양한 가격 필드 우선순위 체크
                 const newPrice = quote.regularMarketPrice || quote.postMarketPrice || quote.preMarketPrice || quote.bid || quote.ask;
                 if (newPrice) {
                     holdings[index].price = newPrice;
-                    // 이름이 없거나 깨진 경우 업데이트
                     if (!holdings[index].name || holdings[index].name.includes('❌')) {
                         holdings[index].name = quote.shortName || quote.longName || quote.symbol;
                     }
@@ -145,13 +152,13 @@ async function refreshAllPrices() {
             }
         });
 
-        console.log(`Updated ${updatedCount} prices via ${successProxy}.`);
+        console.log(`Updated ${updatedCount} prices via ${successInfo}.`);
         renderAssetList();
-        alert(`${updatedCount}개 종목의 시세가 업데이트되었습니다. (${successProxy} Server)`);
+        alert(`${updatedCount}개 종목의 시세가 업데이트되었습니다. (${successInfo})`);
 
     } catch (error) {
         console.error("Price update completely failed:", error);
-        alert("시세를 가져오는데 실패했습니다.\n\n원인: " + error.message + "\n\n(인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.)");
+        alert("시세를 가져오는데 실패했습니다.\n\n원인: " + error.message);
     } finally {
         refreshPricesBtn.disabled = false;
         if (refreshIcon) refreshIcon.classList.remove('animate-spin');
