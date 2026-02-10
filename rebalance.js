@@ -90,6 +90,39 @@ function getMappedSector(ticker, quoteType = "", yahooSector = "") {
 // 3. Hierarchical Logic (Top-Down Focus)
 // ==========================================
 
+window.addQuickAsset = async (ticker, sector) => {
+    if (holdings.find(h => h.ticker.toUpperCase() === ticker.toUpperCase())) {
+        alert("이미 목록에 있습니다.");
+        return;
+    }
+    
+    holdings.push({ 
+        ticker: ticker, 
+        name: "불러오는 중...", 
+        qty: 0, 
+        price: 0, 
+        targetPercent: 0, 
+        sector: sector 
+    });
+    
+    renderAssetList();
+    
+    // 시세 즉시 업데이트 시도
+    try {
+        const data = await fetchInternalAPI('price', { ticker: ticker });
+        const result = data?.chart?.result?.[0];
+        if (result && result.meta) {
+            const price = result.meta.regularMarketPrice || result.meta.chartPreviousClose || 0;
+            const asset = holdings.find(h => h.ticker === ticker);
+            if (asset) {
+                asset.price = price;
+                asset.name = result.meta.symbol || ticker;
+                renderAssetList();
+            }
+        }
+    } catch (e) {}
+};
+
 // Sector -> Ticker Sync (사용자가 섹터 가이드라인에 맞춰 종목 비중을 자동 배분하고 싶을 때)
 window.distributeSector = (sectorName) => {
     const tickersInSector = holdings.filter(h => h.sector === sectorName);
@@ -252,6 +285,20 @@ function updateCalculation() {
     });
 
     document.getElementById('totalValueDisplay').innerText = `$${currentTotalValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+    // 내 자산 목표 비중 합계 계산 및 표시
+    const totalTargetPercent = holdings.reduce((sum, h) => sum + (parseFloat(h.targetPercent) || 0), 0);
+    const totalPercentDisplay = document.getElementById('totalPercentDisplay');
+    if (totalPercentDisplay) {
+        let diffPercent = 100 - totalTargetPercent;
+        if (Math.abs(diffPercent) < 0.1) {
+            totalPercentDisplay.innerHTML = `<span class="text-emerald-500">✨ 목표 비중 합계: 100% (완벽!)</span>`;
+        } else if (diffPercent > 0) {
+            totalPercentDisplay.innerHTML = `<span class="text-blue-500 font-bold">⚠️ 합계: ${totalTargetPercent.toFixed(1)}% (현금/미할당: ${diffPercent.toFixed(1)}%)</span>`;
+        } else {
+            totalPercentDisplay.innerHTML = `<span class="text-red-500 font-bold">🚫 합계: ${totalTargetPercent.toFixed(1)}% (${Math.abs(diffPercent).toFixed(1)}% 초과)</span>`;
+        }
+    }
 
     // 리밸런싱 기준 금액 결정: 목표 투자 금액이 있으면 그것을 쓰고, 없으면 현재 총액을 기준으로 함
     const rebalanceBase = targetCapital > 0 ? targetCapital : currentTotalValue;
