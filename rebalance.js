@@ -78,8 +78,12 @@ async function refreshAllPrices() {
         // 가용한 프록시 서버 목록 (순차 시도)
         const proxies = [
             { name: 'Primary-Proxy', getUrl: (target) => `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`, isDirect: false },
-            { name: 'Backup-Proxy-1', getUrl: (target) => `https://corsproxy.io/?${encodeURIComponent(target)}`, isDirect: true },
-            { name: 'Backup-Proxy-2', getUrl: (target) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`, isDirect: true }
+        // 가용한 프록시 서버 목록 (안정성 최우선)
+        const proxies = [
+            // AllOrigins: 느리지만 가장 안정적 (타임아웃 25초)
+            { name: 'AllOrigins', getUrl: (target) => `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`, isDirect: false, timeout: 25000 },
+            // ThingProxy: 안정적임 (타임아웃 15초)
+            { name: 'ThingProxy', getUrl: (target) => `https://thingproxy.freeboard.io/fetch/${target}`, isDirect: true, timeout: 15000 }
         ];
 
         let quotes = null;
@@ -94,43 +98,62 @@ async function refreshAllPrices() {
                     console.log(`Trying ${proxy.name}...`);
                     
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+                    const timeoutId = setTimeout(() => controller.abort(), proxy.timeout || 15000);
 
                     const response = await fetch(requestUrl, { 
                         signal: controller.signal
-                        // Headers removed to prevent preflight CORS errors
                     });
                     clearTimeout(timeoutId);
 
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    if (!response.ok) {
+                        console.warn(`${proxy.name} HTTP ${response.status}`);
+                        continue;
+                    }
 
                     let data;
                     if (proxy.isDirect) {
-                        data = await response.json();
+                        // 텍스트로 먼저 받아서 JSON 파싱 시도
+                        const text = await response.text();
+                        try {
+                            data = JSON.parse(text);
+                        } catch (e) {
+                            if (text.includes("Edge: Too many requests") || text.includes("Too Many Requests")) {
+                                throw new Error("요청 한도 초과 (Too Many Requests)");
+                            }
+                            throw new Error("Invalid JSON response");
+                        }
                     } else {
                         const raw = await response.json();
                         if (!raw || !raw.contents) throw new Error("Empty contents");
-                        data = JSON.parse(raw.contents);
+                        
+                        try {
+                            data = JSON.parse(raw.contents);
+                        } catch (e) {
+                             if (raw.status?.http_code === 429) throw new Error("Too Many Requests");
+                             throw new Error("Invalid JSON in contents");
+                        }
                     }
 
                     quotes = data?.quoteResponse?.result || data?.finance?.result || (Array.isArray(data) ? data : null);
                     
                     if (quotes && Array.isArray(quotes) && quotes.length > 0) {
                         successInfo = `${proxy.name}`;
-                        break outerLoop; // 전체 루프 탈출
+                        break outerLoop; 
                     }
                 } catch (e) {
                     console.warn(`${proxy.name} failed:`, e.message);
                     lastError = e;
-                    continue;
+                    continue; 
                 }
             }
         }
 
         if (!quotes) {
             let errorMsg = lastError?.message || "연결 실패";
-            if (errorMsg.includes("Failed to fetch")) {
-                errorMsg = "브라우저 보안 설정 또는 네트워크 문제로 연결이 차단되었습니다. 잠시 후 다시 시도해주세요.";
+            if (errorMsg.includes("Too Many Requests")) {
+                errorMsg = "서버 사용량이 많아 일시적으로 차단되었습니다. 1분 뒤 다시 시도해주세요.";
+            } else if (errorMsg.includes("Failed to fetch")) {
+                errorMsg = "네트워크 연결이 불안정하거나 차단되었습니다.";
             }
             throw new Error(errorMsg);
         }
@@ -635,14 +658,13 @@ async function addAssetFromSearch(quote) {
         const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(quote.symbol)}`;
         const proxies = [
             { url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`, isDirect: false },
-            { url: `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`, isDirect: true },
-            { url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`, isDirect: true }
+            { url: `https://thingproxy.freeboard.io/fetch/${targetUrl}`, isDirect: true }
         ];
 
         for (const proxy of proxies) {
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); 
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
                 
                 const response = await fetch(proxy.url, { signal: controller.signal });
                 clearTimeout(timeoutId);
@@ -651,7 +673,8 @@ async function addAssetFromSearch(quote) {
 
                 let data;
                 if (proxy.isDirect) {
-                    data = await response.json();
+                    const text = await response.text();
+                    try { data = JSON.parse(text); } catch { continue; }
                 } else {
                     const raw = await response.json();
                     if (raw.contents) data = JSON.parse(raw.contents);
