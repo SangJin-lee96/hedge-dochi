@@ -125,6 +125,33 @@
                     </div>
                 </div>
 
+                <!-- 투자 성향 분석 (Which Dochi are you?) -->
+                <div class="p-6 md:p-8 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2" style="color: var(--color-primary-text);">
+                        <span>🦔</span> 투자 성향 분석 (Which Dochi are you?)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- 공격도치 -->
+                        <div onclick="selectDochi('aggressive')" class="cursor-pointer group p-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-700 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-center">
+                            <div class="text-4xl mb-2 group-hover:scale-110 transition-transform">🔥</div>
+                            <h4 class="font-bold text-slate-800 dark:text-white mb-1">공격도치</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">High Risk, High Return<br>연 기대수익: 12%</p>
+                        </div>
+                        <!-- 중도도치 -->
+                        <div onclick="selectDochi('balanced')" class="cursor-pointer group p-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-center">
+                            <div class="text-4xl mb-2 group-hover:scale-110 transition-transform">⚖️</div>
+                            <h4 class="font-bold text-slate-800 dark:text-white mb-1">중도도치</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Balance is Key<br>연 기대수익: 7%</p>
+                        </div>
+                        <!-- 수비도치 -->
+                        <div onclick="selectDochi('defensive')" class="cursor-pointer group p-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-700 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all text-center">
+                            <div class="text-4xl mb-2 group-hover:scale-110 transition-transform">🛡️</div>
+                            <h4 class="font-bold text-slate-800 dark:text-white mb-1">수비도치</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Capital Preservation<br>연 기대수익: 4%</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="p-6 md:p-8 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-xl font-bold" style="color: var(--color-primary-text);">📋 보유 자산 목록</h3>
@@ -213,6 +240,17 @@
                     <div id="actionPlanList" class="space-y-3">
                         <p class="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">자산 데이터를 입력하면 분석 결과가 여기에 표시됩니다.</p>
                     </div>
+                </div>
+
+                <!-- 10년 자산 시뮬레이션 차트 -->
+                <div class="p-6 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
+                    <h3 class="text-sm font-bold uppercase tracking-widest mb-4 text-center" style="color: var(--color-secondary-text);">📈 10년 자산 시뮬레이션</h3>
+                    <div class="relative h-64 w-full">
+                        <canvas id="simulationChart"></canvas>
+                    </div>
+                    <p id="simulationInsight" class="mt-4 text-xs text-center text-slate-500 dark:text-slate-400">
+                        현재 포트폴리오 vs 선택한 도치 스타일 비교
+                    </p>
                 </div>
             </div>
         </div>
