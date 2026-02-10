@@ -167,6 +167,85 @@
                     </div>
                 </div>
 
+                <!-- 섹터 대시보드 (Hierarchical Allocation) -->
+                <div class="p-6 md:p-8 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold flex items-center gap-2" style="color: var(--color-primary-text);">
+                            <span>📊</span> 섹터별 목표 비중 (Sector Targets)
+                        </h3>
+                        <div id="sectorTotalStatus" class="text-sm font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                            Total: 100%
+                        </div>
+                    </div>
+                    <div id="sectorDashboard" class="space-y-6">
+                        <!-- Equity Sector -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-end">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-bold">📈 시장지수 (Equity)</span>
+                                    <button onclick="distributeSector('시장지수 (Equity)')" class="text-[10px] bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">하위 종목 균등배분</button>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <input type="number" id="target_equity" value="0" class="w-16 text-right font-black text-blue-600 dark:text-blue-400 bg-transparent border-b-2 border-blue-500 focus:outline-none" onchange="updateSectorTarget('시장지수 (Equity)', this.value)">
+                                    <span class="text-xs font-bold text-slate-400">%</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden flex">
+                                <div id="progress_equity_current" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
+                                <div id="progress_equity_gap" class="h-full bg-blue-300/30 transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
+                                <span>현재: <span id="current_equity_pct">0%</span></span>
+                                <span>목표: <span id="target_equity_pct">0%</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Bonds/Cash Sector -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-end">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-bold">🛡️ 안전자산 (Bonds/Cash)</span>
+                                    <button onclick="distributeSector('안전자산 (Bonds/Cash)')" class="text-[10px] bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">하위 종목 균등배분</button>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <input type="number" id="target_bonds" value="0" class="w-16 text-right font-black text-emerald-600 dark:text-emerald-400 bg-transparent border-b-2 border-emerald-500 focus:outline-none" onchange="updateSectorTarget('안전자산 (Bonds/Cash)', this.value)">
+                                    <span class="text-xs font-bold text-slate-400">%</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden flex">
+                                <div id="progress_bonds_current" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
+                                <div id="progress_bonds_gap" class="h-full bg-emerald-300/30 transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
+                                <span>현재: <span id="current_bonds_pct">0%</span></span>
+                                <span>목표: <span id="target_bonds_pct">0%</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Gold/Alt Sector -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-end">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-bold">📀 원자재 (Gold/Alt)</span>
+                                    <button onclick="distributeSector('원자재 (Gold/Alt)')" class="text-[10px] bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors">하위 종목 균등배분</button>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <input type="number" id="target_alt" value="0" class="w-16 text-right font-black text-amber-600 dark:text-amber-400 bg-transparent border-b-2 border-amber-500 focus:outline-none" onchange="updateSectorTarget('원자재 (Gold/Alt)', this.value)">
+                                    <span class="text-xs font-bold text-slate-400">%</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden flex">
+                                <div id="progress_alt_current" class="h-full bg-amber-500 transition-all duration-500" style="width: 0%"></div>
+                                <div id="progress_alt_gap" class="h-full bg-amber-300/30 transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
+                                <span>현재: <span id="current_alt_pct">0%</span></span>
+                                <span>목표: <span id="target_alt_pct">0%</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="p-6 md:p-8 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-xl font-bold" style="color: var(--color-primary-text);">📋 보유 자산 목록</h3>
@@ -188,7 +267,7 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="text-sm font-bold border-b" style="color: var(--color-secondary-text); border-color: var(--color-hr-border);">
-                                    <th class="py-3 px-2">종목명 (Ticker)</th>
+                                    <th class="py-3 px-2">종목/섹터</th>
                                     <th class="py-3 px-2 text-right">보유 수량</th>
                                     <th class="py-3 px-2 text-right">현재가($)</th>
                                     <th class="py-3 px-2 text-right">목표비중(%)</th>
@@ -270,9 +349,14 @@
 
                 <!-- 차트 -->
                 <div class="p-6 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
-                    <h3 class="text-sm font-bold uppercase tracking-widest mb-4 text-center" style="color: var(--color-secondary-text);">현재 vs 목표 비중 비교</h3>
-                    <div class="relative h-64 w-full">
+                    <h3 class="text-sm font-bold uppercase tracking-widest mb-4 text-center" style="color: var(--color-secondary-text);">섹터별: 현재 vs 목표</h3>
+                    <div class="relative h-64 w-full mb-8">
                         <canvas id="portfolioChart"></canvas>
+                    </div>
+                    <hr class="border-slate-100 dark:border-slate-700 my-6">
+                    <h3 class="text-sm font-bold uppercase tracking-widest mb-4 text-center" style="color: var(--color-secondary-text);">종목별: 현재 vs 목표</h3>
+                    <div class="relative h-64 w-full">
+                        <canvas id="tickerChart"></canvas>
                     </div>
                 </div>
 
