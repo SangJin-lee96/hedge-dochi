@@ -506,79 +506,117 @@ async function performSearch(query) {
         const targetUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=10&newsCount=0`;
         const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
 
+        console.log("Searching for:", query);
         const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("네트워크 응답 에러");
+        
         const rawData = await response.json();
-        const data = JSON.parse(rawData.contents);
+        if (!rawData || !rawData.contents) throw new Error("데이터를 가져올 수 없습니다.");
 
-        if (!data.quotes || data.quotes.length === 0) {
+        const data = JSON.parse(rawData.contents);
+        console.log("Search results data:", data);
+
+        const quotes = data.quotes || [];
+        
+        if (quotes.length === 0) {
             searchResults.innerHTML = '<li class="text-center py-4 text-slate-400 text-sm">검색 결과가 없습니다.</li>';
             return;
         }
 
         searchResults.innerHTML = '';
-        data.quotes.forEach(quote => {
+        quotes.forEach(quote => {
+            // symbol이 없거나 유효하지 않은 결과는 제외
             if (!quote.symbol) return;
             
             const li = document.createElement('li');
             li.className = "p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-blue-200 dark:hover:border-blue-900 group";
+            
+            const name = quote.shortname || quote.longname || quote.symbol;
+            const exchange = quote.exchDisp || quote.exchange || "Unknown";
+            const type = quote.quoteType || "Stock";
+
             li.innerHTML = `
                 <div class="flex justify-between items-center">
-                    <div>
-                        <span class="font-bold text-blue-600 dark:text-blue-400 group-hover:underline">${quote.symbol}</span>
-                        <span class="text-sm text-slate-600 dark:text-slate-300 ml-2">${quote.shortname || quote.longname || ''}</span>
-                        <div class="text-[10px] text-slate-400">${quote.exchange} · ${quote.quoteType}</div>
+                    <div class="flex-1 min-w-0 pr-4">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-blue-600 dark:text-blue-400 group-hover:underline truncate">${quote.symbol}</span>
+                            <span class="text-xs px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-500 font-medium">${exchange}</span>
+                        </div>
+                        <div class="text-sm text-slate-600 dark:text-slate-300 truncate">${name}</div>
+                        <div class="text-[10px] text-slate-400">${type}</div>
                     </div>
-                    <button class="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-3 py-1 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button class="shrink-0 bg-blue-600 text-white dark:bg-blue-600 dark:text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all hover:bg-blue-700">
                         + 추가
                     </button>
                 </div>
             `;
-            li.onclick = () => addAssetFromSearch(quote);
+            li.onclick = (e) => {
+                e.preventDefault();
+                addAssetFromSearch(quote);
+            };
             searchResults.appendChild(li);
         });
     } catch (e) {
-        console.error("Search error:", e);
-        searchResults.innerHTML = '<li class="text-center py-4 text-red-400 text-sm">검색 중 오류가 발생했습니다.</li>';
+        console.error("Search error detail:", e);
+        searchResults.innerHTML = `<li class="text-center py-4 text-red-400 text-sm">오류: ${e.message}</li>`;
     }
 }
 
 async function addAssetFromSearch(quote) {
+    if (!quote || !quote.symbol) return;
+
     // Check if already exists
-    if (holdings.find(h => h.ticker === quote.symbol)) {
-        alert("이미 포트폴리오에 있는 종목입니다.");
+    const exists = holdings.find(h => h.ticker.toUpperCase() === quote.symbol.toUpperCase());
+    if (exists) {
+        alert(`'${quote.symbol}'은(는) 이미 목록에 있습니다.`);
         return;
     }
 
-    // Try to get price
+    // Try to get initial price
     let price = 0;
     try {
         const priceUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${quote.symbol}`;
         const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(priceUrl)}&timestamp=${Date.now()}`;
         const response = await fetch(proxyUrl);
-        const rawData = await response.json();
-        const data = JSON.parse(rawData.contents);
-        const result = data.quoteResponse?.result?.[0];
-        if (result) {
-            price = result.regularMarketPrice || result.postMarketPrice || 0;
+        if (response.ok) {
+            const rawData = await response.json();
+            const data = JSON.parse(rawData.contents);
+            const result = data.quoteResponse?.result?.[0];
+            if (result) {
+                price = result.regularMarketPrice || result.postMarketPrice || result.bid || 0;
+            }
         }
     } catch (e) {
-        console.warn("Could not fetch initial price");
+        console.warn("Initial price fetch failed for", quote.symbol);
     }
 
-    holdings.push({
+    const newAsset = {
         ticker: quote.symbol,
-        name: quote.shortname || quote.longname || '',
+        name: quote.shortname || quote.longname || quote.symbol,
         qty: 0,
         price: price,
         targetPercent: 0
-    });
+    };
 
+    holdings.push(newAsset);
+    
+    // UI Update
     tickerSearchInput.value = '';
     searchResultsContainer.classList.add('hidden');
     renderAssetList();
     
-    // Smooth scroll to table
-    document.getElementById('assetListBody').lastElementChild.scrollIntoView({ behavior: 'smooth' });
+    // Highlight the new row
+    setTimeout(() => {
+        const rows = assetListBody.querySelectorAll('tr');
+        const lastRow = rows[rows.length - 1];
+        if (lastRow) {
+            lastRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            lastRow.classList.add('bg-blue-50', 'dark:bg-blue-900/20');
+            setTimeout(() => {
+                lastRow.classList.remove('bg-blue-50', 'dark:bg-blue-900/20');
+            }, 2000);
+        }
+    }, 100);
 }
 
 // Initial render
