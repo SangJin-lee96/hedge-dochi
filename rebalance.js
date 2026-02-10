@@ -77,9 +77,9 @@ async function refreshAllPrices() {
         
         // 가용한 프록시 서버 목록 (순차 시도)
         const proxies = [
-            { name: 'Proxy-1', getUrl: (target) => `https://corsproxy.io/?${encodeURIComponent(target)}`, isDirect: true },
-            { name: 'Proxy-2', getUrl: (target) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`, isDirect: true },
-            { name: 'Proxy-3', getUrl: (target) => `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`, isDirect: false }
+            { name: 'Primary-Proxy', getUrl: (target) => `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`, isDirect: false },
+            { name: 'Backup-Proxy-1', getUrl: (target) => `https://corsproxy.io/?${encodeURIComponent(target)}`, isDirect: true },
+            { name: 'Backup-Proxy-2', getUrl: (target) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`, isDirect: true }
         ];
 
         let quotes = null;
@@ -91,14 +91,14 @@ async function refreshAllPrices() {
             for (const proxy of proxies) {
                 try {
                     const requestUrl = proxy.getUrl(mirror);
-                    console.log(`Trying ${proxy.name} with Mirror...`);
+                    console.log(`Trying ${proxy.name}...`);
                     
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 8000);
+                    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
                     const response = await fetch(requestUrl, { 
-                        signal: controller.signal,
-                        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                        signal: controller.signal
+                        // Headers removed to prevent preflight CORS errors
                     });
                     clearTimeout(timeoutId);
 
@@ -109,7 +109,7 @@ async function refreshAllPrices() {
                         data = await response.json();
                     } else {
                         const raw = await response.json();
-                        if (!raw.contents) throw new Error("Empty contents");
+                        if (!raw || !raw.contents) throw new Error("Empty contents");
                         data = JSON.parse(raw.contents);
                     }
 
@@ -130,7 +130,7 @@ async function refreshAllPrices() {
         if (!quotes) {
             let errorMsg = lastError?.message || "연결 실패";
             if (errorMsg.includes("Failed to fetch")) {
-                errorMsg = "브라우저에서 요청이 차단되었습니다. (광고 차단기/AdBlock을 끄고 다시 시도해주세요)";
+                errorMsg = "브라우저 보안 설정 또는 네트워크 문제로 연결이 차단되었습니다. 잠시 후 다시 시도해주세요.";
             }
             throw new Error(errorMsg);
         }
@@ -634,14 +634,15 @@ async function addAssetFromSearch(quote) {
     try {
         const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(quote.symbol)}`;
         const proxies = [
+            { url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`, isDirect: false },
             { url: `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`, isDirect: true },
-            { url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`, isDirect: false }
+            { url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`, isDirect: true }
         ];
 
         for (const proxy of proxies) {
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 4000); // 4초 (개별 조회는 짧게)
+                const timeoutId = setTimeout(() => controller.abort(), 5000); 
                 
                 const response = await fetch(proxy.url, { signal: controller.signal });
                 clearTimeout(timeoutId);
@@ -659,10 +660,10 @@ async function addAssetFromSearch(quote) {
                 const result = data?.quoteResponse?.result?.[0] || data?.finance?.result?.[0];
                 if (result) {
                     price = result.regularMarketPrice || result.postMarketPrice || result.preMarketPrice || result.bid || 0;
-                    if (price > 0) break; // 성공 시 탈출
+                    if (price > 0) break;
                 }
             } catch (e) {
-                // Ignore and try next proxy
+                // Ignore and try next
             }
         }
     } catch (e) {
