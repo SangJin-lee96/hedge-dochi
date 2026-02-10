@@ -209,6 +209,31 @@
         </div>
     </footer>
 
+    <!-- 티커 검색 모달 -->
+    <div id="tickerSearchModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white">🔍 종목 검색</h3>
+                <button id="closeSearchModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="relative">
+                    <input type="text" id="tickerSearchInput" placeholder="예: Alphabet, Samsung, 005930..." class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 pl-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-bold text-slate-800 dark:text-white">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
+                </div>
+                <p class="text-xs text-slate-400 mt-2 ml-1">기업명(영어/한글) 또는 티커를 입력하세요. (미국/한국 주식 지원)</p>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2" id="searchResultsContainer">
+                <ul id="searchResults" class="space-y-1">
+                    <!-- 검색 결과가 여기에 표시됩니다 -->
+                    <li class="text-center text-slate-400 py-8 text-sm">검색어를 입력하면 결과가 나옵니다.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDKs -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
