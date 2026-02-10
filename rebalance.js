@@ -117,27 +117,25 @@ async function refreshAllPrices() {
     }
 }
 
-// Helper: Fetch Single Price with Failover
+// Helper: Fetch Single Price using Chart API (Bypass Strategy)
 async function fetchSinglePrice(ticker) {
-    const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}`;
+    // 전략: Quote API(v7)가 막혔으므로 Chart API(v8)를 사용하여 우회합니다.
+    // 차트 데이터의 메타 정보(meta)에 현재가가 포함되어 있습니다.
+    const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1d`;
     
-    // 프록시 목록 (검증된 것들 위주)
     const proxies = [
-        // 1순위: AllOrigins (검색 기능에서 검증됨)
-        { url: (t) => `https://api.allorigins.win/get?url=${encodeURIComponent(t)}`, isDirect: false },
-        // 2순위: CorsProxy (빠름)
-        { url: (t) => `https://corsproxy.io/?${encodeURIComponent(t)}`, isDirect: true },
-        // 3순위: ThingProxy (백업)
-        { url: (t) => `https://thingproxy.freeboard.io/fetch/${t}`, isDirect: true }
+        // 1. CodeTabs: 빠름, 개별 요청 시 성공률 높음
+        { url: (t) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(t)}`, isDirect: true },
+        // 2. AllOrigins: 가장 안정적인 백업
+        { url: (t) => `https://api.allorigins.win/get?url=${encodeURIComponent(t)}`, isDirect: false }
     ];
 
     for (const proxy of proxies) {
         try {
-            const requestUrl = proxy.url(targetUrl);
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000); // 개별 요청 5초 제한
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
 
-            const response = await fetch(requestUrl, { signal: controller.signal });
+            const response = await fetch(proxy.url(targetUrl), { signal: controller.signal });
             clearTimeout(timeoutId);
 
             if (!response.ok) continue;
@@ -149,21 +147,28 @@ async function fetchSinglePrice(ticker) {
             } else {
                 const raw = await response.json();
                 if (!raw.contents) continue;
-                data = JSON.parse(raw.contents);
+                try { data = JSON.parse(raw.contents); } catch { continue; }
             }
 
-            const result = data?.quoteResponse?.result?.[0] || data?.finance?.result?.[0];
-            if (result) {
-                const price = result.regularMarketPrice || result.postMarketPrice || result.preMarketPrice || result.bid || result.ask;
-                const name = result.shortName || result.longName || ticker;
+            // 차트 API 응답 구조 파싱 (v8)
+            const result = data?.chart?.result?.[0];
+            if (result && result.meta) {
+                const meta = result.meta;
+                // 장중 가격 또는 종가 가져오기
+                const price = meta.regularMarketPrice || meta.chartPreviousClose || 0;
                 
-                if (price) return { price, name };
+                // 차트 API는 기업명(shortName)을 주지 않을 수 있으므로, 
+                // 이름이 필요하다면 기존 이름을 유지하거나 티커를 임시로 사용
+                const name = meta.symbol || ticker; 
+                
+                if (price > 0) return { price, name };
             }
         } catch (e) {
-            continue; // 다음 프록시 시도
+            // 실패 시 다음 프록시 시도
+            continue;
         }
     }
-    return null; // 모든 프록시 실패 시
+    return null; // 모든 시도 실패
 }
 
 // Backup Fetch Logic (Deprecated but kept for reference if needed)
