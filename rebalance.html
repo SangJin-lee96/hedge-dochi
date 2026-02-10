@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="내 자산의 황금비율을 찾아라! 포트폴리오 리밸런싱 매니저. 감정에 휘둘리지 않는 투자를 도와드립니다.">
+    <title>포트폴리오 리밸런싱 | My Wealth Tier</title>
+    <meta property="og:title" content="포트폴리오 리밸런싱 | My Wealth Tier">
+    <meta property="og:description" content="복잡한 계산은 이제 그만. 내 자산의 현재 비율을 진단하고, 매수/매도 수량을 직관적으로 알려드립니다.">
+    <meta property="og:image" content="https://hedge-dochi.com/og-image.png">
+    <meta property="og:url" content="https://hedge-dochi.com/rebalance.html">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
+    <!-- Chart.js for Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --color-primary-text: #1e293b;
+            --color-secondary-text: #64748b;
+            --color-background: #f8fafc;
+            --color-card-background: #ffffff;
+            --color-card-border: #e2e8f0;
+            --color-input-background: #f8fafc;
+            --color-input-border: #e2e8f0;
+            --color-input-text: #334155;
+            --color-nav-bg: #ffffff;
+            --nav-bg-rgb: 255, 255, 255;
+            --color-nav-border: #f1f5f9;
+            --color-nav-link: #2563eb;
+            --color-nav-link-hover-bg: #eff6ff;
+            --color-toggle-text: #64748b;
+            --color-toggle-hover-bg: #f8fafc;
+        }
+
+        html.dark {
+            --color-primary-text: #f8fafc;
+            --color-secondary-text: #94a3b8;
+            --color-background: #0f172a;
+            --color-card-background: #1e293b;
+            --color-card-border: #334155;
+            --color-input-background: #334155;
+            --color-input-border: #475569;
+            --color-input-text: #f1f5f9;
+            --color-nav-bg: #1e293b;
+            --nav-bg-rgb: 30, 41, 59;
+            --color-nav-border: #334155;
+            --color-nav-link: #60a5fa;
+            --color-nav-link-hover-bg: #0f172a;
+            --color-toggle-text: #94a3b8;
+            --color-toggle-hover-bg: #334155;
+        }
+
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); }
+        .transition-colors { transition-duration: 300ms; }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden transition-colors">
+    <!-- Sticky Header Navigation -->
+    <header class="sticky top-0 z-50 w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
+                <span class="text-xl">💎</span>
+                <span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
+            </div>
+            <nav class="flex items-center gap-1 md:gap-4">
+                <a href="index.html" class="hidden md:block text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link); hover:background-color: var(--color-nav-link-hover-bg);">자산 시뮬레이터</a>
+                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link); hover:background-color: var(--color-nav-link-hover-bg);">로또 추천</a>
+                <a href="rebalance.html" class="text-sm font-extrabold px-3 py-2 rounded-lg transition-colors bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">리밸런싱</a>
+                <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text); hover:background-color: var(--color-toggle-hover-bg);">🌙</button>
+                <div id="authContainer" class="ml-2">
+                    <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-colors">
+                        구글 로그인
+                    </button>
+                    <div id="userProfile" class="hidden flex items-center gap-2">
+                        <img id="userPhoto" src="" alt="Profile" class="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-600">
+                        <button id="logoutBtn" class="text-xs text-slate-500 hover:text-red-500 font-semibold">로그아웃</button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="py-8 px-4 md:py-12 max-w-6xl mx-auto">
+        <header class="mb-10 text-center md:text-left">
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight" style="color: var(--color-primary-text);">⚖️ 포트폴리오 리밸런싱</h1>
+            <p class="mt-4 text-lg font-medium" style="color: var(--color-secondary-text);">감정에 휘둘리지 않는 투자의 핵심, '비율'을 지키세요.</p>
+        </header>
+
+        <!-- 로그인 안내 (비로그인 시 표시) -->
+        <div id="loginAlert" class="mb-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800 text-center">
+            <p class="text-blue-800 dark:text-blue-200 font-bold text-lg mb-2">🔒 로그인이 필요한 기능입니다</p>
+            <p class="text-blue-600 dark:text-blue-300 mb-4">내 포트폴리오를 안전하게 저장하고 관리하려면 구글 로그인을 해주세요.</p>
+            <button onclick="document.getElementById('loginBtn').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1">
+                지금 시작하기
+            </button>
+        </div>
+
+        <!-- 메인 콘텐츠 (로그인 시 표시) -->
+        <div id="appContent" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- 왼쪽: 자산 입력 및 관리 -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="p-6 md:p-8 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold" style="color: var(--color-primary-text);">📋 보유 자산 목록</h3>
+                        <div class="flex gap-2">
+                             <button id="addAssetBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors">
+                                + 종목 추가
+                            </button>
+                            <button id="saveBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-1">
+                                💾 저장
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 자산 리스트 테이블 -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-sm font-bold border-b" style="color: var(--color-secondary-text); border-color: var(--color-hr-border);">
+                                    <th class="py-3 px-2">종목명 (Ticker)</th>
+                                    <th class="py-3 px-2 text-right">보유 수량</th>
+                                    <th class="py-3 px-2 text-right">현재가($)</th>
+                                    <th class="py-3 px-2 text-right">목표비중(%)</th>
+                                    <th class="py-3 px-2 text-center">삭제</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assetListBody" class="text-sm font-medium">
+                                <!-- 자바스크립트로 행이 추가됩니다 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl text-xs text-slate-500 dark:text-slate-400">
+                        <p>💡 <strong>팁:</strong> 현재가는 직접 입력하거나, 나중에 API 연동 기능을 통해 업데이트할 수 있습니다. 목표 비중의 합은 <strong>100%</strong>가 되어야 합니다.</p>
+                        <p id="totalPercentDisplay" class="mt-2 font-bold text-lg text-right text-indigo-600 dark:text-indigo-400">현재 목표 비중 합계: 0%</p>
+                    </div>
+                </div>
+
+                 <!-- AdSense Area -->
+                 <div class="rounded-xl h-24 flex flex-col items-center justify-center text-[10px] tracking-[0.2em] transition-colors duration-300 bg-slate-100 text-slate-400 border-2 border-dashed border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+                    <span class="font-bold mb-1 opacity-60">SPONSORED</span>
+                    <div class="mt-2 text-xs">Google AdSense Area</div>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 분석 대시보드 -->
+            <div class="lg:col-span-5 space-y-6">
+                <!-- 총 자산 및 리밸런싱 요약 -->
+                <div class="p-8 rounded-3xl shadow-xl border bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-transparent">
+                    <p class="text-indigo-100 text-xs font-bold uppercase tracking-widest mb-1">총 자산 가치 (추정)</p>
+                    <h2 id="totalValueDisplay" class="text-4xl font-black tracking-tight mb-6">$0.00</h2>
+                    
+                    <div id="rebalanceStatus" class="p-4 bg-white/10 rounded-xl backdrop-blur-md border border-white/20">
+                        <div class="flex items-center gap-3">
+                            <span id="statusIcon" class="text-2xl">✅</span>
+                            <div>
+                                <h4 id="statusTitle" class="font-bold">상태 양호</h4>
+                                <p id="statusDesc" class="text-sm text-indigo-100 opacity-90">현재 포트폴리오 비율이 목표와 일치합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 차트 -->
+                <div class="p-6 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
+                    <h3 class="text-sm font-bold uppercase tracking-widest mb-4 text-center" style="color: var(--color-secondary-text);">현재 vs 목표 비중 비교</h3>
+                    <div class="relative h-64 w-full">
+                        <canvas id="portfolioChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 액션 플랜 -->
+                <div class="p-6 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2" style="color: var(--color-primary-text);">
+                        <span>🚀</span> 리밸런싱 가이드
+                    </h3>
+                    <div id="actionPlanList" class="space-y-3">
+                        <p class="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">자산 데이터를 입력하면 분석 결과가 여기에 표시됩니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center mt-12 py-8" style="border-top: 1px solid var(--color-footer-border);">
+        <div class="max-w-6xl mx-auto text-sm" style="color: var(--color-footer-text);">
+            <p class="font-semibold">Hedge Dochi - Smart Asset Management</p>
+            <p class="mt-2 text-xs opacity-70">본 서비스는 투자의 보조 도구일 뿐이며, 모든 투자 결정의 책임은 본인에게 있습니다.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <script type="module" src="rebalance.js"></script>
+    <script src="dark-mode.js"></script>
+</body>
+</html>
