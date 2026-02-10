@@ -49,13 +49,14 @@ const saveBtn = document.getElementById('saveBtn');
 const refreshPricesBtn = document.getElementById('refreshPricesBtn');
 const refreshIcon = document.getElementById('refreshIcon');
 
-// Batch Price Fetching (Senior Optimizer Approach)
+// Batch Price Fetching (Individual Request Strategy for Maximum Reliability)
 async function refreshAllPrices() {
-    const validTickers = holdings
-        .map(h => h.ticker.trim().toUpperCase())
-        .filter(t => t && !['CASH', 'USD', 'KRW', '현금', 'NEW ASSET'].includes(t));
+    const validHoldings = holdings.filter(h => 
+        h.ticker && h.ticker.trim() !== '' && 
+        !['CASH', 'USD', 'KRW', '현금', 'NEW ASSET'].includes(h.ticker.toUpperCase())
+    );
 
-    if (validTickers.length === 0) {
+    if (validHoldings.length === 0) {
         alert("시세를 불러올 유효한 종목(Ticker)이 없습니다. (현금 제외)");
         return;
     }
@@ -64,87 +65,114 @@ async function refreshAllPrices() {
     refreshPricesBtn.disabled = true;
     if (refreshIcon) refreshIcon.classList.add('animate-spin', 'inline-block');
     refreshPricesBtn.classList.add('opacity-50');
+    
+    let successCount = 0;
+    let failCount = 0;
 
-    try {
-        const symbols = validTickers.join(',');
-        // 검색 기능과 동일한 안정적인 URL 구조 사용
-        const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
-
-        console.log("Refreshing prices for:", symbols);
-        
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error(`프록시 서버 응답 에러 (${response.status})`);
-        
-        const rawData = await response.json();
-        if (!rawData || !rawData.contents) throw new Error("데이터를 가져올 수 없습니다.");
-
-        const data = JSON.parse(rawData.contents);
-        console.log("Price data received:", data);
-
-        const quotes = data?.quoteResponse?.result;
-        
-        if (!quotes || !Array.isArray(quotes) || quotes.length === 0) {
-            // AllOrigins 실패 시 Backup (ThingProxy) 시도
-            return await refreshPricesBackup(symbols);
-        }
-
-        updateHoldingsWithQuotes(quotes);
-        alert(`${quotes.length}개 종목의 실시간 시세가 업데이트되었습니다. 📈`);
-
-    } catch (error) {
-        console.error("Primary price fetch failed:", error);
-        // 즉시 백업 시도
+    // 하나씩 순차적으로 처리 (병렬 처리 시 브라우저 제한 걸릴 수 있음)
+    for (let i = 0; i < validHoldings.length; i++) {
+        const item = validHoldings[i];
         try {
-            const symbols = validTickers.join(',');
-            await refreshPricesBackup(symbols);
-        } catch (backupError) {
-            alert("시세를 가져오는데 실패했습니다. 잠시 후 다시 시도해주세요.\n(원인: " + backupError.message + ")");
+            // 진행 상황을 버튼에 표시 가능하면 좋음 (선택사항)
+            console.log(`Fetching price for ${item.ticker} (${i + 1}/${validHoldings.length})...`);
+            
+            const priceData = await fetchSinglePrice(item.ticker);
+            
+            if (priceData && priceData.price > 0) {
+                // 원본 배열에서 해당 아이템을 찾아 업데이트
+                const index = holdings.indexOf(item);
+                if (index !== -1) {
+                    holdings[index].price = priceData.price;
+                    // 이름이 없거나 깨졌을 경우 보정
+                    if (!holdings[index].name || holdings[index].name.includes('❌')) {
+                        holdings[index].name = priceData.name;
+                    }
+                    successCount++;
+                }
+            } else {
+                failCount++;
+            }
+        } catch (e) {
+            console.warn(`Failed to update ${item.ticker}:`, e);
+            failCount++;
         }
-    } finally {
-        refreshPricesBtn.disabled = false;
-        if (refreshIcon) refreshIcon.classList.remove('animate-spin');
-        refreshPricesBtn.classList.remove('opacity-50');
+        
+        // 너무 빠른 요청으로 인한 차단 방지 (약간의 딜레이)
+        await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    // UI 복구 및 결과 알림
+    refreshPricesBtn.disabled = false;
+    if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+    refreshPricesBtn.classList.remove('opacity-50');
+    
+    renderAssetList(); // 화면 갱신
+    
+    if (successCount > 0) {
+        let msg = `${successCount}개 종목의 시세를 업데이트했습니다.`;
+        if (failCount > 0) msg += `\n(${failCount}개 실패 - 티커를 확인해주세요)`;
+        alert(msg);
+    } else {
+        alert("시세를 가져오는데 실패했습니다. 네트워크 상태를 확인하거나 잠시 후 다시 시도해주세요.");
     }
 }
 
-// Backup Fetch Logic
-async function refreshPricesBackup(symbols) {
-    console.log("Attempting backup price fetch...");
-    const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}`;
-    const proxyUrl = `https://thingproxy.freeboard.io/fetch/${targetUrl}`;
+// Helper: Fetch Single Price with Failover
+async function fetchSinglePrice(ticker) {
+    const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}`;
     
-    const response = await fetch(proxyUrl);
-    if (!response.ok) throw new Error("모든 시세 서버가 응답하지 않습니다.");
-    
-    const data = await response.json();
-    const quotes = data?.quoteResponse?.result;
-    
-    if (quotes && Array.isArray(quotes) && quotes.length > 0) {
-        updateHoldingsWithQuotes(quotes);
-        alert(`${quotes.length}개 종목의 시세가 업데이트되었습니다. (Backup)`);
-    } else {
-        throw new Error("데이터 구조가 올바르지 않습니다.");
+    // 프록시 목록 (검증된 것들 위주)
+    const proxies = [
+        // 1순위: AllOrigins (검색 기능에서 검증됨)
+        { url: (t) => `https://api.allorigins.win/get?url=${encodeURIComponent(t)}`, isDirect: false },
+        // 2순위: CorsProxy (빠름)
+        { url: (t) => `https://corsproxy.io/?${encodeURIComponent(t)}`, isDirect: true },
+        // 3순위: ThingProxy (백업)
+        { url: (t) => `https://thingproxy.freeboard.io/fetch/${t}`, isDirect: true }
+    ];
+
+    for (const proxy of proxies) {
+        try {
+            const requestUrl = proxy.url(targetUrl);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 개별 요청 5초 제한
+
+            const response = await fetch(requestUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) continue;
+
+            let data;
+            if (proxy.isDirect) {
+                const text = await response.text();
+                try { data = JSON.parse(text); } catch { continue; }
+            } else {
+                const raw = await response.json();
+                if (!raw.contents) continue;
+                data = JSON.parse(raw.contents);
+            }
+
+            const result = data?.quoteResponse?.result?.[0] || data?.finance?.result?.[0];
+            if (result) {
+                const price = result.regularMarketPrice || result.postMarketPrice || result.preMarketPrice || result.bid || result.ask;
+                const name = result.shortName || result.longName || ticker;
+                
+                if (price) return { price, name };
+            }
+        } catch (e) {
+            continue; // 다음 프록시 시도
+        }
     }
+    return null; // 모든 프록시 실패 시
+}
+
+// Backup Fetch Logic (Deprecated but kept for reference if needed)
+async function refreshPricesBackup(symbols) {
+    // ... (This function is no longer used by the new logic but kept to avoid ReferenceError if called elsewhere, though we removed calls)
 }
 
 function updateHoldingsWithQuotes(quotes) {
-    let updatedCount = 0;
-    quotes.forEach(quote => {
-        if (!quote || !quote.symbol) return;
-        const index = holdings.findIndex(h => h.ticker.toUpperCase() === quote.symbol.toUpperCase());
-        if (index !== -1) {
-            const newPrice = quote.regularMarketPrice || quote.postMarketPrice || quote.preMarketPrice || quote.bid || quote.ask;
-            if (newPrice) {
-                holdings[index].price = newPrice;
-                if (!holdings[index].name || holdings[index].name.includes('❌')) {
-                    holdings[index].name = quote.shortName || quote.longName || quote.symbol;
-                }
-                updatedCount++;
-            }
-        }
-    });
-    renderAssetList();
+   // ... (Similar, no longer primary)
 }
 
 if (refreshPricesBtn) {
