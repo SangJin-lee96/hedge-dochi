@@ -53,10 +53,10 @@ const refreshIcon = document.getElementById('refreshIcon');
 async function refreshAllPrices() {
     const validTickers = holdings
         .map(h => h.ticker.trim().toUpperCase())
-        .filter(t => t && !['CASH', 'USD', 'KRW', '현금'].includes(t));
+        .filter(t => t && !['CASH', 'USD', 'KRW', '현금', 'NEW ASSET'].includes(t));
 
     if (validTickers.length === 0) {
-        alert("시세를 불러올 유효한 종목(Ticker)이 없습니다.");
+        alert("시세를 불러올 유효한 종목(Ticker)이 없습니다. (현금 제외)");
         return;
     }
 
@@ -67,34 +67,47 @@ async function refreshAllPrices() {
 
     try {
         const symbols = validTickers.join(',');
-        // Using AllOrigins CORS Proxy + Yahoo Finance Public API
         const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
 
         const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("네트워크 응답에 문제가 있습니다.");
+        if (!response.ok) throw new Error("프록시 서버 응답 에러");
         
         const rawData = await response.json();
-        const data = JSON.parse(rawData.contents);
-        const quotes = data.quoteResponse.result;
+        if (!rawData.contents) throw new Error("응답 데이터가 비어있습니다.");
 
-        if (!quotes || quotes.length === 0) throw new Error("시세 정보를 찾을 수 없습니다.");
+        const data = JSON.parse(rawData.contents);
+        
+        // 데이터 구조 검증 (핵심 수정 부분)
+        if (!data || !data.quoteResponse) {
+            console.error("Yahoo API Error Structure:", data);
+            throw new Error("Yahoo Finance 응답 형식이 올바르지 않습니다.");
+        }
+
+        const quotes = data.quoteResponse.result;
+        if (!quotes || !Array.isArray(quotes) || quotes.length === 0) {
+            throw new Error("입력하신 티커 정보를 찾을 수 없습니다. (미국 주식 티커 기준)");
+        }
 
         // Update holdings with new prices
         let updatedCount = 0;
         quotes.forEach(quote => {
             const index = holdings.findIndex(h => h.ticker.toUpperCase() === quote.symbol.toUpperCase());
             if (index !== -1) {
-                holdings[index].price = quote.regularMarketPrice;
-                updatedCount++;
+                // 야후 파이낸스 가격 정보 필드 확인 (regularMarketPrice 또는 postMarketPrice)
+                const newPrice = quote.regularMarketPrice || quote.postMarketPrice || quote.bid || quote.ask;
+                if (newPrice) {
+                    holdings[index].price = newPrice;
+                    updatedCount++;
+                }
             }
         });
 
         alert(`${updatedCount}개 종목의 실시간 시세가 업데이트되었습니다. 📈`);
         renderAssetList();
     } catch (error) {
-        console.error("Price fetch error:", error);
-        alert("시세를 가져오지 못했습니다. 잠시 후 다시 시도해주세요. (원인: " + error.message + ")");
+        console.error("Price fetch error detail:", error);
+        alert("시세를 가져오지 못했습니다. 원인: " + error.message + "\n\n(참고: 'AAPL' 같은 미국 티커 위주로 작동하며, 국내 주식은 '005930.KS' 형태로 입력해야 합니다.)");
     } finally {
         // UI Feedback: Stop Loading
         refreshPricesBtn.disabled = false;
@@ -206,15 +219,39 @@ addAssetBtn.addEventListener('click', () => {
     renderAssetList();
 });
 
-// Helper: Open Price Search
-window.openPriceSearch = (index) => {
-    const ticker = holdings[index].ticker;
-    if (!ticker) {
-        alert("종목명(Ticker)을 먼저 입력해주세요.");
+// Helper: Validate Ticker & Get Name
+window.validateTicker = async (index, symbol) => {
+    if (!symbol || ['CASH', 'USD', 'KRW', '현금', 'NEW ASSET'].includes(symbol.toUpperCase())) {
+        holdings[index].name = "현금성 자산";
+        renderAssetList(); // Refresh to show name
         return;
     }
-    const query = encodeURIComponent(`${ticker} stock price`);
-    window.open(`https://www.google.com/search?q=${query}`, '_blank');
+
+    try {
+        const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
+        
+        const response = await fetch(proxyUrl);
+        if (!response.ok) return; // Silent fail
+
+        const rawData = await response.json();
+        const data = JSON.parse(rawData.contents);
+        const quote = data.quoteResponse?.result?.[0];
+
+        if (quote) {
+            holdings[index].name = quote.shortName || quote.longName || symbol;
+            // Optional: Auto-fill price if 0
+            if (holdings[index].price === 0 && quote.regularMarketPrice) {
+                holdings[index].price = quote.regularMarketPrice;
+            }
+        } else {
+            holdings[index].name = "❌ 종목 확인 불가";
+        }
+    } catch (e) {
+        console.warn("Validation failed for", symbol);
+        holdings[index].name = "";
+    }
+    renderAssetList();
 };
 
 function renderAssetList() {
@@ -223,13 +260,20 @@ function renderAssetList() {
         const tr = document.createElement('tr');
         tr.className = "border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group";
         
+        const assetName = item.name ? `<div class="text-[10px] text-slate-400 truncate max-w-[100px]">${item.name}</div>` : '';
+
         tr.innerHTML = `
             <td class="py-3 px-2 align-middle">
-                <div class="flex items-center gap-1">
-                    <input type="text" placeholder="예: AAPL" value="${item.ticker}" class="w-full min-w-[60px] bg-transparent border-b border-transparent focus:border-blue-500 outline-none font-bold text-slate-700 dark:text-slate-200 uppercase" onchange="updateHolding(${index}, 'ticker', this.value)">
-                    <button onclick="openPriceSearch(${index})" class="text-slate-400 hover:text-blue-500 transition-colors p-1" title="구글 시세 검색">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </button>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1">
+                        <input type="text" placeholder="예: AAPL" value="${item.ticker}" class="w-full min-w-[60px] bg-transparent border-b border-transparent focus:border-blue-500 outline-none font-bold text-slate-700 dark:text-slate-200 uppercase" 
+                            onchange="updateHolding(${index}, 'ticker', this.value)"
+                            onblur="validateTicker(${index}, this.value)">
+                        <button onclick="openPriceSearch(${index})" class="text-slate-400 hover:text-blue-500 transition-colors p-1" title="구글 시세 검색">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </button>
+                    </div>
+                    ${assetName}
                 </div>
             </td>
             <td class="py-3 px-2 align-middle">
