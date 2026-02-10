@@ -49,7 +49,50 @@ const saveBtn = document.getElementById('saveBtn');
 const refreshPricesBtn = document.getElementById('refreshPricesBtn');
 const refreshIcon = document.getElementById('refreshIcon');
 
-// Batch Price Fetching (Individual Request Strategy for Maximum Reliability)
+// Shared Proxy List & Helper
+const getProxies = (targetUrl) => [
+    // 1. CodeTabs (Fast & Reliable)
+    { url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`, isDirect: true },
+    // 2. CorsProxy.io (Fast, supports raw URLs)
+    { url: `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`, isDirect: true },
+    // 3. AllOrigins (Backup)
+    { url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`, isDirect: false }
+];
+
+async function fetchWithProxies(targetUrl, timeout = 10000) {
+    const proxies = getProxies(targetUrl);
+    
+    for (const proxy of proxies) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+            const response = await fetch(proxy.url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) continue;
+
+            if (proxy.isDirect) {
+                const text = await response.text();
+                try { 
+                    return JSON.parse(text); 
+                } catch { 
+                    // CodeTabs sometimes returns error message as text
+                    continue; 
+                }
+            } else {
+                const raw = await response.json();
+                if (!raw.contents) continue;
+                return JSON.parse(raw.contents);
+            }
+        } catch (e) {
+            continue;
+        }
+    }
+    throw new Error("All proxies failed");
+}
+
+// Batch Price Fetching (Individual Request Strategy with Chart API)
 async function refreshAllPrices() {
     const validHoldings = holdings.filter(h => 
         h.ticker && h.ticker.trim() !== '' && 
@@ -69,25 +112,30 @@ async function refreshAllPrices() {
     let successCount = 0;
     let failCount = 0;
 
-    // 하나씩 순차적으로 처리 (병렬 처리 시 브라우저 제한 걸릴 수 있음)
     for (let i = 0; i < validHoldings.length; i++) {
         const item = validHoldings[i];
         try {
-            // 진행 상황을 버튼에 표시 가능하면 좋음 (선택사항)
             console.log(`Fetching price for ${item.ticker} (${i + 1}/${validHoldings.length})...`);
             
-            const priceData = await fetchSinglePrice(item.ticker);
+            // Use Chart API (v8) as it is less restricted
+            const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(item.ticker)}?interval=1d&range=1d`;
+            const data = await fetchWithProxies(targetUrl, 10000);
             
-            if (priceData && priceData.price > 0) {
-                // 원본 배열에서 해당 아이템을 찾아 업데이트
-                const index = holdings.indexOf(item);
-                if (index !== -1) {
-                    holdings[index].price = priceData.price;
-                    // 이름이 없거나 깨졌을 경우 보정
-                    if (!holdings[index].name || holdings[index].name.includes('❌')) {
-                        holdings[index].name = priceData.name;
+            const result = data?.chart?.result?.[0];
+            if (result && result.meta) {
+                const price = result.meta.regularMarketPrice || result.meta.chartPreviousClose || 0;
+                
+                if (price > 0) {
+                    const index = holdings.indexOf(item);
+                    if (index !== -1) {
+                        holdings[index].price = price;
+                        if (!holdings[index].name || holdings[index].name.includes('❌')) {
+                            holdings[index].name = result.meta.symbol || item.ticker;
+                        }
+                        successCount++;
                     }
-                    successCount++;
+                } else {
+                    failCount++;
                 }
             } else {
                 failCount++;
@@ -97,87 +145,23 @@ async function refreshAllPrices() {
             failCount++;
         }
         
-        // 너무 빠른 요청으로 인한 차단 방지 (약간의 딜레이)
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // Delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    // UI 복구 및 결과 알림
     refreshPricesBtn.disabled = false;
     if (refreshIcon) refreshIcon.classList.remove('animate-spin');
     refreshPricesBtn.classList.remove('opacity-50');
     
-    renderAssetList(); // 화면 갱신
+    renderAssetList();
     
     if (successCount > 0) {
         let msg = `${successCount}개 종목의 시세를 업데이트했습니다.`;
         if (failCount > 0) msg += `\n(${failCount}개 실패 - 티커를 확인해주세요)`;
         alert(msg);
     } else {
-        alert("시세를 가져오는데 실패했습니다. 네트워크 상태를 확인하거나 잠시 후 다시 시도해주세요.");
+        alert("시세를 가져오는데 실패했습니다. 잠시 후 다시 시도해주세요.");
     }
-}
-
-// Helper: Fetch Single Price using Chart API (Bypass Strategy)
-async function fetchSinglePrice(ticker) {
-    // 전략: Quote API(v7)가 막혔으므로 Chart API(v8)를 사용하여 우회합니다.
-    // 차트 데이터의 메타 정보(meta)에 현재가가 포함되어 있습니다.
-    const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1d`;
-    
-    const proxies = [
-        // 1. CodeTabs: 빠름, 개별 요청 시 성공률 높음
-        { url: (t) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(t)}`, isDirect: true },
-        // 2. AllOrigins: 가장 안정적인 백업
-        { url: (t) => `https://api.allorigins.win/get?url=${encodeURIComponent(t)}`, isDirect: false }
-    ];
-
-    for (const proxy of proxies) {
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
-
-            const response = await fetch(proxy.url(targetUrl), { signal: controller.signal });
-            clearTimeout(timeoutId);
-
-            if (!response.ok) continue;
-
-            let data;
-            if (proxy.isDirect) {
-                const text = await response.text();
-                try { data = JSON.parse(text); } catch { continue; }
-            } else {
-                const raw = await response.json();
-                if (!raw.contents) continue;
-                try { data = JSON.parse(raw.contents); } catch { continue; }
-            }
-
-            // 차트 API 응답 구조 파싱 (v8)
-            const result = data?.chart?.result?.[0];
-            if (result && result.meta) {
-                const meta = result.meta;
-                // 장중 가격 또는 종가 가져오기
-                const price = meta.regularMarketPrice || meta.chartPreviousClose || 0;
-                
-                // 차트 API는 기업명(shortName)을 주지 않을 수 있으므로, 
-                // 이름이 필요하다면 기존 이름을 유지하거나 티커를 임시로 사용
-                const name = meta.symbol || ticker; 
-                
-                if (price > 0) return { price, name };
-            }
-        } catch (e) {
-            // 실패 시 다음 프록시 시도
-            continue;
-        }
-    }
-    return null; // 모든 시도 실패
-}
-
-// Backup Fetch Logic (Deprecated but kept for reference if needed)
-async function refreshPricesBackup(symbols) {
-    // ... (This function is no longer used by the new logic but kept to avoid ReferenceError if called elsewhere, though we removed calls)
-}
-
-function updateHoldingsWithQuotes(quotes) {
-   // ... (Similar, no longer primary)
 }
 
 if (refreshPricesBtn) {
@@ -291,22 +275,17 @@ window.validateTicker = async (index, symbol) => {
         return;
     }
 
+    // Chart API 활용한 검증
     try {
-        const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
+        const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`;
+        const data = await fetchWithProxies(targetUrl, 5000);
         
-        const response = await fetch(proxyUrl);
-        if (!response.ok) return; // Silent fail
-
-        const rawData = await response.json();
-        const data = JSON.parse(rawData.contents);
-        const quote = data.quoteResponse?.result?.[0];
-
-        if (quote) {
-            holdings[index].name = quote.shortName || quote.longName || symbol;
-            // Optional: Auto-fill price if 0
-            if (holdings[index].price === 0 && quote.regularMarketPrice) {
-                holdings[index].price = quote.regularMarketPrice;
+        const result = data?.chart?.result?.[0];
+        if (result && result.meta) {
+            holdings[index].name = result.meta.symbol || symbol;
+            const price = result.meta.regularMarketPrice || result.meta.chartPreviousClose;
+            if (holdings[index].price === 0 && price) {
+                holdings[index].price = price;
             }
         } else {
             holdings[index].name = "❌ 종목 확인 불가";
@@ -562,23 +541,17 @@ if (tickerSearchInput) {
     });
 }
 
+// Search Logic (Updated to use fetchWithProxies)
 async function performSearch(query) {
     searchResultsContainer.classList.remove('hidden');
     searchResults.innerHTML = '<li class="text-center py-4 text-slate-400 text-sm">검색 중...</li>';
 
     try {
-        const targetUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=10&newsCount=0`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
-
         console.log("Searching for:", query);
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("네트워크 응답 에러");
+        const targetUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=10&newsCount=0`;
         
-        const rawData = await response.json();
-        if (!rawData || !rawData.contents) throw new Error("데이터를 가져올 수 없습니다.");
-
-        const data = JSON.parse(rawData.contents);
-        console.log("Search results data:", data);
+        const data = await fetchWithProxies(targetUrl, 8000);
+        console.log("Search results:", data);
 
         const quotes = data.quotes || [];
         
@@ -589,7 +562,6 @@ async function performSearch(query) {
 
         searchResults.innerHTML = '';
         quotes.forEach(quote => {
-            // symbol이 없거나 유효하지 않은 결과는 제외
             if (!quote.symbol) return;
             
             const li = document.createElement('li');
@@ -617,71 +589,41 @@ async function performSearch(query) {
             li.onclick = async (e) => {
                 const btn = li.querySelector('.add-btn');
                 if (btn.disabled) return;
-                
-                // 즉각적인 피드백 제공
                 btn.disabled = true;
-                btn.innerHTML = '<span>⏳ 처리 중...</span>';
-                btn.classList.add('opacity-70', 'cursor-not-allowed');
-                
+                btn.innerHTML = '<span>⏳...</span>';
                 await addAssetFromSearch(quote);
             };
             searchResults.appendChild(li);
         });
     } catch (e) {
-        console.error("Search error detail:", e);
-        searchResults.innerHTML = `<li class="text-center py-4 text-red-400 text-sm">오류: ${e.message}</li>`;
+        console.error("Search error:", e);
+        searchResults.innerHTML = `<li class="text-center py-4 text-red-400 text-sm">오류: 네트워크 연결 실패<br><span class="text-xs text-slate-400">잠시 후 다시 시도해주세요.</span></li>`;
     }
 }
 
+// Add Asset Logic (Updated to use fetchWithProxies and Chart API)
 async function addAssetFromSearch(quote) {
     if (!quote || !quote.symbol) return;
 
-    // Check if already exists
     const exists = holdings.find(h => h.ticker.toUpperCase() === quote.symbol.toUpperCase());
     if (exists) {
         alert(`'${quote.symbol}'은(는) 이미 목록에 있습니다.`);
+        tickerSearchInput.value = '';
+        searchResultsContainer.classList.add('hidden');
         return;
     }
 
-    // Try to get initial price with stability (Multi-Proxy)
     let price = 0;
     try {
-        const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(quote.symbol)}`;
-        const proxies = [
-            { url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`, isDirect: false },
-            { url: `https://thingproxy.freeboard.io/fetch/${targetUrl}`, isDirect: true }
-        ];
-
-        for (const proxy of proxies) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000);
-                
-                const response = await fetch(proxy.url, { signal: controller.signal });
-                clearTimeout(timeoutId);
-
-                if (!response.ok) continue;
-
-                let data;
-                if (proxy.isDirect) {
-                    const text = await response.text();
-                    try { data = JSON.parse(text); } catch { continue; }
-                } else {
-                    const raw = await response.json();
-                    if (raw.contents) data = JSON.parse(raw.contents);
-                }
-
-                const result = data?.quoteResponse?.result?.[0] || data?.finance?.result?.[0];
-                if (result) {
-                    price = result.regularMarketPrice || result.postMarketPrice || result.preMarketPrice || result.bid || 0;
-                    if (price > 0) break;
-                }
-            } catch (e) {
-                // Ignore and try next
-            }
+        const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(quote.symbol)}?interval=1d&range=1d`;
+        const data = await fetchWithProxies(targetUrl, 6000);
+        
+        const result = data?.chart?.result?.[0];
+        if (result && result.meta) {
+            price = result.meta.regularMarketPrice || result.meta.chartPreviousClose || 0;
         }
     } catch (e) {
-        console.warn("Initial price fetch failed for", quote.symbol, e.message);
+        console.warn("Initial price fetch failed:", e);
     }
 
     const newAsset = {
@@ -694,12 +636,10 @@ async function addAssetFromSearch(quote) {
 
     holdings.push(newAsset);
     
-    // UI Update
     tickerSearchInput.value = '';
     searchResultsContainer.classList.add('hidden');
     renderAssetList();
     
-    // Highlight the new row
     setTimeout(() => {
         const rows = assetListBody.querySelectorAll('tr');
         const lastRow = rows[rows.length - 1];
@@ -713,5 +653,6 @@ async function addAssetFromSearch(quote) {
     }, 100);
 }
 
-// Initial render
+// Initial render for default data (before login)
+// The Auth listener will handle the actual data loading
 renderAssetList();
