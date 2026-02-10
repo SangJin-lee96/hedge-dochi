@@ -46,6 +46,66 @@ const appContent = document.getElementById('appContent');
 const assetListBody = document.getElementById('assetListBody');
 const addAssetBtn = document.getElementById('addAssetBtn');
 const saveBtn = document.getElementById('saveBtn');
+const refreshPricesBtn = document.getElementById('refreshPricesBtn');
+const refreshIcon = document.getElementById('refreshIcon');
+
+// Batch Price Fetching (Senior Optimizer Approach)
+async function refreshAllPrices() {
+    const validTickers = holdings
+        .map(h => h.ticker.trim().toUpperCase())
+        .filter(t => t && !['CASH', 'USD', 'KRW', '현금'].includes(t));
+
+    if (validTickers.length === 0) {
+        alert("시세를 불러올 유효한 종목(Ticker)이 없습니다.");
+        return;
+    }
+
+    // UI Feedback: Start Loading
+    refreshPricesBtn.disabled = true;
+    refreshIcon.classList.add('animate-spin', 'inline-block');
+    refreshPricesBtn.classList.add('opacity-50');
+
+    try {
+        const symbols = validTickers.join(',');
+        // Using AllOrigins CORS Proxy + Yahoo Finance Public API
+        const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("네트워크 응답에 문제가 있습니다.");
+        
+        const rawData = await response.json();
+        const data = JSON.parse(rawData.contents);
+        const quotes = data.quoteResponse.result;
+
+        if (!quotes || quotes.length === 0) throw new Error("시세 정보를 찾을 수 없습니다.");
+
+        // Update holdings with new prices
+        let updatedCount = 0;
+        quotes.forEach(quote => {
+            const index = holdings.findIndex(h => h.ticker.toUpperCase() === quote.symbol.toUpperCase());
+            if (index !== -1) {
+                holdings[index].price = quote.regularMarketPrice;
+                updatedCount++;
+            }
+        });
+
+        alert(`${updatedCount}개 종목의 실시간 시세가 업데이트되었습니다. 📈`);
+        renderAssetList();
+    } catch (error) {
+        console.error("Price fetch error:", error);
+        alert("시세를 가져오지 못했습니다. 잠시 후 다시 시도해주세요. (원인: " + error.message + ")");
+    } finally {
+        // UI Feedback: Stop Loading
+        refreshPricesBtn.disabled = false;
+        refreshIcon.classList.remove('animate-spin');
+        refreshPricesBtn.classList.remove('opacity-50');
+    }
+}
+
+if (refreshPricesBtn) {
+    refreshPricesBtn.addEventListener('click', refreshAllPrices);
+}
 
 // Auth Logic
 const provider = new GoogleAuthProvider();
