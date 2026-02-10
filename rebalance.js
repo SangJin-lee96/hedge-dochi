@@ -75,9 +75,6 @@ async function refreshAllPrices() {
             `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}&_=${timestamp}`
         ];
         
-        // 가용한 프록시 서버 목록 (순차 시도)
-        const proxies = [
-            { name: 'Primary-Proxy', getUrl: (target) => `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`, isDirect: false },
         // 가용한 프록시 서버 목록 (안정성 최우선)
         const proxies = [
             // AllOrigins: 느리지만 가장 안정적 (타임아웃 25초)
