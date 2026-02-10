@@ -356,6 +356,55 @@ function updateCalculation() {
     }
 
     updateCharts(sectorStats, currentTotalValue);
+    updateSimulationChart();
+}
+
+function updateSimulationChart() {
+    const ctx = document.getElementById('simulationChart');
+    if (!ctx) return;
+    
+    let totalValue = holdings.reduce((sum, h) => sum + (h.qty * h.price), 0) || 10000;
+    const years = Array.from({length: 11}, (_, i) => i);
+    const inflationRate = 0.025;
+    const currentReturn = 0.06; // 현재 포트폴리오 예상 수익률 (가정)
+    
+    const currentData = years.map(y => Math.round(totalValue * Math.pow(1 + currentReturn, y)));
+    const realData = years.map(y => Math.round(totalValue * Math.pow(1 + currentReturn - inflationRate, y)));
+    
+    // 도치 성향별 목표 수익률
+    const returnPresets = { aggressive: 0.12, balanced: 0.07, defensive: 0.04 };
+    let targetReturn = currentDochiStyle ? returnPresets[currentDochiStyle] : 0.07;
+    const recommendedData = years.map(y => Math.round(totalValue * Math.pow(1 + targetReturn, y)));
+
+    if (simulationChartInstance) simulationChartInstance.destroy();
+    
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const tickColor = isDarkMode ? '#94a3b8' : '#64748b';
+    
+    simulationChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { 
+            labels: years.map(y => `${y}년후`), 
+            datasets: [
+                { label: '현재 경로', data: currentData, borderColor: '#94a3b8', borderDash: [5,5], pointRadius: 0 }, 
+                { label: '실질 가치(물가반영)', data: realData, borderColor: '#f59e0b', borderDash: [2,2], borderWidth: 1, pointRadius: 0 }, 
+                { label: '도치 추천 경로', data: recommendedData, borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', pointRadius: 0 }
+            ] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            interaction: { intersect: false, mode: 'index' },
+            scales: { 
+                y: { 
+                    ticks: { color: tickColor, callback: v => '$' + (v/1000).toFixed(0) + 'k' }, 
+                    grid: { color: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' } 
+                }, 
+                x: { ticks: { color: tickColor }, grid: { display: false } } 
+            }, 
+            plugins: { legend: { labels: { color: tickColor, font: { family: 'Pretendard' } } } } 
+        }
+    });
 }
 
 function updateCharts(sectorStats, totalValue) {
