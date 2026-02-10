@@ -62,31 +62,37 @@ async function refreshAllPrices() {
 
     // UI Feedback: Start Loading
     refreshPricesBtn.disabled = true;
-    refreshIcon.classList.add('animate-spin', 'inline-block');
+    if (refreshIcon) refreshIcon.classList.add('animate-spin', 'inline-block');
     refreshPricesBtn.classList.add('opacity-50');
 
     try {
         const symbols = validTickers.join(',');
-        const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
+        // 유효한 URL 파라미터를 위해 다시 한번 인코딩
+        const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
 
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("프록시 서버 응답 에러");
+        console.log("Refreshing prices for:", symbols);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
+
+        const response = await fetch(proxyUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error(`프록시 서버 응답 에러 (${response.status})`);
         
         const rawData = await response.json();
-        if (!rawData.contents) throw new Error("응답 데이터가 비어있습니다.");
+        if (!rawData || !rawData.contents) throw new Error("응답 데이터가 비어있습니다.");
 
         const data = JSON.parse(rawData.contents);
         
-        // 데이터 구조 검증 (핵심 수정 부분)
-        if (!data || !data.quoteResponse) {
-            console.error("Yahoo API Error Structure:", data);
+        if (!data || !data.quoteResponse || !data.quoteResponse.result) {
             throw new Error("Yahoo Finance 응답 형식이 올바르지 않습니다.");
         }
 
         const quotes = data.quoteResponse.result;
-        if (!quotes || !Array.isArray(quotes) || quotes.length === 0) {
-            throw new Error("입력하신 티커 정보를 찾을 수 없습니다. (미국 주식 티커 기준)");
+        if (quotes.length === 0) {
+            throw new Error("종목 정보를 찾을 수 없습니다.");
         }
 
         // Update holdings with new prices
@@ -94,24 +100,34 @@ async function refreshAllPrices() {
         quotes.forEach(quote => {
             const index = holdings.findIndex(h => h.ticker.toUpperCase() === quote.symbol.toUpperCase());
             if (index !== -1) {
-                // 야후 파이낸스 가격 정보 필드 확인 (regularMarketPrice 또는 postMarketPrice)
                 const newPrice = quote.regularMarketPrice || quote.postMarketPrice || quote.bid || quote.ask;
                 if (newPrice) {
                     holdings[index].price = newPrice;
+                    // 이름이 없는 경우 여기서 업데이트
+                    if (!holdings[index].name) {
+                        holdings[index].name = quote.shortName || quote.longName;
+                    }
                     updatedCount++;
                 }
             }
         });
 
-        alert(`${updatedCount}개 종목의 실시간 시세가 업데이트되었습니다. 📈`);
+        console.log(`Successfully updated ${updatedCount} prices.`);
         renderAssetList();
+        if (updatedCount > 0) {
+            alert(`${updatedCount}개 종목의 실시간 시세가 업데이트되었습니다. 📈`);
+        }
     } catch (error) {
         console.error("Price fetch error detail:", error);
-        alert("시세를 가져오지 못했습니다. 원인: " + error.message + "\n\n(참고: 'AAPL' 같은 미국 티커 위주로 작동하며, 국내 주식은 '005930.KS' 형태로 입력해야 합니다.)");
+        let msg = "시세를 가져오지 못했습니다.";
+        if (error.name === 'AbortError') msg += " (요청 시간 초과)";
+        else msg += " 원인: " + (error.message === "Failed to fetch" ? "네트워크 연결 또는 프록시 서버 이슈" : error.message);
+        
+        alert(msg + "\n\n(참고: 잠시 후 다시 시도하거나, 미국 주식 티커인 경우 올바른지 확인해주세요.)");
     } finally {
         // UI Feedback: Stop Loading
         refreshPricesBtn.disabled = false;
-        refreshIcon.classList.remove('animate-spin');
+        if (refreshIcon) refreshIcon.classList.remove('animate-spin');
         refreshPricesBtn.classList.remove('opacity-50');
     }
 }
@@ -545,14 +561,21 @@ async function performSearch(query) {
                         <div class="text-sm text-slate-600 dark:text-slate-300 truncate">${name}</div>
                         <div class="text-[10px] text-slate-400">${type}</div>
                     </div>
-                    <button class="shrink-0 bg-blue-600 text-white dark:bg-blue-600 dark:text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all hover:bg-blue-700">
+                    <button class="add-btn shrink-0 bg-blue-600 text-white dark:bg-blue-600 dark:text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all hover:bg-blue-700">
                         + 추가
                     </button>
                 </div>
             `;
-            li.onclick = (e) => {
-                e.preventDefault();
-                addAssetFromSearch(quote);
+            li.onclick = async (e) => {
+                const btn = li.querySelector('.add-btn');
+                if (btn.disabled) return;
+                
+                // 즉각적인 피드백 제공
+                btn.disabled = true;
+                btn.innerHTML = '<span>⏳ 처리 중...</span>';
+                btn.classList.add('opacity-70', 'cursor-not-allowed');
+                
+                await addAssetFromSearch(quote);
             };
             searchResults.appendChild(li);
         });
@@ -572,22 +595,31 @@ async function addAssetFromSearch(quote) {
         return;
     }
 
-    // Try to get initial price
+    // Try to get initial price with stability
     let price = 0;
     try {
-        const priceUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${quote.symbol}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(priceUrl)}&timestamp=${Date.now()}`;
-        const response = await fetch(proxyUrl);
+        const priceUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(quote.symbol)}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(priceUrl)}`;
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5초 타임아웃
+
+        const response = await fetch(proxyUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
         if (response.ok) {
             const rawData = await response.json();
-            const data = JSON.parse(rawData.contents);
-            const result = data.quoteResponse?.result?.[0];
-            if (result) {
-                price = result.regularMarketPrice || result.postMarketPrice || result.bid || 0;
+            if (rawData.contents) {
+                const data = JSON.parse(rawData.contents);
+                const result = data.quoteResponse?.result?.[0];
+                if (result) {
+                    price = result.regularMarketPrice || result.postMarketPrice || result.bid || 0;
+                }
             }
         }
     } catch (e) {
-        console.warn("Initial price fetch failed for", quote.symbol);
+        console.warn("Initial price fetch failed for", quote.symbol, e.message);
+        // 시세를 못 가져와도 종목은 추가될 수 있도록 함
     }
 
     const newAsset = {
