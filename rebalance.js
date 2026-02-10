@@ -269,9 +269,6 @@ function renderAssetList() {
                         <input type="text" placeholder="예: AAPL" value="${item.ticker}" class="w-full min-w-[60px] bg-transparent border-b border-transparent focus:border-blue-500 outline-none font-bold text-slate-700 dark:text-slate-200 uppercase" 
                             onchange="updateHolding(${index}, 'ticker', this.value)"
                             onblur="validateTicker(${index}, this.value)">
-                        <button onclick="openPriceSearch(${index})" class="text-slate-400 hover:text-blue-500 transition-colors p-1" title="구글 시세 검색">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </button>
                     </div>
                     ${assetName}
                 </div>
@@ -480,6 +477,109 @@ function updateChart(labels, currentData, targetData) {
     });
 }
 
-// Initial render for default data (before login)
-// The Auth listener will handle the actual data loading
+// Ticker Search Logic
+const tickerSearchInput = document.getElementById('tickerSearchInput');
+const searchResultsContainer = document.getElementById('searchResultsContainer');
+const searchResults = document.getElementById('searchResults');
+
+let searchTimeout = null;
+
+if (tickerSearchInput) {
+    tickerSearchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        clearTimeout(searchTimeout);
+        
+        if (query.length < 2) {
+            searchResultsContainer.classList.add('hidden');
+            return;
+        }
+
+        searchTimeout = setTimeout(() => performSearch(query), 500);
+    });
+}
+
+async function performSearch(query) {
+    searchResultsContainer.classList.remove('hidden');
+    searchResults.innerHTML = '<li class="text-center py-4 text-slate-400 text-sm">검색 중...</li>';
+
+    try {
+        const targetUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=10&newsCount=0`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
+
+        const response = await fetch(proxyUrl);
+        const rawData = await response.json();
+        const data = JSON.parse(rawData.contents);
+
+        if (!data.quotes || data.quotes.length === 0) {
+            searchResults.innerHTML = '<li class="text-center py-4 text-slate-400 text-sm">검색 결과가 없습니다.</li>';
+            return;
+        }
+
+        searchResults.innerHTML = '';
+        data.quotes.forEach(quote => {
+            if (!quote.symbol) return;
+            
+            const li = document.createElement('li');
+            li.className = "p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-blue-200 dark:hover:border-blue-900 group";
+            li.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="font-bold text-blue-600 dark:text-blue-400 group-hover:underline">${quote.symbol}</span>
+                        <span class="text-sm text-slate-600 dark:text-slate-300 ml-2">${quote.shortname || quote.longname || ''}</span>
+                        <div class="text-[10px] text-slate-400">${quote.exchange} · ${quote.quoteType}</div>
+                    </div>
+                    <button class="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-3 py-1 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                        + 추가
+                    </button>
+                </div>
+            `;
+            li.onclick = () => addAssetFromSearch(quote);
+            searchResults.appendChild(li);
+        });
+    } catch (e) {
+        console.error("Search error:", e);
+        searchResults.innerHTML = '<li class="text-center py-4 text-red-400 text-sm">검색 중 오류가 발생했습니다.</li>';
+    }
+}
+
+async function addAssetFromSearch(quote) {
+    // Check if already exists
+    if (holdings.find(h => h.ticker === quote.symbol)) {
+        alert("이미 포트폴리오에 있는 종목입니다.");
+        return;
+    }
+
+    // Try to get price
+    let price = 0;
+    try {
+        const priceUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${quote.symbol}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(priceUrl)}&timestamp=${Date.now()}`;
+        const response = await fetch(proxyUrl);
+        const rawData = await response.json();
+        const data = JSON.parse(rawData.contents);
+        const result = data.quoteResponse?.result?.[0];
+        if (result) {
+            price = result.regularMarketPrice || result.postMarketPrice || 0;
+        }
+    } catch (e) {
+        console.warn("Could not fetch initial price");
+    }
+
+    holdings.push({
+        ticker: quote.symbol,
+        name: quote.shortname || quote.longname || '',
+        qty: 0,
+        price: price,
+        targetPercent: 0
+    });
+
+    tickerSearchInput.value = '';
+    searchResultsContainer.classList.add('hidden');
+    renderAssetList();
+    
+    // Smooth scroll to table
+    document.getElementById('assetListBody').lastElementChild.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Initial render
 renderAssetList();
