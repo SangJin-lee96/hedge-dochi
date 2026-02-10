@@ -84,28 +84,47 @@ async function refreshAllPrices() {
         const rawData = await response.json();
         if (!rawData || !rawData.contents) throw new Error("응답 데이터가 비어있습니다.");
 
-        const data = JSON.parse(rawData.contents);
+        let data;
+        try {
+            data = JSON.parse(rawData.contents);
+        } catch (e) {
+            console.error("JSON Parse Error:", rawData.contents);
+            throw new Error("데이터 형식이 JSON이 아닙니다.");
+        }
         
-        if (!data || !data.quoteResponse || !data.quoteResponse.result) {
-            throw new Error("Yahoo Finance 응답 형식이 올바르지 않습니다.");
+        console.log("Raw Yahoo Data:", data);
+
+        // 다양한 경로에서 result 배열 탐색 (유연한 구조 대응)
+        const quotes = data?.quoteResponse?.result || data?.finance?.result || (Array.isArray(data) ? data : null);
+        
+        if (!quotes || !Array.isArray(quotes)) {
+            console.error("Unexpected Data Structure:", data);
+            throw new Error("Yahoo Finance 응답에서 종목 정보를 찾을 수 없습니다.");
         }
 
-        const quotes = data.quoteResponse.result;
         if (quotes.length === 0) {
-            throw new Error("종목 정보를 찾을 수 없습니다.");
+            throw new Error("검색된 종목 정보가 0건입니다.");
         }
 
         // Update holdings with new prices
         let updatedCount = 0;
         quotes.forEach(quote => {
+            if (!quote || !quote.symbol) return;
+            
             const index = holdings.findIndex(h => h.ticker.toUpperCase() === quote.symbol.toUpperCase());
             if (index !== -1) {
-                const newPrice = quote.regularMarketPrice || quote.postMarketPrice || quote.bid || quote.ask;
+                // 가능한 모든 가격 필드 체크
+                const newPrice = quote.regularMarketPrice || 
+                                 quote.postMarketPrice || 
+                                 quote.preMarketPrice || 
+                                 quote.bid || 
+                                 quote.ask;
+                
                 if (newPrice) {
                     holdings[index].price = newPrice;
-                    // 이름이 없는 경우 여기서 업데이트
-                    if (!holdings[index].name) {
-                        holdings[index].name = quote.shortName || quote.longName;
+                    // 이름 업데이트 (없을 경우)
+                    if (!holdings[index].name || holdings[index].name.includes('❌')) {
+                        holdings[index].name = quote.shortName || quote.longName || quote.symbol;
                     }
                     updatedCount++;
                 }
@@ -611,9 +630,9 @@ async function addAssetFromSearch(quote) {
             const rawData = await response.json();
             if (rawData.contents) {
                 const data = JSON.parse(rawData.contents);
-                const result = data.quoteResponse?.result?.[0];
+                const result = data?.quoteResponse?.result?.[0] || data?.finance?.result?.[0];
                 if (result) {
-                    price = result.regularMarketPrice || result.postMarketPrice || result.bid || 0;
+                    price = result.regularMarketPrice || result.postMarketPrice || result.preMarketPrice || result.bid || 0;
                 }
             }
         }
