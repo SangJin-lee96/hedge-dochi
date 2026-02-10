@@ -142,31 +142,52 @@ saveBtn.addEventListener('click', () => savePortfolio());
 
 // UI & Calculation Logic
 addAssetBtn.addEventListener('click', () => {
-    holdings.push({ ticker: "New Asset", qty: 0, price: 0, targetPercent: 0 });
+    holdings.push({ ticker: "", qty: 0, price: 0, targetPercent: 0 });
     renderAssetList();
 });
+
+// Helper: Open Price Search
+window.openPriceSearch = (index) => {
+    const ticker = holdings[index].ticker;
+    if (!ticker) {
+        alert("종목명(Ticker)을 먼저 입력해주세요.");
+        return;
+    }
+    const query = encodeURIComponent(`${ticker} stock price`);
+    window.open(`https://www.google.com/search?q=${query}`, '_blank');
+};
 
 function renderAssetList() {
     assetListBody.innerHTML = '';
     holdings.forEach((item, index) => {
         const tr = document.createElement('tr');
-        tr.className = "border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors";
+        tr.className = "border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group";
         
         tr.innerHTML = `
-            <td class="py-3 px-2">
-                <input type="text" value="${item.ticker}" class="w-full bg-transparent border-b border-transparent focus:border-blue-500 outline-none font-bold text-slate-700 dark:text-slate-200" onchange="updateHolding(${index}, 'ticker', this.value)">
+            <td class="py-3 px-2 align-middle">
+                <div class="flex items-center gap-1">
+                    <input type="text" placeholder="예: AAPL" value="${item.ticker}" class="w-full min-w-[60px] bg-transparent border-b border-transparent focus:border-blue-500 outline-none font-bold text-slate-700 dark:text-slate-200 uppercase" onchange="updateHolding(${index}, 'ticker', this.value)">
+                    <button onclick="openPriceSearch(${index})" class="text-slate-400 hover:text-blue-500 transition-colors p-1" title="구글 시세 검색">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </button>
+                </div>
             </td>
-            <td class="py-3 px-2">
-                <input type="number" value="${item.qty}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'qty', this.value)">
+            <td class="py-3 px-2 align-middle">
+                <input type="number" placeholder="0" value="${item.qty}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'qty', this.value)">
             </td>
-            <td class="py-3 px-2">
-                <input type="number" value="${item.price}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'price', this.value)">
+            <td class="py-3 px-2 align-middle">
+                <input type="number" placeholder="0" value="${item.price}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none" onchange="updateHolding(${index}, 'price', this.value)">
             </td>
-            <td class="py-3 px-2">
-                <input type="number" value="${item.targetPercent}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none font-semibold text-blue-600 dark:text-blue-400" onchange="updateHolding(${index}, 'targetPercent', this.value)">
+            <td class="py-3 px-2 align-middle">
+                <div class="relative">
+                    <input type="number" placeholder="0" value="${item.targetPercent}" class="w-full bg-transparent text-right border-b border-transparent focus:border-blue-500 outline-none font-semibold text-blue-600 dark:text-blue-400" onchange="updateHolding(${index}, 'targetPercent', this.value)">
+                    <span class="absolute right-[-10px] top-1/2 -translate-y-1/2 text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">%</span>
+                </div>
             </td>
-            <td class="py-3 px-2 text-center">
-                <button onclick="removeAsset(${index})" class="text-slate-400 hover:text-red-500 transition-colors">🗑️</button>
+            <td class="py-3 px-2 text-center align-middle">
+                <button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
             </td>
         `;
         assetListBody.appendChild(tr);
@@ -178,14 +199,16 @@ window.updateHolding = (index, field, value) => {
     if (field === 'qty' || field === 'price' || field === 'targetPercent') {
         holdings[index][field] = parseFloat(value) || 0;
     } else {
-        holdings[index][field] = value;
+        holdings[index][field] = value.toUpperCase(); // Ticker uppercase
     }
     updateCalculation();
 };
 
 window.removeAsset = (index) => {
-    holdings.splice(index, 1);
-    renderAssetList();
+    if(confirm('정말 이 종목을 삭제하시겠습니까?')) {
+        holdings.splice(index, 1);
+        renderAssetList();
+    }
 };
 
 function updateCalculation() {
@@ -198,11 +221,19 @@ function updateCalculation() {
         totalTargetPercent += item.targetPercent;
     });
 
-    // 2. Update Summary UI
+    // 2. Update Summary UI & Target Percent Feedback
     document.getElementById('totalValueDisplay').innerText = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    
     const totalPercentDisplay = document.getElementById('totalPercentDisplay');
-    totalPercentDisplay.innerText = `현재 목표 비중 합계: ${totalTargetPercent.toFixed(1)}%`;
-    totalPercentDisplay.style.color = Math.abs(totalTargetPercent - 100) < 0.1 ? '#2563eb' : '#ef4444'; // Blue if 100%, Red otherwise
+    const diffPercent = 100 - totalTargetPercent;
+    
+    if (Math.abs(diffPercent) < 0.1) {
+        totalPercentDisplay.innerHTML = `<span class="text-emerald-500">✨ 목표 비중 합계: 100% (완벽함)</span>`;
+    } else if (diffPercent > 0) {
+        totalPercentDisplay.innerHTML = `<span class="text-amber-500 font-bold">⚠️ 목표 비중 합계: ${totalTargetPercent.toFixed(1)}% (${diffPercent.toFixed(1)}% 부족)</span>`;
+    } else {
+        totalPercentDisplay.innerHTML = `<span class="text-red-500 font-bold">🚫 목표 비중 합계: ${totalTargetPercent.toFixed(1)}% (${Math.abs(diffPercent).toFixed(1)}% 초과)</span>`;
+    }
 
     // 3. Calculate Rebalancing Actions
     const actionPlanList = document.getElementById('actionPlanList');
@@ -223,7 +254,7 @@ function updateCalculation() {
         const diffVal = targetVal - currentVal;
         
         // Chart Data
-        chartLabels.push(item.ticker);
+        chartLabels.push(item.ticker || 'No Name');
         currentWeights.push((currentWeight * 100).toFixed(1));
         targetWeights.push(item.targetPercent);
 
@@ -234,30 +265,39 @@ function updateCalculation() {
             if (deviation > THRESHOLD) {
                 isBalanced = false;
                 const actionDiv = document.createElement('div');
-                actionDiv.className = "flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm";
+                actionDiv.className = "flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all hover:shadow-md " + 
+                    (diffVal > 0 ? "bg-red-50/50 border-red-100 dark:bg-red-900/10 dark:border-red-900/30" : "bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/30");
                 
-                let actionText = "";
-                let badgeClass = "";
+                let actionBadge = "";
+                let actionDetail = "";
                 
                 if (diffVal > 0) {
                     // Buy
                     const buyQty = item.price > 0 ? (diffVal / item.price).toFixed(2) : 0;
-                    actionText = `<span class="font-bold text-red-500">매수 (BUY)</span> <span class="text-sm ml-2">약 ${buyQty}주 ($${diffVal.toLocaleString(undefined, {maximumFractionDigits:0})})</span>`;
-                    badgeClass = "bg-red-50 text-red-600 border-red-100";
+                    actionBadge = `<span class="inline-block px-3 py-1 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 font-black text-sm">매수 (BUY)</span>`;
+                    actionDetail = `<span class="text-red-600 dark:text-red-400 font-bold text-lg">+${buyQty}주</span> <span class="text-xs text-slate-500">($${diffVal.toLocaleString(undefined, {maximumFractionDigits:0})})</span>`;
                 } else {
                     // Sell
                     const sellQty = item.price > 0 ? (Math.abs(diffVal) / item.price).toFixed(2) : 0;
-                    actionText = `<span class="font-bold text-blue-500">매도 (SELL)</span> <span class="text-sm ml-2">약 ${sellQty}주 ($${Math.abs(diffVal).toLocaleString(undefined, {maximumFractionDigits:0})})</span>`;
-                    badgeClass = "bg-blue-50 text-blue-600 border-blue-100";
+                    actionBadge = `<span class="inline-block px-3 py-1 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 font-black text-sm">매도 (SELL)</span>`;
+                    actionDetail = `<span class="text-blue-600 dark:text-blue-400 font-bold text-lg">-${sellQty}주</span> <span class="text-xs text-slate-500">($${Math.abs(diffVal).toLocaleString(undefined, {maximumFractionDigits:0})})</span>`;
                 }
 
                 actionDiv.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <span class="font-bold text-slate-700 dark:text-slate-200">${item.ticker}</span>
-                        <span class="text-xs px-2 py-1 rounded-full ${badgeClass} font-bold">${(currentWeight*100).toFixed(1)}% → ${item.targetPercent}%</span>
+                    <div class="flex items-center gap-3 mb-2 sm:mb-0">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-slate-600 bg-white shadow-sm border border-slate-100 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600">
+                            ${item.ticker.substring(0,2).toUpperCase()}
+                        </div>
+                        <div>
+                            <span class="block font-bold text-slate-800 dark:text-slate-100">${item.ticker}</span>
+                            <span class="text-xs text-slate-500">목표: ${item.targetPercent}% (현재: ${(currentWeight*100).toFixed(1)}%)</span>
+                        </div>
                     </div>
-                    <div class="text-right">
-                        ${actionText}
+                    <div class="text-right flex items-center gap-4 justify-between sm:justify-end w-full sm:w-auto">
+                        ${actionBadge}
+                        <div class="text-right">
+                            ${actionDetail}
+                        </div>
                     </div>
                 `;
                 actionPlanList.appendChild(actionDiv);
@@ -267,18 +307,19 @@ function updateCalculation() {
 
     if (isBalanced) {
         actionPlanList.innerHTML = `
-            <div class="text-center py-6 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-                <p class="font-bold mb-1">🎉 완벽합니다!</p>
-                <p class="text-sm">리밸런싱이 필요하지 않습니다.</p>
+            <div class="flex flex-col items-center justify-center py-10 text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+                <span class="text-4xl mb-2">🎉</span>
+                <p class="font-bold text-lg text-slate-600 dark:text-slate-300">포트폴리오가 완벽합니다!</p>
+                <p class="text-sm">현재 리밸런싱이 필요하지 않습니다.</p>
             </div>
         `;
         document.getElementById('statusIcon').innerText = "✅";
         document.getElementById('statusTitle').innerText = "상태 양호";
         document.getElementById('statusDesc').innerText = "현재 포트폴리오 비율이 목표와 일치합니다.";
     } else {
-        document.getElementById('statusIcon').innerText = "⚠️";
-        document.getElementById('statusTitle').innerText = "조정 필요";
-        document.getElementById('statusDesc').innerText = "일부 자산이 목표 비율을 벗어났습니다.";
+        document.getElementById('statusIcon').innerText = "⚡️";
+        document.getElementById('statusTitle').innerText = "리밸런싱 필요";
+        document.getElementById('statusDesc').innerText = "목표 비중과 차이가 발생했습니다.";
     }
 
     updateChart(chartLabels, currentWeights, targetWeights);
