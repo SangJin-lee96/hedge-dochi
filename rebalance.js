@@ -67,14 +67,14 @@ async function refreshAllPrices() {
 
     try {
         const symbols = validTickers.join(',');
-        // 유효한 URL 파라미터를 위해 다시 한번 인코딩
-        const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}`;
+        // 타겟 URL 자체에 캐시 방지 파라미터 추가
+        const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}&_=${Date.now()}`;
         const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
 
         console.log("Refreshing prices for:", symbols);
         
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
+        const timeoutId = setTimeout(() => controller.abort(), 12000); // 12초로 약간 연장
 
         const response = await fetch(proxyUrl, { signal: controller.signal });
         clearTimeout(timeoutId);
@@ -88,18 +88,33 @@ async function refreshAllPrices() {
         try {
             data = JSON.parse(rawData.contents);
         } catch (e) {
-            console.error("JSON Parse Error:", rawData.contents);
-            throw new Error("데이터 형식이 JSON이 아닙니다.");
+            console.error("JSON Parse Error. Raw content snippet:", rawData.contents.substring(0, 200));
+            throw new Error("Yahoo 응답이 올바른 JSON 형식이 아닙니다.");
         }
         
-        console.log("Raw Yahoo Data:", data);
+        console.log("Full API Response:", data);
 
-        // 다양한 경로에서 result 배열 탐색 (유연한 구조 대응)
-        const quotes = data?.quoteResponse?.result || data?.finance?.result || (Array.isArray(data) ? data : null);
+        // 더 공격적인 데이터 추출 (상태 코드 확인 포함)
+        let quotes = null;
+        if (data.quoteResponse && Array.isArray(data.quoteResponse.result)) {
+            quotes = data.quoteResponse.result;
+        } else if (data.finance && Array.isArray(data.finance.result)) {
+            quotes = data.finance.result;
+        } else if (Array.isArray(data)) {
+            quotes = data;
+        }
+
+        // 에러 정보가 포함되어 있는지 확인
+        const apiError = data?.quoteResponse?.error || data?.finance?.error || data?.error;
+        if (apiError) {
+            console.error("Yahoo API returned an error:", apiError);
+            throw new Error(`Yahoo API 에러: ${apiError.description || apiError.code || "알 수 없는 에러"}`);
+        }
         
         if (!quotes || !Array.isArray(quotes)) {
-            console.error("Unexpected Data Structure:", data);
-            throw new Error("Yahoo Finance 응답에서 종목 정보를 찾을 수 없습니다.");
+            const structure = Object.keys(data).join(', ');
+            console.error("Invalid Structure. Keys found:", structure);
+            throw new Error(`종목 정보를 찾을 수 없습니다. (데이터 구조: ${structure || 'empty'})`);
         }
 
         if (quotes.length === 0) {
