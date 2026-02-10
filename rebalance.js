@@ -194,29 +194,90 @@ async function addAssetFromSearch(quote) {
     tickerSearchInput.value = ''; searchResultsContainer.classList.add('hidden'); renderAssetList();
 }
 
-// Portfolio Presets (Sector-based)
+// Portfolio Presets (Sector-based with Candidates)
 const portfolioPresets = {
     aggressive: {
         name: "공격도치", icon: "🦔🔥", returnRate: 0.12,
         composition: [
-            { sector: "기술성장주 (Tech)", name: "나스닥100 등 혁신 기업", targetPercent: 70 },
-            { sector: "시장지수 (Equity)", name: "S&P 500 등 대형주", targetPercent: 30 }
+            { 
+                sector: "기술성장주 (Tech)", 
+                targetPercent: 70,
+                candidates: [
+                    { ticker: "QQQ", name: "Invesco QQQ (나스닥100)" },
+                    { ticker: "VGT", name: "Vanguard IT ETF" },
+                    { ticker: "XLK", name: "Tech Select Sector SPDR" }
+                ]
+            },
+            { 
+                sector: "시장지수 (Equity)", 
+                targetPercent: 30,
+                candidates: [
+                    { ticker: "SPY", name: "SPDR S&P 500" },
+                    { ticker: "VOO", name: "Vanguard S&P 500" },
+                    { ticker: "IVV", name: "iShares Core S&P 500" }
+                ]
+            }
         ]
     },
     balanced: {
         name: "중도도치", icon: "🦔⚖️", returnRate: 0.07,
         composition: [
-            { sector: "시장지수 (Equity)", name: "S&P 500 등 시장 대표주", targetPercent: 50 },
-            { sector: "안전자산 (Bonds)", name: "중단기 국채 및 우량 채권", targetPercent: 40 },
-            { sector: "배당주 (Dividend)", name: "안정적 현금흐름 기업", targetPercent: 10 }
+            { 
+                sector: "시장지수 (Equity)", 
+                targetPercent: 50,
+                candidates: [
+                    { ticker: "SPY", name: "SPDR S&P 500" },
+                    { ticker: "VTI", name: "Total Stock Market" }
+                ]
+            },
+            { 
+                sector: "안전자산 (Bonds)", 
+                targetPercent: 40,
+                candidates: [
+                    { ticker: "BND", name: "Total Bond Market" },
+                    { ticker: "AGG", name: "Core US Aggregate Bond" },
+                    { ticker: "TLT", name: "20+ Year Treasury Bond" }
+                ]
+            },
+            { 
+                sector: "배당주 (Dividend)", 
+                targetPercent: 10,
+                candidates: [
+                    { ticker: "SCHD", name: "US Dividend Equity" },
+                    { ticker: "VYM", name: "High Dividend Yield" },
+                    { ticker: "JEPI", name: "Equity Premium Income" }
+                ]
+            }
         ]
     },
     defensive: {
         name: "수비도치", icon: "🦔🛡️", returnRate: 0.04,
         composition: [
-            { sector: "안전자산 (Bonds/Cash)", name: "단기 국채 및 현금성 자산", targetPercent: 60 },
-            { sector: "원자재 (Gold/Alt)", name: "인플레이션 헷지 자산", targetPercent: 20 },
-            { sector: "시장지수 (Equity)", name: "배당주 및 지수", targetPercent: 20 }
+            { 
+                sector: "안전자산 (Short Bonds)", 
+                targetPercent: 60,
+                candidates: [
+                    { ticker: "SHY", name: "1-3 Year Treasury" },
+                    { ticker: "BIL", name: "1-3 Month T-Bill" },
+                    { ticker: "SGOV", name: "0-3 Month Treasury" }
+                ]
+            },
+            { 
+                sector: "원자재 (Gold)", 
+                targetPercent: 20,
+                candidates: [
+                    { ticker: "GLD", name: "SPDR Gold Shares" },
+                    { ticker: "IAU", name: "iShares Gold Trust" }
+                ]
+            },
+            { 
+                sector: "시장지수 (Equity)", 
+                targetPercent: 20,
+                candidates: [
+                    { ticker: "SPY", name: "SPDR S&P 500" },
+                    { ticker: "DIA", name: "Dow Jones Industrial" }
+                ]
+            }
         ]
     }
 };
@@ -232,49 +293,92 @@ window.selectDochi = (type) => {
     recommendationSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
 
-// 추천 비중 적용 (Sync Logic)
+// 추천 비중 적용 (선택된 종목 기반)
 window.applyRecommendation = () => {
     if (!currentDochiStyle) return;
     const preset = portfolioPresets[currentDochiStyle];
-    if (!confirm(`'${preset.name}'의 추천 비중을 내 자산 목록에 적용하시겠습니까?\n\n없는 섹터(종목)는 자동으로 추가되며, 목표 비중이 일괄 변경됩니다.`)) return;
+    
+    // 선택된 종목 수집
+    const selectedTickers = [];
+    preset.composition.forEach((comp, idx) => {
+        const radios = document.getElementsByName(`rec_radio_${idx}`);
+        let selected = null;
+        for (const radio of radios) {
+            if (radio.checked) {
+                selected = {
+                    ticker: radio.value,
+                    name: radio.dataset.name,
+                    targetPercent: comp.targetPercent
+                };
+                break;
+            }
+        }
+        if (selected) selectedTickers.push(selected);
+    });
+
+    if (selectedTickers.length === 0) return;
+
+    if (!confirm(`선택하신 ${selectedTickers.length}개 대표 종목으로 포트폴리오를 재구성하시겠습니까?\n\n- 기존 목표 비중은 초기화됩니다.\n- 선택한 종목이 목록에 추가됩니다.`)) return;
 
     // 1. Reset targets
     holdings.forEach(h => h.targetPercent = 0);
 
-    // 2. Apply or Add
-    preset.composition.forEach(comp => {
-        // 이름이나 티커로 매칭 시도 (단순 매칭)
-        let asset = holdings.find(h => 
-            h.ticker.toUpperCase() === comp.sector.toUpperCase() || 
-            h.name.includes(comp.sector.split(' ')[0]) // "기술성장주" 등으로 매칭 시도
-        );
+    // 2. Apply Selected Items
+    selectedTickers.forEach(item => {
+        let asset = holdings.find(h => h.ticker.toUpperCase() === item.ticker.toUpperCase());
         
         if (asset) {
-            asset.targetPercent = comp.targetPercent;
+            asset.targetPercent = item.targetPercent;
         } else {
             holdings.push({
-                ticker: comp.sector,
-                name: comp.name,
+                ticker: item.ticker,
+                name: item.name,
                 qty: 0,
-                price: 0,
-                targetPercent: comp.targetPercent
+                price: 0, // Will be fetched via refresh
+                targetPercent: item.targetPercent
             });
         }
     });
+    
     renderAssetList();
+    // 새로 추가된 종목의 시세 자동 업데이트 (선택 사항)
+    setTimeout(() => refreshAllPrices(), 500);
 };
 
 function renderRecommendationList(preset) {
     const totalValue = holdings.reduce((sum, h) => sum + (h.qty * h.price), 0);
     recommendationListBody.innerHTML = '';
-    preset.composition.forEach(comp => {
+    
+    preset.composition.forEach((comp, idx) => {
         const tr = document.createElement('tr');
         tr.className = "border-b border-indigo-100 dark:border-indigo-800/50 hover:bg-white/50 dark:hover:bg-slate-800/50";
+        
         const estAmount = totalValue > 0 ? `$${Math.round(totalValue * comp.targetPercent / 100).toLocaleString()}` : '-';
+
+        // 종목 선택 옵션 생성 (Radio Buttons)
+        let optionsHtml = `<div class="flex flex-wrap gap-2 mt-1">`;
+        comp.candidates.forEach((cand, cIdx) => {
+            const isChecked = cIdx === 0 ? 'checked' : '';
+            optionsHtml += `
+                <label class="inline-flex items-center cursor-pointer bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-700 rounded-lg px-2 py-1 hover:border-indigo-400 transition-colors">
+                    <input type="radio" name="rec_radio_${idx}" value="${cand.ticker}" data-name="${cand.name}" class="form-radio text-indigo-600 h-3 w-3" ${isChecked}>
+                    <span class="ml-1 text-xs font-bold text-slate-700 dark:text-slate-300">${cand.ticker}</span>
+                </label>
+            `;
+        });
+        optionsHtml += `</div>`;
+
         tr.innerHTML = `
-            <td class="py-2 px-2 align-middle"><div class="font-bold text-indigo-900 dark:text-indigo-200">${comp.sector}</div><div class="text-xs text-slate-500">${comp.name}</div></td>
-            <td class="py-2 px-2 align-middle text-right font-bold text-indigo-600 dark:text-indigo-400">${comp.targetPercent}%</td>
-            <td class="py-2 px-2 align-middle text-right text-slate-600 dark:text-slate-300">${estAmount}</td>`;
+            <td class="py-3 px-2 align-middle">
+                <div class="font-bold text-indigo-900 dark:text-indigo-200 text-sm">${comp.sector}</div>
+                ${optionsHtml}
+            </td>
+            <td class="py-3 px-2 align-middle text-right font-bold text-indigo-600 dark:text-indigo-400 text-lg">
+                ${comp.targetPercent}%
+            </td>
+            <td class="py-3 px-2 align-middle text-right text-slate-600 dark:text-slate-300 text-sm">
+                ${estAmount}
+            </td>`;
         recommendationListBody.appendChild(tr);
     });
 }
