@@ -195,14 +195,14 @@ async function addAssetFromSearch(quote) {
 // Portfolio Presets (Sector-based)
 const portfolioPresets = {
     aggressive: {
-        name: "공격도치", returnRate: 0.12,
+        name: "공격도치", icon: "🦔🔥", returnRate: 0.12,
         composition: [
             { sector: "기술성장주 (Tech)", name: "나스닥100 등 혁신 기업", targetPercent: 70 },
             { sector: "시장지수 (Equity)", name: "S&P 500 등 대형주", targetPercent: 30 }
         ]
     },
     balanced: {
-        name: "중도도치", returnRate: 0.07,
+        name: "중도도치", icon: "🦔⚖️", returnRate: 0.07,
         composition: [
             { sector: "시장지수 (Equity)", name: "S&P 500 등 시장 대표주", targetPercent: 50 },
             { sector: "안전자산 (Bonds)", name: "중단기 국채 및 우량 채권", targetPercent: 40 },
@@ -210,7 +210,7 @@ const portfolioPresets = {
         ]
     },
     defensive: {
-        name: "수비도치", returnRate: 0.04,
+        name: "수비도치", icon: "🦔🛡️", returnRate: 0.04,
         composition: [
             { sector: "안전자산 (Bonds/Cash)", name: "단기 국채 및 현금성 자산", targetPercent: 60 },
             { sector: "원자재 (Gold/Alt)", name: "인플레이션 헷지 자산", targetPercent: 20 },
@@ -228,7 +228,7 @@ window.selectDochi = (type) => {
     
     // UI 업데이트 (추천 영역 활성화)
     recommendationSection.classList.remove('hidden');
-    recommendationTitle.innerText = preset.name;
+    recommendationTitle.innerHTML = `<span class="mr-2 text-xl">${preset.icon}</span> ${preset.name}`;
     
     renderRecommendationList(preset);
     updateSimulationChart();

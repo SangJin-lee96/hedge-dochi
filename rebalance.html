@@ -132,22 +132,37 @@
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- 공격도치 -->
-                        <div onclick="selectDochi('aggressive')" class="cursor-pointer group p-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-700 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-center">
-                            <div class="text-4xl mb-2 group-hover:scale-110 transition-transform">🔥</div>
-                            <h4 class="font-bold text-slate-800 dark:text-white mb-1">공격도치</h4>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">High Risk, High Return<br>연 기대수익: 12%</p>
+                        <div onclick="selectDochi('aggressive')" class="cursor-pointer group p-6 rounded-3xl border-2 border-transparent bg-white dark:bg-slate-800 hover:border-red-400 hover:shadow-2xl hover:shadow-red-200/50 dark:hover:shadow-red-900/20 transition-all text-center relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-red-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150"></div>
+                            <div class="relative z-10">
+                                <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-tr from-red-500 to-orange-400 rounded-2xl flex items-center justify-center text-4xl shadow-lg group-hover:rotate-6 transition-transform">
+                                    🦔🔥
+                                </div>
+                                <h4 class="font-bold text-slate-800 dark:text-white mb-1 text-lg">공격도치</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">수익률 극대화!<br><span class="font-bold text-red-500 text-[10px]">High Risk, High Return</span></p>
+                            </div>
                         </div>
                         <!-- 중도도치 -->
-                        <div onclick="selectDochi('balanced')" class="cursor-pointer group p-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-center">
-                            <div class="text-4xl mb-2 group-hover:scale-110 transition-transform">⚖️</div>
-                            <h4 class="font-bold text-slate-800 dark:text-white mb-1">중도도치</h4>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Balance is Key<br>연 기대수익: 7%</p>
+                        <div onclick="selectDochi('balanced')" class="cursor-pointer group p-6 rounded-3xl border-2 border-transparent bg-white dark:bg-slate-800 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-200/50 dark:hover:shadow-blue-900/20 transition-all text-center relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150"></div>
+                            <div class="relative z-10">
+                                <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-tr from-blue-500 to-indigo-400 rounded-2xl flex items-center justify-center text-4xl shadow-lg group-hover:-rotate-6 transition-transform">
+                                    🦔⚖️
+                                </div>
+                                <h4 class="font-bold text-slate-800 dark:text-white mb-1 text-lg">중도도치</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">황금 밸런스 지향<br><span class="font-bold text-blue-500 text-[10px]">Growth & Stability</span></p>
+                            </div>
                         </div>
                         <!-- 수비도치 -->
-                        <div onclick="selectDochi('defensive')" class="cursor-pointer group p-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-700 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all text-center">
-                            <div class="text-4xl mb-2 group-hover:scale-110 transition-transform">🛡️</div>
-                            <h4 class="font-bold text-slate-800 dark:text-white mb-1">수비도치</h4>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Capital Preservation<br>연 기대수익: 4%</p>
+                        <div onclick="selectDochi('defensive')" class="cursor-pointer group p-6 rounded-3xl border-2 border-transparent bg-white dark:bg-slate-800 hover:border-emerald-400 hover:shadow-2xl hover:shadow-emerald-200/50 dark:hover:shadow-emerald-900/20 transition-all text-center relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150"></div>
+                            <div class="relative z-10">
+                                <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-4xl shadow-lg group-hover:scale-110 transition-transform">
+                                    🦔🛡️
+                                </div>
+                                <h4 class="font-bold text-slate-800 dark:text-white mb-1 text-lg">수비도치</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">소중한 내 자산 방어<br><span class="font-bold text-emerald-500 text-[10px]">Capital Preservation</span></p>
+                            </div>
                         </div>
                     </div>
                 </div>
