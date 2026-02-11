@@ -55,22 +55,6 @@
         }
         body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); }
         .transition-colors { transition-duration: 300ms; }
-        /* Fix for Tooltip Clipping in overflow containers */
-        .tooltip-container { position: relative; }
-        .custom-tooltip {
-            visibility: hidden;
-            opacity: 0;
-            position: absolute;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: opacity 0.3s;
-            z-index: 9999;
-        }
-        .group:hover .custom-tooltip {
-            visibility: visible;
-            opacity: 1;
-        }
     </style>
 </head>
 <body class="min-h-screen relative overflow-x-hidden transition-colors">
@@ -125,24 +109,24 @@
                     </div>
                 </div>
 
-                <!-- 투자 성향 (RESTORED) -->
+                <!-- 투자 성향 선택 (완벽 복구) -->
                 <div class="p-6 md:p-8 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
                     <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><span>🦔</span> 투자 성향 선택</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div onclick="selectDochi('aggressive')" class="cursor-pointer group p-6 rounded-3xl border-2 border-transparent bg-white dark:bg-slate-800 hover:border-red-400 hover:shadow-2xl transition-all text-center">
-                            <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-tr from-red-500 to-orange-400 rounded-2xl flex items-center justify-center text-3xl shadow-lg">🔥</div>
+                        <div onclick="selectDochi('aggressive')" class="cursor-pointer group p-6 rounded-3xl border-2 border-transparent bg-white dark:bg-slate-800 hover:border-rose-400 hover:shadow-2xl transition-all text-center">
+                            <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-2xl flex items-center justify-center text-3xl shadow-lg">🔥</div>
                             <h4 class="font-bold mb-1">공격도치</h4>
-                            <p class="text-[10px] text-slate-500 font-bold uppercase">High Risk</p>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">High Risk</p>
                         </div>
                         <div onclick="selectDochi('balanced')" class="cursor-pointer group p-6 rounded-3xl border-2 border-transparent bg-white dark:bg-slate-800 hover:border-blue-400 hover:shadow-2xl transition-all text-center">
                             <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-tr from-blue-500 to-indigo-400 rounded-2xl flex items-center justify-center text-3xl shadow-lg">⚖️</div>
                             <h4 class="font-bold mb-1">중도도치</h4>
-                            <p class="text-[10px] text-slate-500 font-bold uppercase">Balanced</p>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Balanced</p>
                         </div>
                         <div onclick="selectDochi('defensive')" class="cursor-pointer group p-6 rounded-3xl border-2 border-transparent bg-white dark:bg-slate-800 hover:border-emerald-400 hover:shadow-2xl transition-all text-center">
                             <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-3xl shadow-lg">🛡️</div>
                             <h4 class="font-bold mb-1">수비도치</h4>
-                            <p class="text-[10px] text-slate-500 font-bold uppercase">Preservation</p>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Preservation</p>
                         </div>
                     </div>
                 </div>
@@ -154,7 +138,7 @@
                         <div id="sectorTotalStatus" class="text-sm font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Total: 100%</div>
                     </div>
                     <div id="sectorDashboard" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        <!-- Sector Items (Same as before) -->
+                        <!-- Sector Item Template -->
                         <div class="space-y-2">
                             <div class="flex justify-between items-end gap-2">
                                 <div class="flex items-center gap-2 overflow-hidden">
@@ -166,12 +150,16 @@
                                     <span class="text-[10px] font-bold text-slate-400">%</span>
                                 </div>
                             </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1"><div id="progress_equity_current" class="h-full bg-blue-500" style="width: 0%"></div><div id="progress_equity_gap" class="h-full bg-blue-300/30" style="width: 0%"></div></div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1">
+                                <div id="progress_equity_current" class="h-full bg-blue-500" style="width: 0%"></div>
+                                <div id="progress_equity_gap" class="h-full bg-blue-300/30" style="width: 0%"></div>
+                            </div>
                             <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter">
                                 <span class="text-slate-400">Actual: <span id="current_equity_pct" class="text-slate-600 dark:text-slate-300 font-black">0%</span></span>
                                 <span class="text-slate-400">Target: <span id="target_equity_pct_val" class="text-blue-500">0%</span></span>
                             </div>
                         </div>
+
                         <div class="space-y-2">
                             <div class="flex justify-between items-end gap-2">
                                 <div class="flex items-center gap-2 overflow-hidden">
@@ -183,12 +171,16 @@
                                     <span class="text-[10px] font-bold text-slate-400">%</span>
                                 </div>
                             </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1"><div id="progress_bonds_current" class="h-full bg-emerald-500" style="width: 0%"></div><div id="progress_bonds_gap" class="h-full bg-emerald-300/30" style="width: 0%"></div></div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1">
+                                <div id="progress_bonds_current" class="h-full bg-emerald-500" style="width: 0%"></div>
+                                <div id="progress_bonds_gap" class="h-full bg-emerald-300/30" style="width: 0%"></div>
+                            </div>
                             <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter">
                                 <span class="text-slate-400">Actual: <span id="current_bonds_pct" class="text-slate-600 dark:text-slate-300 font-black">0%</span></span>
                                 <span class="text-slate-400">Target: <span id="target_bonds_pct_val" class="text-emerald-500">0%</span></span>
                             </div>
                         </div>
+
                         <div class="space-y-2">
                             <div class="flex justify-between items-end gap-2">
                                 <div class="flex items-center gap-2 overflow-hidden">
@@ -200,12 +192,16 @@
                                     <span class="text-[10px] font-bold text-slate-400">%</span>
                                 </div>
                             </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1"><div id="progress_gold_current" class="h-full bg-amber-500" style="width: 0%"></div><div id="progress_gold_gap" class="h-full bg-amber-300/30" style="width: 0%"></div></div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1">
+                                <div id="progress_gold_current" class="h-full bg-amber-500" style="width: 0%"></div>
+                                <div id="progress_gold_gap" class="h-full bg-amber-300/30" style="width: 0%"></div>
+                            </div>
                             <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter">
                                 <span class="text-slate-400">Actual: <span id="current_gold_pct" class="text-slate-600 dark:text-slate-300 font-black">0%</span></span>
                                 <span class="text-slate-400">Target: <span id="target_gold_pct_val" class="text-amber-500">0%</span></span>
                             </div>
                         </div>
+
                         <div class="space-y-2">
                             <div class="flex justify-between items-end gap-2">
                                 <div class="flex items-center gap-2 overflow-hidden">
@@ -217,12 +213,16 @@
                                     <span class="text-[10px] font-bold text-slate-400">%</span>
                                 </div>
                             </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1"><div id="progress_commodity_current" class="h-full bg-orange-500" style="width: 0%"></div><div id="progress_commodity_gap" class="h-full bg-orange-300/30" style="width: 0%"></div></div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1">
+                                <div id="progress_commodity_current" class="h-full bg-orange-500" style="width: 0%"></div>
+                                <div id="progress_commodity_gap" class="h-full bg-orange-300/30" style="width: 0%"></div>
+                            </div>
                             <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter">
                                 <span class="text-slate-400">Actual: <span id="current_commodity_pct" class="text-slate-600 dark:text-slate-300 font-black">0%</span></span>
                                 <span class="text-slate-400">Target: <span id="target_commodity_pct_val" class="text-orange-500">0%</span></span>
                             </div>
                         </div>
+
                         <div class="space-y-2">
                             <div class="flex justify-between items-end gap-2">
                                 <div class="flex items-center gap-2 overflow-hidden">
@@ -234,12 +234,16 @@
                                     <span class="text-[10px] font-bold text-slate-400">%</span>
                                 </div>
                             </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1"><div id="progress_crypto_current" class="h-full bg-purple-500" style="width: 0%"></div><div id="progress_crypto_gap" class="h-full bg-purple-300/30" style="width: 0%"></div></div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1">
+                                <div id="progress_crypto_current" class="h-full bg-purple-500" style="width: 0%"></div>
+                                <div id="progress_crypto_gap" class="h-full bg-purple-300/30" style="width: 0%"></div>
+                            </div>
                             <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter">
                                 <span class="text-slate-400">Actual: <span id="current_crypto_pct" class="text-slate-600 dark:text-slate-300 font-black">0%</span></span>
                                 <span class="text-slate-400">Target: <span id="target_crypto_pct_val" class="text-purple-500">0%</span></span>
                             </div>
                         </div>
+
                         <div class="space-y-2">
                             <div class="flex justify-between items-end gap-2">
                                 <div class="flex items-center gap-2 overflow-hidden">
@@ -271,9 +275,8 @@
                              <button id="saveBtn" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1">💾 저장</button>
                         </div>
                     </div>
-                    <!-- Overflow handled by adding top padding to ensure tooltips aren't clipped -->
-                    <div class="overflow-x-auto pt-16 -mt-16">
-                        <table class="w-full text-left border-collapse table-auto min-w-[750px] mt-16">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse table-auto min-w-[750px]">
                             <thead>
                                 <tr class="text-[11px] font-bold border-b uppercase tracking-wider text-slate-400" style="border-color: var(--color-hr-border);">
                                     <th class="py-3 px-2 w-12 text-center relative group whitespace-nowrap">
@@ -285,11 +288,10 @@
                                                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
                                             </svg>
                                         </div>
-                                        <!-- Exact Requested Custom Tooltip -->
-                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-[#1a1f2e] text-white text-xs rounded-md shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[999] whitespace-normal text-left font-normal border border-slate-700/50 backdrop-blur-md">
+                                        <!-- Custom Tooltip (Positioned BELOW to avoid clipping) -->
+                                        <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-[#1a1f2e] text-white text-xs rounded-md shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[999] whitespace-normal text-left font-normal border border-slate-700/50 backdrop-blur-md">
+                                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-[#1a1f2e]"></div>
                                             잠금 기능을 활성화하면 리밸런싱 계산 시 해당 종목의 비중을 고정하고 나머지 종목들로만 비중을 재분배합니다.
-                                            <!-- Tooltip Arrow -->
-                                            <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#1a1f2e]"></div>
                                         </div>
                                     </th>
                                     <th class="py-3 px-2 text-left min-w-[180px]">종목/섹터</th>
