@@ -83,6 +83,7 @@ const logoutBtn = document.getElementById('logoutBtn');
 const userProfile = document.getElementById('userProfile');
 const loginAlert = document.getElementById('loginAlert');
 const appContent = document.getElementById('appContent');
+const refreshPricesBtn = document.getElementById('refreshPricesBtn');
 
 // ==========================================
 // 2. Logic & Precision Engine
@@ -206,6 +207,34 @@ window.distributeSector = (sectorName) => {
 };
 
 window.updateSectorTarget = (sector, val) => { sectorTargets[sector] = parseFloat(val) || 0; updateSectorUI(); updateCalculation(); };
+
+async function refreshAllPrices() {
+    const valid = holdings.filter(h => h.ticker && h.ticker.trim() !== '' && !['CASH', 'USD', 'KRW', '현금'].includes(h.ticker.toUpperCase()));
+    if (valid.length === 0) return;
+    
+    if (refreshPricesBtn) {
+        refreshPricesBtn.disabled = true;
+        refreshPricesBtn.innerText = "⏳ 갱신 중...";
+    }
+
+    for (const item of valid) {
+        try {
+            const data = await fetchInternalAPI('price', { ticker: item.ticker.toUpperCase() });
+            const meta = data?.chart?.result?.[0]?.meta;
+            if (meta) {
+                item.price = meta.regularMarketPrice || meta.chartPreviousClose || 0;
+                if (!item.name || item.name === "") item.name = meta.shortName || meta.symbol;
+            }
+        } catch (e) { console.error(`Refresh error for ${item.ticker}:`, e); }
+        await new Promise(r => setTimeout(r, 100)); // Rate limiting
+    }
+
+    if (refreshPricesBtn) {
+        refreshPricesBtn.disabled = false;
+        refreshPricesBtn.innerText = "🔄 시세 새로고침";
+    }
+    renderAssetList();
+}
 
 // ==========================================
 // 4. Main Rendering & Calculation
@@ -478,6 +507,7 @@ document.getElementById('saveBtn')?.addEventListener('click', async () => {
 });
 
 document.getElementById('addAssetBtn')?.addEventListener('click', () => { holdings.push({ ticker: "NEW", name: "", qty: 0, price: 0, targetPercent: 0, sector: "주식 (Equity)", locked: false }); renderAssetList(); });
+if (refreshPricesBtn) refreshPricesBtn.addEventListener('click', refreshAllPrices);
 if (targetCapitalInput) targetCapitalInput.addEventListener('input', (e) => { targetCapital = parseFloat(e.target.value) || 0; updateCalculation(); });
 if (document.getElementById('tickerSearchInput')) {
     let timer = null;
