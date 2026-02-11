@@ -16,7 +16,6 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-GFMXESYQFR');
     </script>
     <!-- Chart.js for Visualization -->
@@ -77,9 +76,7 @@
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text); hover:background-color: var(--color-toggle-hover-bg);">🌙</button>
                 <div id="authContainer" class="ml-2">
-                    <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-colors">
-                        구글 로그인
-                    </button>
+                    <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-colors">구글 로그인</button>
                     <div id="userProfile" class="hidden flex items-center gap-2">
                         <img id="userPhoto" src="" alt="Profile" class="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-600">
                         <button id="logoutBtn" class="text-xs text-slate-500 hover:text-red-500 font-semibold">로그아웃</button>
@@ -91,17 +88,15 @@
 
     <main class="py-8 px-4 md:py-12 max-w-6xl mx-auto">
         <header class="mb-10 text-center md:text-left">
-            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight" style="color: var(--color-primary-text);">⚖️ 포트폴리오 리밸런싱</h1>
-            <p class="mt-4 text-lg font-medium" style="color: var(--color-secondary-text);">감정에 휘둘리지 않는 투자의 핵심, '비율'을 지키세요.</p>
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">⚖️ 포트폴리오 리밸런싱</h1>
+            <p class="mt-4 text-lg font-medium text-slate-500">감정에 휘둘리지 않는 투자의 핵심, '비율'을 지키세요.</p>
         </header>
 
         <!-- 로그인 안내 -->
         <div id="loginAlert" class="mb-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800 text-center">
             <p class="text-blue-800 dark:text-blue-200 font-bold text-lg mb-2">🔒 로그인이 필요한 기능입니다</p>
             <p class="text-blue-600 dark:text-blue-300 mb-4">내 포트폴리오를 안전하게 저장하고 관리하려면 구글 로그인을 해주세요.</p>
-            <button onclick="document.getElementById('loginBtn').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1">
-                지금 시작하기
-            </button>
+            <button onclick="document.getElementById('loginBtn').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1">지금 시작하기</button>
         </div>
 
         <div id="appContent" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -109,9 +104,7 @@
             <div class="lg:col-span-7 space-y-6">
                 <!-- 티커 검색 -->
                 <div class="p-6 md:p-8 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
-                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2" style="color: var(--color-primary-text);">
-                        <span>🔍</span> 종목 검색 및 추가
-                    </h3>
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><span>🔍</span> 종목 검색 및 추가</h3>
                     <div class="relative">
                         <input type="text" id="tickerSearchInput" placeholder="기업명, 티커(예: AAPL, TLT, GLD) 또는 가상자산(BTC-USD) 입력" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 pl-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-bold text-slate-800 dark:text-white">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">🔎</span>
@@ -123,24 +116,22 @@
 
                 <!-- 투자 성향 분석 -->
                 <div class="p-6 md:p-8 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
-                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2" style="color: var(--color-primary-text);">
-                        <span>🦔</span> 투자 성향 분석 (Which Dochi are you?)
-                    </h3>
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><span>🦔</span> 투자 성향 분석</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div onclick="selectDochi('aggressive')" class="cursor-pointer group p-6 rounded-3xl border-2 border-transparent bg-white dark:bg-slate-800 hover:border-red-400 hover:shadow-2xl transition-all text-center relative overflow-hidden">
                             <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-tr from-red-500 to-orange-400 rounded-2xl flex items-center justify-center text-3xl shadow-lg">🦔🔥</div>
                             <h4 class="font-bold mb-1">공격도치</h4>
-                            <p class="text-[10px] text-slate-500">High Risk, High Return</p>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-tighter font-bold">High Risk, High Return</p>
                         </div>
                         <div onclick="selectDochi('balanced')" class="cursor-pointer group p-6 rounded-3xl border-2 border-transparent bg-white dark:bg-slate-800 hover:border-blue-400 hover:shadow-2xl transition-all text-center relative overflow-hidden">
                             <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-tr from-blue-500 to-indigo-400 rounded-2xl flex items-center justify-center text-3xl shadow-lg">🦔⚖️</div>
                             <h4 class="font-bold mb-1">중도도치</h4>
-                            <p class="text-[10px] text-slate-500">Growth & Stability</p>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-tighter font-bold">Growth & Stability</p>
                         </div>
                         <div onclick="selectDochi('defensive')" class="cursor-pointer group p-6 rounded-3xl border-2 border-transparent bg-white dark:bg-slate-800 hover:border-emerald-400 hover:shadow-2xl transition-all text-center relative overflow-hidden">
                             <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-3xl shadow-lg">🦔🛡️</div>
                             <h4 class="font-bold mb-1">수비도치</h4>
-                            <p class="text-[10px] text-slate-500">Capital Preservation</p>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-tighter font-bold">Capital Preservation</p>
                         </div>
                     </div>
                 </div>
@@ -148,10 +139,8 @@
                 <!-- 섹터 대시보드 -->
                 <div class="p-6 md:p-8 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold flex items-center gap-2" style="color: var(--color-primary-text);">
-                            <span>📊</span> 섹터별 목표 가이드
-                        </h3>
-                        <div id="sectorTotalStatus" class="text-sm font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Total: 100%</div>
+                        <h3 class="text-xl font-bold flex items-center gap-2"><span>📊</span> 섹터별 목표 가이드</h3>
+                        <div id="sectorTotalStatus" class="text-sm font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Total: 100%</div>
                     </div>
                     <div id="sectorDashboard" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                         <!-- Equity -->
@@ -159,14 +148,17 @@
                             <div class="flex justify-between items-end gap-2">
                                 <div class="flex items-center gap-2 overflow-hidden">
                                     <span class="text-sm font-bold truncate">📈 시장지수 (Equity)</span>
-                                    <button onclick="distributeSector('시장지수 (Equity)')" class="flex-shrink-0 text-[9px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">균등배분</button>
+                                    <button onclick="distributeSector('시장지수 (Equity)')" class="flex-shrink-0 text-[9px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold">균등배분</button>
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0">
-                                    <input type="number" id="target_equity" value="0" class="w-12 text-right font-bold text-blue-600 dark:text-blue-400 bg-transparent border-b border-blue-500 focus:outline-none" onchange="updateSectorTarget('시장지수 (Equity)', this.value)">
+                                    <input type="number" id="target_equity" value="0" class="w-12 text-right font-bold text-blue-600 bg-transparent border-b border-blue-500 focus:outline-none" onchange="updateSectorTarget('시장지수 (Equity)', this.value)">
                                     <span class="text-[10px] font-bold text-slate-400">%</span>
                                 </div>
                             </div>
-                            <div class="flex flex-wrap gap-1"><button onclick="addQuickAsset('VOO', '시장지수 (Equity)')" class="text-[9px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-1 py-0.5 rounded border border-blue-100 dark:border-blue-800">VOO</button><button onclick="addQuickAsset('QQQ', '시장지수 (Equity)')" class="text-[9px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-1 py-0.5 rounded border border-blue-100 dark:border-blue-800">QQQ</button></div>
+                            <div class="flex flex-wrap gap-1">
+                                <button onclick="addQuickAsset('VOO', '시장지수 (Equity)')" class="text-[9px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">VOO</button>
+                                <button onclick="addQuickAsset('QQQ', '시장지수 (Equity)')" class="text-[9px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">QQQ</button>
+                            </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1"><div id="progress_equity_current" class="h-full bg-blue-500" style="width: 0%"></div><div id="progress_equity_gap" class="h-full bg-blue-300/30" style="width: 0%"></div></div>
                         </div>
                         <!-- Bonds -->
@@ -174,14 +166,17 @@
                             <div class="flex justify-between items-end gap-2">
                                 <div class="flex items-center gap-2 overflow-hidden">
                                     <span class="text-sm font-bold truncate">🛡️ 채권 (Bonds)</span>
-                                    <button onclick="distributeSector('채권 (Bonds)')" class="flex-shrink-0 text-[9px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">균등배분</button>
+                                    <button onclick="distributeSector('채권 (Bonds)')" class="flex-shrink-0 text-[9px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold">균등배분</button>
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0">
-                                    <input type="number" id="target_bonds" value="0" class="w-12 text-right font-bold text-emerald-600 dark:text-emerald-400 bg-transparent border-b border-emerald-500 focus:outline-none" onchange="updateSectorTarget('채권 (Bonds)', this.value)">
+                                    <input type="number" id="target_bonds" value="0" class="w-12 text-right font-bold text-emerald-600 bg-transparent border-b border-emerald-500 focus:outline-none" onchange="updateSectorTarget('채권 (Bonds)', this.value)">
                                     <span class="text-[10px] font-bold text-slate-400">%</span>
                                 </div>
                             </div>
-                            <div class="flex flex-wrap gap-1"><button onclick="addQuickAsset('TLT', '채권 (Bonds)')" class="text-[9px] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 px-1 py-0.5 rounded border border-emerald-100 dark:border-emerald-800">TLT</button><button onclick="addQuickAsset('BND', '채권 (Bonds)')" class="text-[9px] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 px-1 py-0.5 rounded border border-emerald-100 dark:border-emerald-800">BND</button></div>
+                            <div class="flex flex-wrap gap-1">
+                                <button onclick="addQuickAsset('TLT', '채권 (Bonds)')" class="text-[9px] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 px-1.5 py-0.5 rounded border border-emerald-100">TLT</button>
+                                <button onclick="addQuickAsset('BND', '채권 (Bonds)')" class="text-[9px] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 px-1.5 py-0.5 rounded border border-emerald-100">BND</button>
+                            </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1"><div id="progress_bonds_current" class="h-full bg-emerald-500" style="width: 0%"></div><div id="progress_bonds_gap" class="h-full bg-emerald-300/30" style="width: 0%"></div></div>
                         </div>
                         <!-- Commodity -->
@@ -189,14 +184,17 @@
                             <div class="flex justify-between items-end gap-2">
                                 <div class="flex items-center gap-2 overflow-hidden">
                                     <span class="text-sm font-bold truncate">📀 원자재 (Commodity)</span>
-                                    <button onclick="distributeSector('원자재 (Commodity)')" class="flex-shrink-0 text-[9px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">균등배분</button>
+                                    <button onclick="distributeSector('원자재 (Commodity)')" class="flex-shrink-0 text-[9px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold">균등배분</button>
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0">
-                                    <input type="number" id="target_commodity" value="0" class="w-12 text-right font-bold text-amber-600 dark:text-amber-400 bg-transparent border-b border-amber-500 focus:outline-none" onchange="updateSectorTarget('원자재 (Commodity)', this.value)">
+                                    <input type="number" id="target_commodity" value="0" class="w-12 text-right font-bold text-amber-600 bg-transparent border-b border-amber-500 focus:outline-none" onchange="updateSectorTarget('원자재 (Commodity)', this.value)">
                                     <span class="text-[10px] font-bold text-slate-400">%</span>
                                 </div>
                             </div>
-                            <div class="flex flex-wrap gap-1"><button onclick="addQuickAsset('GLD', '원자재 (Commodity)')" class="text-[9px] bg-amber-50 dark:bg-amber-900/30 text-amber-600 px-1 py-0.5 rounded border border-amber-100 dark:border-amber-800">GLD</button><button onclick="addQuickAsset('USO', '원자재 (Commodity)')" class="text-[9px] bg-amber-50 dark:bg-amber-900/30 text-amber-600 px-1 py-0.5 rounded border border-amber-100 dark:border-amber-800">USO</button></div>
+                            <div class="flex flex-wrap gap-1">
+                                <button onclick="addQuickAsset('GLD', '원자재 (Commodity)')" class="text-[9px] bg-amber-50 dark:bg-amber-900/30 text-amber-600 px-1.5 py-0.5 rounded border border-amber-100">GLD</button>
+                                <button onclick="addQuickAsset('USO', '원자재 (Commodity)')" class="text-[9px] bg-amber-50 dark:bg-amber-900/30 text-amber-600 px-1.5 py-0.5 rounded border border-amber-100">USO</button>
+                            </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1"><div id="progress_commodity_current" class="h-full bg-amber-500" style="width: 0%"></div><div id="progress_commodity_gap" class="h-full bg-amber-300/30" style="width: 0%"></div></div>
                         </div>
                         <!-- Crypto -->
@@ -204,14 +202,17 @@
                             <div class="flex justify-between items-end gap-2">
                                 <div class="flex items-center gap-2 overflow-hidden">
                                     <span class="text-sm font-bold truncate">₿ 가상자산 (Crypto)</span>
-                                    <button onclick="distributeSector('가상자산 (Crypto)')" class="flex-shrink-0 text-[9px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">균등배분</button>
+                                    <button onclick="distributeSector('가상자산 (Crypto)')" class="flex-shrink-0 text-[9px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold">균등배분</button>
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0">
-                                    <input type="number" id="target_crypto" value="0" class="w-12 text-right font-bold text-purple-600 dark:text-purple-400 bg-transparent border-b border-purple-500 focus:outline-none" onchange="updateSectorTarget('가상자산 (Crypto)', this.value)">
+                                    <input type="number" id="target_crypto" value="0" class="w-12 text-right font-bold text-purple-600 bg-transparent border-b border-purple-500 focus:outline-none" onchange="updateSectorTarget('가상자산 (Crypto)', this.value)">
                                     <span class="text-[10px] font-bold text-slate-400">%</span>
                                 </div>
                             </div>
-                            <div class="flex flex-wrap gap-1"><button onclick="addQuickAsset('BTC-USD', '가상자산 (Crypto)')" class="text-[9px] bg-purple-50 dark:bg-purple-900/30 text-purple-600 px-1 py-0.5 rounded border border-purple-100 dark:border-purple-800">BTC</button><button onclick="addQuickAsset('ETH-USD', '가상자산 (Crypto)')" class="text-[9px] bg-purple-50 dark:bg-purple-900/30 text-purple-600 px-1 py-0.5 rounded border border-purple-100 dark:border-purple-800">ETH</button></div>
+                            <div class="flex flex-wrap gap-1">
+                                <button onclick="addQuickAsset('BTC-USD', '가상자산 (Crypto)')" class="text-[9px] bg-purple-50 dark:bg-purple-900/30 text-purple-600 px-1.5 py-0.5 rounded border border-purple-100">BTC</button>
+                                <button onclick="addQuickAsset('ETH-USD', '가상자산 (Crypto)')" class="text-[9px] bg-purple-50 dark:bg-purple-900/30 text-purple-600 px-1.5 py-0.5 rounded border border-purple-100">ETH</button>
+                            </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1"><div id="progress_crypto_current" class="h-full bg-purple-500" style="width: 0%"></div><div id="progress_crypto_gap" class="h-full bg-purple-300/30" style="width: 0%"></div></div>
                         </div>
                         <!-- Cash -->
@@ -219,14 +220,17 @@
                             <div class="flex justify-between items-end gap-2">
                                 <div class="flex items-center gap-2 overflow-hidden">
                                     <span class="text-sm font-bold truncate">💵 현금 (Cash)</span>
-                                    <button onclick="distributeSector('현금 (Cash)')" class="flex-shrink-0 text-[9px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">균등배분</button>
+                                    <button onclick="distributeSector('현금 (Cash)')" class="flex-shrink-0 text-[9px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold">균등배분</button>
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0">
-                                    <input type="number" id="target_cash" value="0" class="w-12 text-right font-bold text-slate-600 dark:text-slate-400 bg-transparent border-b border-slate-500 focus:outline-none" onchange="updateSectorTarget('현금 (Cash)', this.value)">
+                                    <input type="number" id="target_cash" value="0" class="w-12 text-right font-bold text-slate-600 bg-transparent border-b border-slate-500 focus:outline-none" onchange="updateSectorTarget('현금 (Cash)', this.value)">
                                     <span class="text-[10px] font-bold text-slate-400">%</span>
                                 </div>
                             </div>
-                            <div class="flex flex-wrap gap-1"><button onclick="addQuickAsset('USD', '현금 (Cash)')" class="text-[9px] bg-slate-50 dark:bg-slate-800 text-slate-600 px-1 py-0.5 rounded border border-slate-200 dark:border-slate-700">USD</button><button onclick="addQuickAsset('KRW', '현금 (Cash)')" class="text-[9px] bg-slate-50 dark:bg-slate-800 text-slate-600 px-1 py-0.5 rounded border border-slate-200 dark:border-slate-700">KRW</button></div>
+                            <div class="flex flex-wrap gap-1">
+                                <button onclick="addQuickAsset('USD', '현금 (Cash)')" class="text-[9px] bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200">USD</button>
+                                <button onclick="addQuickAsset('KRW', '현금 (Cash)')" class="text-[9px] bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200">KRW</button>
+                            </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex mt-1"><div id="progress_cash_current" class="h-full bg-slate-500" style="width: 0%"></div><div id="progress_cash_gap" class="h-full bg-slate-300/30" style="width: 0%"></div></div>
                         </div>
                     </div>
@@ -234,32 +238,34 @@
 
                 <!-- 보유 자산 목록 -->
                 <div class="p-6 md:p-8 rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
-                    <div class="flex justify-between items-center mb-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                         <h3 class="text-xl font-bold">📋 보유 자산 목록</h3>
                         <div class="flex flex-wrap gap-2">
-                             <button id="refreshPricesBtn" class="bg-slate-100 dark:bg-slate-700 px-4 py-2 rounded-lg text-sm font-bold transition-all">🔄 시세 새로고침</button>
-                             <button id="addAssetBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">+ 종목 추가</button>
-                             <button id="saveBtn" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">💾 저장</button>
+                             <label class="cursor-pointer bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1">📤 CSV<input type="file" id="csvFileInput" class="hidden" accept=".csv"></label>
+                             <button onclick="normalizeWeights()" class="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 px-3 py-2 rounded-lg text-xs font-bold border border-indigo-200">⚖️ 정규화</button>
+                             <button id="addAssetBtn" class="bg-indigo-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition-colors">+ 종목</button>
+                             <button id="saveBtn" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1">💾 저장</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse table-fixed min-w-[600px]">
                             <thead>
-                                <tr class="text-sm font-bold border-b" style="color: var(--color-secondary-text); border-color: var(--color-hr-border);">
-                                    <th class="py-3 px-2">종목/섹터</th>
-                                    <th class="py-3 px-2 text-right">보유 수량</th>
-                                    <th class="py-3 px-2 text-right">현재가($)</th>
-                                    <th class="py-3 px-2 text-right">목표비중(%)</th>
-                                    <th class="py-3 px-2 text-center">삭제</th>
+                                <tr class="text-[11px] font-bold border-b uppercase tracking-wider text-slate-400" style="border-color: var(--color-hr-border);">
+                                    <th class="py-3 px-2 w-10 text-center">잠금</th>
+                                    <th class="py-3 px-2 text-left">종목/섹터</th>
+                                    <th class="py-3 px-2 text-right w-24">보유 수량</th>
+                                    <th class="py-3 px-2 text-right w-24">현재가($)</th>
+                                    <th class="py-3 px-2 text-right w-24">목표비중(%)</th>
+                                    <th class="py-3 px-2 text-center w-10">삭제</th>
                                 </tr>
                             </thead>
                             <tbody id="assetListBody" class="text-sm font-medium"></tbody>
                         </table>
                     </div>
-                    <div class="mt-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl text-xs text-slate-500 space-y-2">
+                    <div class="mt-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl text-[11px] text-slate-500 space-y-2">
                         <div class="flex items-start gap-2"><span class="text-indigo-500 font-bold whitespace-nowrap">💡 Tip 1:</span><span>상단의 종목 검색에서 내 자산에 바로 추가할 수 있습니다.</span></div>
                         <div class="flex items-start gap-2"><span class="text-indigo-500 font-bold whitespace-nowrap">💡 Tip 2:</span><span>현금(Cash)도 종목처럼 관리하세요. 티커에 'USD'를 입력하면 됩니다.</span></div>
-                        <p id="totalPercentDisplay" class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600 font-bold text-lg text-right text-indigo-600 dark:text-indigo-400">내 자산 목표 비중 합계: 0%</p>
+                        <p id="totalPercentDisplay" class="mt-3 pt-3 border-t border-slate-200 font-bold text-lg text-right text-indigo-600">목표 비중 합계: 0%</p>
                     </div>
                 </div>
             </div>
