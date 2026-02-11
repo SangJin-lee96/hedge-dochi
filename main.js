@@ -1,6 +1,30 @@
 document.addEventListener('DOMContentLoaded', () => {
     let chart;
 
+    // --- Mobile Menu Toggle Logic ---
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const darkModeToggleMobile = document.getElementById('darkModeToggleMobile');
+
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close menu when clicking a link
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    }
+
+    if (darkModeToggleMobile) {
+        darkModeToggleMobile.addEventListener('click', () => {
+            document.getElementById('darkModeToggle').click();
+        });
+    }
+
     function updateSimulation() {
         // 1. 입력값 가져오기
         const salaryElem = document.getElementById('annualSalary');

@@ -391,12 +391,29 @@ async function fetchInternalAPI(endpoint, params) {
 
 onAuthStateChanged(auth, async (user) => {
     currentUser = user;
+    const authContainerMobile = document.getElementById('authContainerMobile');
+    
     if (user) {
         if (loginBtn) loginBtn.classList.add('hidden');
         if (userProfile) userProfile.classList.remove('hidden');
         if (document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL;
         if (loginAlert) loginAlert.classList.add('hidden');
         if (appContent) { appContent.classList.remove('hidden'); appContent.classList.add('grid'); }
+        
+        // Handle Mobile Auth UI
+        if (authContainerMobile) {
+            authContainerMobile.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <img src="${user.photoURL}" class="w-10 h-10 rounded-full border border-slate-200">
+                        <span class="font-bold text-slate-800 dark:text-white">${user.displayName || '사용자'}</span>
+                    </div>
+                    <button id="logoutBtnMobile" class="text-sm text-red-500 font-bold">로그아웃</button>
+                </div>
+            `;
+            document.getElementById('logoutBtnMobile').addEventListener('click', () => signOut(auth).then(() => location.reload()));
+        }
+
         try {
             const docSnap = await getDoc(doc(db, "users", user.uid));
             if (docSnap.exists()) {
@@ -417,6 +434,12 @@ onAuthStateChanged(auth, async (user) => {
         if (userProfile) userProfile.classList.add('hidden');
         if (loginAlert) loginAlert.classList.remove('hidden');
         if (appContent) appContent.classList.add('hidden');
+        
+        if (authContainerMobile) {
+            authContainerMobile.innerHTML = `
+                <button onclick="document.getElementById('loginBtn').click()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">구글 로그인</button>
+            `;
+        }
     }
 });
 
