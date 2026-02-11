@@ -23,69 +23,79 @@ try {
 } catch (e) { console.error("Firebase init error:", e); }
 
 // ==========================================
-// 1. State Management
+// 1. Professional Asset Sectors & State
 // ==========================================
 let currentUser = null;
-let holdings = [
-    { ticker: "VOO", name: "Vanguard S&P 500", qty: 10, price: 500, targetPercent: 50, sector: "시장지수 (Equity)", locked: false },
-    { ticker: "TLT", name: "20+ Year Treasury Bond", qty: 20, price: 90, targetPercent: 30, sector: "채권 (Bonds)", locked: false },
-    { ticker: "BTC-USD", name: "Bitcoin", qty: 0.1, price: 40000, targetPercent: 10, sector: "가상자산 (Crypto)", locked: false },
-    { ticker: "USD", name: "US Dollar", qty: 1000, price: 1, targetPercent: 10, sector: "현금 (Cash)", locked: false }
+let holdings = []; 
+
+const PRIMARY_SECTORS = [
+    "주식 (Equity)", 
+    "채권 (Fixed Income)", 
+    "귀금속 (Precious Metals)", 
+    "원자재 (Commodity)", 
+    "가상자산 (Digital Asset)", 
+    "현금 (Liquidity)"
 ];
 
-const PRIMARY_SECTORS = ["시장지수 (Equity)", "채권 (Bonds)", "원자재 (Commodity)", "가상자산 (Crypto)", "현금 (Cash)"];
-let sectorTargets = { "시장지수 (Equity)": 50, "채권 (Bonds)": 30, "원자재 (Commodity)": 0, "가상자산 (Crypto)": 10, "현금 (Cash)": 10 };
+let sectorTargets = {
+    "주식 (Equity)": 40,
+    "채권 (Fixed Income)": 30,
+    "귀금속 (Precious Metals)": 10,
+    "원자재 (Commodity)": 5,
+    "가상자산 (Digital Asset)": 5,
+    "현금 (Liquidity)": 10
+};
+
 let targetCapital = 0;
 let chartInstance = null, tickerChartInstance = null, simulationChartInstance = null;
 let currentDochiStyle = null, isIntegerMode = false;
 
-// DOM
+// DOM Elements
 const assetListBody = document.getElementById('assetListBody');
 const totalValueDisplay = document.getElementById('totalValueDisplay');
 const totalPercentDisplay = document.getElementById('totalPercentDisplay');
 const actionPlanList = document.getElementById('actionPlanList');
 const targetCapitalInput = document.getElementById('targetCapitalInput');
-const refreshPricesBtn = document.getElementById('refreshPricesBtn');
-const csvFileInput = document.getElementById('csvFileInput');
-const tickerSearchInput = document.getElementById('tickerSearchInput');
 
 // ==========================================
-// 2. Logic & Utilities
+// 2. Advanced Mapping & Migration
 // ==========================================
 
 function getMappedSector(ticker, quoteType = "", yahooSector = "") {
     const t = ticker.toUpperCase();
-    if (quoteType === 'CRYPTOCURRENCY' || t.endsWith('-USD') || t.endsWith('-KRW') || t === 'BTC' || t === 'ETH') return "가상자산 (Crypto)";
-    if (t === 'USD' || t === 'KRW' || t === 'CASH' || t === '현금') return "현금 (Cash)";
-    if (yahooSector.includes("Treasury") || yahooSector.includes("Bonds") || t === 'TLT' || t === 'BND' || t === 'IEF') return "채권 (Bonds)";
-    if (yahooSector.includes("Commodit") || t === 'GLD' || t === 'IAU' || t === 'USO' || t === 'SLV') return "원자재 (Commodity)";
-    return "시장지수 (Equity)";
+    // Precise Mapping
+    if (t === 'GLD' || t === 'IAU' || t === 'SLV' || t === 'SIL' || t === '금' || t === '은') return "귀금속 (Precious Metals)";
+    if (t === 'BTC-USD' || t === 'ETH-USD' || t === 'BTC' || t === 'ETH' || quoteType === 'CRYPTOCURRENCY') return "가상자산 (Digital Asset)";
+    if (t === 'USD' || t === 'KRW' || t === 'CASH' || t === 'BIL' || t === 'SGOV') return "현금 (Liquidity)";
+    if (t === 'TLT' || t === 'IEF' || t === 'SHY' || t === 'BND' || t === 'AGG' || yahooSector.includes("Bonds") || yahooSector.includes("Treasury")) return "채권 (Fixed Income)";
+    if (t === 'USO' || t === 'DBC' || t === 'GSG' || t === 'CPER' || yahooSector.includes("Commodit")) return "원자재 (Commodity)";
+    
+    // Default to Equity for Stocks/ETFs
+    return "주식 (Equity)";
 }
 
 function migrateData(data) {
     if (data.holdings) {
         data.holdings.forEach(h => {
-            if (h.sector === "안전자산 (Bonds/Cash)") h.sector = "채권 (Bonds)";
-            if (h.sector === "원자재 (Gold/Alt)") h.sector = "원자재 (Commodity)";
-            if (!h.sector) h.sector = getMappedSector(h.ticker);
+            // Sector Name Normalization
+            if (h.sector === "시장지수 (Equity)") h.sector = "주식 (Equity)";
+            if (h.sector === "채권 (Bonds)") h.sector = "채권 (Fixed Income)";
+            if (h.sector === "안전자산 (Bonds/Cash)") h.sector = "채권 (Fixed Income)";
+            if (h.sector === "원자재 (Commodity)" && (h.ticker.includes("GLD") || h.ticker.includes("금"))) h.sector = "귀금속 (Precious Metals)";
+            if (h.sector === "가상자산 (Crypto)") h.sector = "가상자산 (Digital Asset)";
+            if (h.sector === "현금 (Cash)") h.sector = "현금 (Liquidity)";
+            
+            if (!h.sector || !PRIMARY_SECTORS.includes(h.sector)) h.sector = getMappedSector(h.ticker);
             if (h.locked === undefined) h.locked = false;
             if (h.price === undefined) h.price = 0;
             if (h.qty === undefined) h.qty = 0;
-            if (h.targetPercent === undefined) h.targetPercent = 0;
         });
     }
     return data;
 }
 
-async function fetchInternalAPI(endpoint, params) {
-    const queryString = new URLSearchParams(params).toString();
-    const response = await fetch(`/api/${endpoint}?${queryString}`);
-    if (!response.ok) throw new Error("API Error");
-    return await response.json();
-}
-
 // ==========================================
-// 3. UI Actions (Window functions for HTML)
+// 3. Precision Engine
 // ==========================================
 
 window.toggleLock = (index) => {
@@ -97,17 +107,23 @@ window.normalizeWeights = () => {
     const locked = holdings.filter(h => h.locked);
     const unlocked = holdings.filter(h => !h.locked);
     if (unlocked.length === 0) return;
+    
     const lockedSum = locked.reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0);
-    const rem = Math.max(0, 100 - lockedSum);
-    const curUnlockedSum = unlocked.reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0);
-    if (curUnlockedSum === 0) {
-        const share = parseFloat((rem / unlocked.length).toFixed(2));
-        unlocked.forEach((h, i) => h.targetPercent = (i === unlocked.length-1) ? parseFloat((rem - share*(unlocked.length-1)).toFixed(2)) : share);
+    const remaining = Math.max(0, 100 - lockedSum);
+    const unlockedWeightSum = unlocked.reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0);
+
+    if (unlockedWeightSum === 0) {
+        const share = parseFloat((remaining / unlocked.length).toFixed(2));
+        unlocked.forEach((h, i) => h.targetPercent = (i === unlocked.length - 1) ? parseFloat((remaining - share * (unlocked.length - 1)).toFixed(2)) : share);
     } else {
-        let dist = 0;
+        let distributed = 0;
         unlocked.forEach((h, i) => {
-            if (i === unlocked.length-1) h.targetPercent = parseFloat((rem - dist).toFixed(2));
-            else { const s = parseFloat(((h.targetPercent / curUnlockedSum) * rem).toFixed(2)); h.targetPercent = s; dist += s; }
+            if (i === unlocked.length - 1) h.targetPercent = parseFloat((remaining - distributed).toFixed(2));
+            else {
+                const s = parseFloat(((h.targetPercent / unlockedWeightSum) * remaining).toFixed(2));
+                h.targetPercent = s;
+                distributed += s;
+            }
         });
     }
     renderAssetList();
@@ -118,43 +134,41 @@ window.distributeSector = (sectorName) => {
     if (ts.length === 0) return;
     const goal = sectorTargets[sectorName] || 0;
     const share = parseFloat((goal / ts.length).toFixed(2));
-    ts.forEach((h, idx) => h.targetPercent = (idx === ts.length-1) ? parseFloat((goal - share*(ts.length-1)).toFixed(2)) : share);
+    ts.forEach((h, idx) => h.targetPercent = (idx === ts.length - 1) ? parseFloat((goal - share * (ts.length - 1)).toFixed(2)) : share);
     renderAssetList();
 };
 
-window.updateSectorTarget = (sector, val) => { sectorTargets[sector] = parseFloat(val) || 0; updateSectorUI(); updateCalculation(); };
-
-window.addQuickAsset = async (ticker, sector) => {
-    if (holdings.find(h => h.ticker.toUpperCase() === ticker.toUpperCase())) { alert("이미 목록에 있습니다."); return; }
-    const isCash = (ticker === 'USD' || ticker === 'KRW');
-    holdings.push({ ticker, name: isCash ? ticker : "불러오는 중...", qty: 0, price: isCash ? 1 : 0, targetPercent: 0, sector, locked: false });
-    renderAssetList();
-    if (!isCash) {
-        try {
-            const data = await fetchInternalAPI('price', { ticker });
-            const meta = data?.chart?.result?.[0]?.meta;
-            if (meta) {
-                const asset = holdings.find(h => h.ticker === ticker);
-                if (asset) { asset.price = meta.regularMarketPrice || meta.chartPreviousClose || 0; asset.name = meta.symbol; renderAssetList(); }
-            }
-        } catch (e) {}
-    }
+window.updateSectorTarget = (sector, val) => {
+    sectorTargets[sector] = parseFloat(val) || 0;
+    updateSectorUI();
+    updateCalculation();
 };
-
-function updateSectorUI() {
-    const map = { "시장지수 (Equity)": "target_equity", "채권 (Bonds)": "target_bonds", "원자재 (Commodity)": "target_commodity", "가상자산 (Crypto)": "target_crypto", "현금 (Cash)": "target_cash" };
-    Object.keys(map).forEach(s => { const el = document.getElementById(map[s]); if (el) el.value = sectorTargets[s] || 0; });
-    const totalGoal = Object.values(sectorTargets).reduce((a, b) => a + b, 0);
-    const status = document.getElementById('sectorTotalStatus');
-    if (status) {
-        status.innerText = `Guide: ${totalGoal.toFixed(1)}%`;
-        status.className = `text-sm font-bold px-3 py-1 rounded-full ${Math.abs(totalGoal-100)<0.1 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`;
-    }
-}
 
 // ==========================================
 // 4. Rendering & Calculation
 // ==========================================
+
+function updateSectorUI() {
+    const idMap = { 
+        "주식 (Equity)": "target_equity", 
+        "채권 (Fixed Income)": "target_bonds", 
+        "귀금속 (Precious Metals)": "target_gold",
+        "원자재 (Commodity)": "target_commodity", 
+        "가상자산 (Digital Asset)": "target_crypto", 
+        "현금 (Liquidity)": "target_cash" 
+    };
+    Object.keys(idMap).forEach(s => {
+        const el = document.getElementById(idMap[s]);
+        if (el) el.value = sectorTargets[s] || 0;
+    });
+    
+    const totalGoal = Object.values(sectorTargets).reduce((a, b) => a + b, 0);
+    const status = document.getElementById('sectorTotalStatus');
+    if (status) {
+        status.innerText = `Goal: ${totalGoal.toFixed(1)}%`;
+        status.className = `text-sm font-bold px-3 py-1 rounded-full ${Math.abs(totalGoal - 100) < 0.1 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`;
+    }
+}
 
 function renderAssetList() {
     if (!assetListBody) return;
@@ -175,7 +189,7 @@ function renderAssetList() {
             <td class="py-3 px-2"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right focus:outline-none" onchange="updateHolding(${index}, 'qty', this.value)"></td>
             <td class="py-3 px-2"><input type="number" value="${item.price}" class="w-full bg-transparent text-right focus:outline-none" onchange="updateHolding(${index}, 'price', this.value)"></td>
             <td class="py-3 px-2"><input type="number" value="${item.targetPercent}" class="w-full bg-transparent text-right focus:outline-none font-semibold text-blue-600" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></td>
-            <td class="py-3 px-2 text-center"><button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500">✕</button></td>`;
+            <td class="py-3 px-2 text-center align-middle"><button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500 transition-colors">✕</button></td>`;
         assetListBody.appendChild(tr);
     });
     updateCalculation();
@@ -183,15 +197,18 @@ function renderAssetList() {
 
 window.updateHolding = (idx, field, val) => {
     holdings[idx][field] = (['qty', 'price', 'targetPercent'].includes(field)) ? parseFloat(val) || 0 : val;
+    if (field === 'ticker' && !holdings[idx].name) holdings[idx].sector = getMappedSector(val);
     updateCalculation();
 };
 
-window.removeAsset = (idx) => { if(confirm('삭제하시겠습니까?')) { holdings.splice(idx, 1); renderAssetList(); } };
-
 function updateCalculation() {
     let currentTotal = 0;
-    const stats = { "시장지수 (Equity)": { current: 0, assigned: 0, goal: sectorTargets["시장지수 (Equity)"] || 0, key: "equity" }, "채권 (Bonds)": { current: 0, assigned: 0, goal: sectorTargets["채권 (Bonds)"] || 0, key: "bonds" }, "원자재 (Commodity)": { current: 0, assigned: 0, goal: sectorTargets["원자재 (Commodity)"] || 0, key: "commodity" }, "가상자산 (Crypto)": { current: 0, assigned: 0, goal: sectorTargets["가상자산 (Crypto)"] || 0, key: "crypto" }, "현금 (Cash)": { current: 0, assigned: 0, goal: sectorTargets["현금 (Cash)"] || 0, key: "cash" } };
-    
+    const stats = PRIMARY_SECTORS.reduce((acc, s) => {
+        const idMap = { "주식 (Equity)": "equity", "채권 (Fixed Income)": "bonds", "귀금속 (Precious Metals)": "gold", "원자재 (Commodity)": "commodity", "가상자산 (Digital Asset)": "crypto", "현금 (Liquidity)": "cash" };
+        acc[s] = { current: 0, assigned: 0, goal: sectorTargets[s] || 0, key: idMap[s] };
+        return acc;
+    }, {});
+
     holdings.forEach(h => {
         const v = (h.qty || 0) * (h.price || 0); currentTotal += v;
         if (stats[h.sector]) { stats[h.sector].current += v; stats[h.sector].assigned += (parseFloat(h.targetPercent) || 0); }
@@ -200,10 +217,10 @@ function updateCalculation() {
     if (totalValueDisplay) totalValueDisplay.innerText = `$${currentTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
     
     const totTarg = holdings.reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0);
-    if (totalPercentDisplay) totalPercentDisplay.innerHTML = `<span class="${Math.abs(totTarg-100)<0.1?'text-emerald-500':'text-blue-500'} font-bold">비중 합계: ${totTarg.toFixed(2)}%</span>`;
+    if (totalPercentDisplay) totalPercentDisplay.innerHTML = `<span class="${Math.abs(totTarg - 100) < 0.1 ? 'text-emerald-500' : 'text-blue-500'} font-bold">비중 합계: ${totTarg.toFixed(2)}%</span>`;
 
     Object.keys(stats).forEach(n => {
-        const s = stats[n]; const curP = currentTotal > 0 ? (s.current / currentTotal)*100 : 0;
+        const s = stats[n]; const curP = currentTotal > 0 ? (s.current / currentTotal) * 100 : 0;
         const cp = document.getElementById(`current_${s.key}_pct`); if(cp) cp.innerText = `${curP.toFixed(1)}%`;
         const tp = document.getElementById(`target_${s.key}_pct`); if(tp) tp.innerText = `${s.goal}%`;
         const pr = document.getElementById(`progress_${s.key}_current`); if(pr) pr.style.width = `${Math.min(s.assigned, s.goal)}%`;
@@ -215,13 +232,13 @@ function updateCalculation() {
         actionPlanList.innerHTML = '';
         let bal = true;
         holdings.forEach(h => {
-            const diff = (base * ((parseFloat(h.targetPercent)||0)/100)) - ((h.qty||0)*(h.price||0));
-            if (Math.abs(diff) > Math.max(10, base*0.01)) {
+            const diff = (base * ((parseFloat(h.targetPercent) || 0) / 100)) - ((h.qty || 0) * (h.price || 0));
+            if (Math.abs(diff) > Math.max(10, base * 0.01)) {
                 bal = false;
                 const d = document.createElement('div');
-                d.className = `p-3 rounded-xl border flex justify-between items-center ${diff>0?'bg-red-50/50 border-red-100':'bg-blue-50/50 border-blue-100'}`;
-                const shares = h.price > 0 ? Math.floor(Math.abs(diff)/h.price) : 0;
-                d.innerHTML = `<div class="flex flex-col"><span class="font-bold">${h.ticker}</span><span class="text-[10px] opacity-60">${shares > 0 ? shares + '주' : '금액'} ${diff > 0 ? '매수' : '매도'}</span></div><span class="${diff>0?'text-red-600':'text-blue-600'} font-black">$${Math.abs(diff).toLocaleString(undefined,{maximumFractionDigits:0})}</span>`;
+                d.className = `p-3 rounded-xl border flex justify-between items-center ${diff > 0 ? 'bg-red-50/50 border-red-100' : 'bg-blue-50/50 border-blue-100'}`;
+                const shares = h.price > 0 ? Math.floor(Math.abs(diff) / h.price) : 0;
+                d.innerHTML = `<div class="flex flex-col"><span class="font-bold">${h.ticker}</span><span class="text-[10px] opacity-60">${shares > 0 ? shares + '주' : '금액'} ${diff > 0 ? '매수' : '매도'}</span></div><span class="${diff > 0 ? 'text-red-600' : 'text-blue-600'} font-black">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>`;
                 actionPlanList.appendChild(d);
             }
         });
@@ -246,35 +263,43 @@ function updateCharts(stats, total) {
 
     chartInstance = new Chart(ctxS, {
         type: 'bar',
-        data: { labels: Object.keys(stats).map(s=>s.split(' ')[0]), datasets: [{ label: '현재 (%)', data: Object.values(stats).map(s=>total>0?(s.current/total*100).toFixed(1):0), backgroundColor: 'rgba(99, 102, 241, 0.8)', borderRadius: 4 }, { label: '목표 (%)', data: Object.values(stats).map(s=>s.goal), borderColor: '#10b981', type: 'line', fill: false, tension: 0.4 }] },
+        data: { labels: Object.keys(stats).map(s => s.split(' ')[0]), datasets: [{ label: '현재 (%)', data: Object.values(stats).map(s => total > 0 ? (s.current / total * 100).toFixed(1) : 0), backgroundColor: 'rgba(99, 102, 241, 0.8)', borderRadius: 4 }, { label: '목표 (%)', data: Object.values(stats).map(s => s.goal), borderColor: '#10b981', type: 'line', fill: false, tension: 0.4 }] },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col } } } }
     });
 
     tickerChartInstance = new Chart(ctxT, {
         type: 'bar',
-        data: { labels: holdings.map(h=>h.ticker), datasets: [{ label: '현재 (%)', data: holdings.map(h=>total>0?((h.qty*h.price)/total*100).toFixed(1):0), backgroundColor: 'rgba(244, 63, 94, 0.8)', borderRadius: 4 }, { label: '목표 (%)', data: holdings.map(h=>h.targetPercent), borderColor: '#10b981', type: 'line', fill: false, tension: 0.4 }] },
+        data: { labels: holdings.map(h => h.ticker), datasets: [{ label: '현재 (%)', data: holdings.map(h => total > 0 ? ((h.qty * h.price) / total * 100).toFixed(1) : 0), backgroundColor: 'rgba(244, 63, 94, 0.8)', borderRadius: 4 }, { label: '목표 (%)', data: holdings.map(h => h.targetPercent), borderColor: '#10b981', type: 'line', fill: false, tension: 0.4 }] },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col } } } }
     });
 
-    const years = [0,1,2,3,4,5,6,7,8,9,10];
+    const years = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const presets = { aggressive: 0.12, balanced: 0.07, defensive: 0.04 };
     const rate = currentDochiStyle ? presets[currentDochiStyle] : 0.07;
     const startVal = total || 10000;
     simulationChartInstance = new Chart(ctxSim, {
         type: 'line',
-        data: { labels: years.map(y=>y+'y'), datasets: [{ label: '예상 성장', data: years.map(y=>Math.round(startVal*Math.pow(1+rate, y))), borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, pointRadius: 0 }, { label: '실질 가치', data: years.map(y=>Math.round(startVal*Math.pow(1+rate-0.025, y))), borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, pointRadius: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: col, callback: v => '$'+(v/1000).toFixed(0)+'k' }, grid: { color: isD ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' } }, x: { ticks: { color: col }, grid: { display: false } } }, plugins: { legend: { labels: { color: col } } } }
+        data: { labels: years.map(y => y + 'y'), datasets: [{ label: '예상 성장', data: years.map(y => Math.round(startVal * Math.pow(1 + rate, y))), borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, pointRadius: 0 }, { label: '실질 가치', data: years.map(y => Math.round(startVal * Math.pow(1 + rate - 0.025, y))), borderColor: '#f59e0b', borderDash: [5, 5], tension: 0.4, pointRadius: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: col, callback: v => '$' + (v / 1000).toFixed(0) + 'k' }, grid: { color: isD ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' } }, x: { ticks: { color: col }, grid: { display: false } } }, plugins: { legend: { labels: { color: col } } } }
     });
 }
 
 // ==========================================
-// 5. Auth & Persistence
+// 5. Auth & API
 // ==========================================
+
+async function fetchInternalAPI(endpoint, params) {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`/api/${endpoint}?${queryString}`);
+    if (!response.ok) throw new Error("API Error");
+    return await response.json();
+}
 
 async function refreshAllPrices() {
     const valid = holdings.filter(h => h.ticker && h.ticker.trim() !== '' && !['CASH', 'USD', 'KRW', '현금'].includes(h.ticker.toUpperCase()));
     if (valid.length === 0) return;
-    refreshPricesBtn.disabled = true; refreshPricesBtn.innerText = "⏳...";
+    const btn = document.getElementById('refreshPricesBtn');
+    if (btn) { btn.disabled = true; btn.innerText = "⏳..."; }
     for (const item of valid) {
         try {
             const data = await fetchInternalAPI('price', { ticker: item.ticker });
@@ -283,14 +308,14 @@ async function refreshAllPrices() {
         } catch (e) {}
         await new Promise(r => setTimeout(r, 100));
     }
-    refreshPricesBtn.disabled = false; refreshPricesBtn.innerText = "🔄 시세 새로고침";
+    if (btn) { btn.disabled = false; btn.innerText = "🔄 시세 새로고침"; }
     renderAssetList();
 }
 
 async function performSearch(query) {
     const container = document.getElementById('searchResultsContainer');
     const list = document.getElementById('searchResults');
-    if(!container || !list) return;
+    if (!container || !list) return;
     container.classList.remove('hidden');
     list.innerHTML = '<li class="text-center py-4 text-slate-400 text-sm">검색 중...</li>';
     try {
@@ -305,7 +330,7 @@ async function performSearch(query) {
             li.onclick = () => {
                 const detectedSector = getMappedSector(quote.symbol, quote.quoteType, quote.sector);
                 holdings.push({ ticker: quote.symbol, name: quote.shortname || quote.symbol, qty: 0, price: 0, targetPercent: 0, sector: detectedSector, locked: false });
-                tickerSearchInput.value = ''; container.classList.add('hidden'); renderAssetList();
+                document.getElementById('tickerSearchInput').value = ''; container.classList.add('hidden'); renderAssetList();
             };
             list.appendChild(li);
         });
@@ -335,19 +360,46 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// Initialization & Events
-if (document.getElementById('saveBtn')) {
-    document.getElementById('saveBtn').addEventListener('click', async () => {
-        if (!currentUser) return;
-        try {
-            const batch = writeBatch(db);
-            batch.set(doc(db, "users", currentUser.uid), { uid: currentUser.uid, holdings, sectorTargets, targetCapital, lastUpdated: new Date() }, { merge: true });
-            await batch.commit(); alert("저장 성공! 💾");
-        } catch (e) { alert("저장 실패"); }
-    });
-}
+// ==========================================
+// 6. Events & Init
+// ==========================================
 
-document.getElementById('addAssetBtn')?.addEventListener('click', () => { holdings.push({ ticker: "NEW", name: "", qty: 0, price: 0, targetPercent: 0, sector: "시장지수 (Equity)", locked: false }); renderAssetList(); });
+window.addQuickAsset = async (ticker, sector) => {
+    if (holdings.find(h => h.ticker.toUpperCase() === ticker.toUpperCase())) { alert("이미 목록에 있습니다."); return; }
+    const isCash = (ticker === 'USD' || ticker === 'KRW');
+    holdings.push({ ticker, name: isCash ? ticker : "불러오는 중...", qty: 0, price: isCash ? 1 : 0, targetPercent: 0, sector, locked: false });
+    renderAssetList();
+    if (!isCash) {
+        try {
+            const data = await fetchInternalAPI('price', { ticker });
+            const meta = data?.chart?.result?.[0]?.meta;
+            if (meta) {
+                const asset = holdings.find(h => h.ticker === ticker);
+                if (asset) { asset.price = meta.regularMarketPrice || meta.chartPreviousClose || 0; asset.name = meta.symbol; renderAssetList(); }
+            }
+        } catch (e) {}
+    }
+};
+
+window.selectDochi = (type) => {
+    currentDochiStyle = type;
+    const p = { aggressive: [70, 10, 5, 5, 5, 5], balanced: [40, 40, 5, 5, 5, 5], defensive: [20, 50, 10, 0, 0, 20] }[type];
+    const sNames = ["주식 (Equity)", "채권 (Fixed Income)", "귀금속 (Precious Metals)", "원자재 (Commodity)", "가상자산 (Digital Asset)", "현금 (Liquidity)"];
+    sNames.forEach((s, i) => sectorTargets[s] = p[i]);
+    updateSectorUI(); updateCalculation();
+    alert(`[${type.toUpperCase()}] 가이드가 적용되었습니다.`);
+};
+
+document.getElementById('saveBtn')?.addEventListener('click', async () => {
+    if (!currentUser) return;
+    try {
+        const batch = writeBatch(db);
+        batch.set(doc(db, "users", currentUser.uid), { uid: currentUser.uid, holdings, sectorTargets, targetCapital, lastUpdated: new Date() }, { merge: true });
+        await batch.commit(); alert("저장 성공! 💾");
+    } catch (e) { alert("저장 실패"); }
+});
+
+document.getElementById('addAssetBtn')?.addEventListener('click', () => { holdings.push({ ticker: "NEW", name: "", qty: 0, price: 0, targetPercent: 0, sector: "주식 (Equity)", locked: false }); renderAssetList(); });
 if (refreshPricesBtn) refreshPricesBtn.addEventListener('click', refreshAllPrices);
 if (targetCapitalInput) targetCapitalInput.addEventListener('input', (e) => { targetCapital = parseFloat(e.target.value) || 0; updateCalculation(); });
 if (tickerSearchInput) {
@@ -367,22 +419,13 @@ if (csvFileInput) {
             const rows = event.target.result.split('\n').slice(1);
             rows.forEach(row => {
                 const [t, q] = row.split(',').map(s => s?.trim());
-                if (t && q) holdings.push({ ticker: t.toUpperCase(), name: t, qty: parseFloat(q), price: 0, targetPercent: 0, sector: "시장지수 (Equity)", locked: false });
+                if (t && q) holdings.push({ ticker: t.toUpperCase(), name: t, qty: parseFloat(q), price: 0, targetPercent: 0, sector: getMappedSector(t), locked: false });
             });
             renderAssetList(); alert("CSV 로드 완료!");
         };
         reader.readAsText(file);
     });
 }
-
-window.selectDochi = (type) => {
-    currentDochiStyle = type;
-    const p = { aggressive: [70, 10, 5, 10, 5], balanced: [40, 40, 5, 5, 10], defensive: [20, 50, 10, 0, 20] }[type];
-    const sNames = ["시장지수 (Equity)", "채권 (Bonds)", "원자재 (Commodity)", "가상자산 (Crypto)", "현금 (Cash)"];
-    sNames.forEach((s, i) => sectorTargets[s] = p[i]);
-    updateSectorUI(); updateCalculation();
-    alert(`[${type.toUpperCase()}] 가이드가 적용되었습니다.`);
-};
 
 // Initial Run
 updateSectorUI();
