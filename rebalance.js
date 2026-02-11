@@ -66,6 +66,7 @@ const STRATEGY_CONFIG = {
 
 let currentUser = null;
 let holdings = []; 
+let selectedStrategyId = null; // 현재 선택된 전략 ID 저장
 const PRIMARY_SECTORS = ["주식 (Equity)", "채권 (Fixed Income)", "귀금속 (Precious Metals)", "원자재 (Commodity)", "가상자산 (Digital Asset)", "현금 (Liquidity)"];
 let sectorTargets = { ...STRATEGY_CONFIG.balanced.weights };
 let targetCapital = 0;
@@ -126,19 +127,29 @@ window.updateTargetFromProfile = (profileId) => {
     renderAssetList();
 };
 
-window.selectDochi = (type) => {
+window.selectDochi = (type, skipAlert = false) => {
+    selectedStrategyId = type; // 상태 업데이트
     const cards = document.querySelectorAll('.strategy-card');
     const ringColors = { aggressive: 'ring-rose-500', balanced: 'ring-blue-500', defensive: 'ring-emerald-500' };
+    
     cards.forEach(card => {
         card.classList.remove('ring-4', 'ring-rose-500', 'ring-blue-500', 'ring-emerald-500', 'opacity-100', 'scale-105');
         card.classList.add('opacity-60', 'scale-100');
     });
+    
     const selectedCard = document.getElementById(`card-${type}`);
     if (selectedCard) {
         selectedCard.classList.remove('opacity-60', 'scale-100');
         selectedCard.classList.add('opacity-100', 'ring-4', ringColors[type], 'scale-105');
     }
+    
+    // 비중 업데이트 로직 실행
     updateTargetFromProfile(type);
+    
+    if (!skipAlert) {
+        const strategy = STRATEGY_CONFIG[type];
+        // alert(`[${strategy.name}] 전략이 적용되었습니다.\n${strategy.description}`);
+    }
 };
 
 function migrateData(data) {
@@ -264,8 +275,6 @@ function renderAssetList() {
 
 window.updateHolding = async (idx, field, val) => {
     holdings[idx][field] = (['qty', 'price', 'targetPercent'].includes(field)) ? parseFloat(val) || 0 : val;
-    
-    // 티커 변경 시 데이터 실시간 패칭 (종목명, 섹터, 가격 자동 업데이트)
     if (field === 'ticker' && val.length >= 1) {
         try {
             const data = await fetchInternalAPI('price', { ticker: val.toUpperCase() });
@@ -275,11 +284,8 @@ window.updateHolding = async (idx, field, val) => {
                 holdings[idx].price = meta.regularMarketPrice || meta.chartPreviousClose || 0;
                 holdings[idx].sector = getMappedSector(val);
             }
-        } catch (e) {
-            holdings[idx].sector = getMappedSector(val);
-        }
+        } catch (e) { holdings[idx].sector = getMappedSector(val); }
     }
-    
     if (!['targetPercent'].includes(field)) renderAssetList(); else updateCalculation();
 };
 
@@ -316,7 +322,6 @@ function updateCalculation() {
         const gp = document.getElementById(`progress_${s.key}_gap`); if(gp) gp.style.width = `${Math.max(0, s.goal - curP)}%`;
     });
 
-    // 리밸런싱 가이드 (매수/매도 명확화)
     const base = targetCapital > 0 ? targetCapital : currentTotal;
     if (actionPlanList) {
         actionPlanList.innerHTML = '';
@@ -325,7 +330,6 @@ function updateCalculation() {
             const targetVal = base * ((parseFloat(h.targetPercent) || 0) / 100);
             const currentVal = (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0);
             const diff = targetVal - currentVal;
-            
             if (Math.abs(diff) > Math.max(10, base * 0.01)) {
                 bal = false;
                 const isBuy = diff > 0;
@@ -334,25 +338,10 @@ function updateCalculation() {
                 const cardBg = isBuy ? "bg-rose-50 dark:bg-rose-900/10" : "bg-blue-50 dark:bg-blue-900/10";
                 const cardBorder = isBuy ? "border-rose-100 dark:border-rose-800" : "border-blue-100 dark:border-blue-800";
                 const textColor = isBuy ? "text-rose-600 dark:text-rose-400" : "text-blue-600 dark:text-blue-400";
-                
                 const d = document.createElement('div');
                 d.className = `p-4 rounded-2xl border ${cardBg} ${cardBorder} flex justify-between items-center transition-all hover:scale-[1.02] shadow-sm`;
-                
                 const shares = h.price > 0 ? Math.floor(Math.abs(diff) / h.price) : 0;
-                d.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="${badgeColor} text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md">${actionText}</div>
-                        <div class="flex flex-col min-w-0">
-                            <span class="font-bold text-slate-800 dark:text-white text-base truncate">${h.name || h.ticker}</span>
-                            <span class="text-xs font-bold opacity-70 ${textColor}">
-                                ${shares > 0 ? '약 ' + shares + '주 ' + actionText : actionText + ' 필요'}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="text-right flex-shrink-0">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">필요 금액</p>
-                        <span class="${textColor} font-black text-xl">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
-                    </div>`;
+                d.innerHTML = `<div class="flex items-center gap-4"><div class="${badgeColor} text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md">${actionText}</div><div class="flex flex-col min-w-0"><span class="font-bold text-slate-800 dark:text-white text-base truncate">${h.name || h.ticker}</span><span class="text-xs font-bold opacity-70 ${textColor}">${shares > 0 ? '약 ' + shares + '주 ' + actionText : actionText + ' 필요'}</span></div></div><div class="text-right flex-shrink-0"><p class="text-[10px] font-bold text-slate-400 uppercase mb-1">필요 금액</p><span class="${textColor} font-black text-xl">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
                 actionPlanList.appendChild(d);
             }
         });
@@ -369,22 +358,18 @@ function updateCharts(stats, total) {
     if (chartInstance) chartInstance.destroy();
     if (tickerChartInstance) tickerChartInstance.destroy();
     if (simulationChartInstance) simulationChartInstance.destroy();
-
     const isD = document.documentElement.classList.contains('dark');
     const col = isD ? '#94a3b8' : '#64748b';
-
     chartInstance = new Chart(ctxS, {
         type: 'bar',
         data: { labels: Object.keys(stats).map(s => s.split(' ')[0]), datasets: [{ label: 'Actual', data: Object.values(stats).map(s => total > 0 ? (s.current / total * 100).toFixed(1) : 0), backgroundColor: 'rgba(99, 102, 241, 0.8)', borderRadius: 8 }, { label: 'Target', data: Object.values(stats).map(s => s.goal), backgroundColor: 'rgba(16, 185, 129, 0.4)', borderRadius: 8 }] },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col, font: { weight: 'bold' } } } } }
     });
-
     tickerChartInstance = new Chart(ctxT, {
         type: 'bar',
         data: { labels: holdings.map(h => h.ticker), datasets: [{ label: 'Actual', data: holdings.map(h => total > 0 ? ((parseFloat(h.qty)*parseFloat(h.price)) / total * 100).toFixed(1) : 0), backgroundColor: 'rgba(244, 63, 94, 0.8)', borderRadius: 8 }, { label: 'Target', data: holdings.map(h => h.targetPercent), backgroundColor: 'rgba(16, 185, 129, 0.4)', borderRadius: 8 }] },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col, font: { weight: 'bold' } } } } }
     });
-
     const years = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const rate = 0.07; const startVal = total || 10000;
     simulationChartInstance = new Chart(ctxSim, {
@@ -404,29 +389,6 @@ async function fetchInternalAPI(endpoint, params) {
     return await response.json();
 }
 
-async function performSearch(query) {
-    const container = document.getElementById('searchResultsContainer');
-    const list = document.getElementById('searchResults');
-    if (!container || !list) return;
-    container.classList.remove('hidden');
-    list.innerHTML = '<li class="text-center py-4 text-slate-400 text-sm">검색 중...</li>';
-    try {
-        const data = await fetchInternalAPI('search', { q: query });
-        const quotes = data.quotes || [];
-        list.innerHTML = quotes.length ? '' : '<li class="text-center py-4 text-slate-400 text-sm">결과 없음</li>';
-        quotes.forEach(quote => {
-            const li = document.createElement('li');
-            li.className = "p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-blue-200 dark:hover:border-blue-900 group";
-            li.innerHTML = `<div class="flex justify-between items-center"><div class="flex-1 min-w-0 pr-4"><div class="flex items-center gap-2"><span class="font-bold text-blue-600 dark:text-blue-400 truncate">${quote.symbol}</span></div><div class="text-sm text-slate-600 dark:text-slate-300 truncate">${quote.shortname || quote.symbol}</div></div><button class="shrink-0 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">추가</button></div>`;
-            li.onclick = () => {
-                holdings.push({ ticker: quote.symbol, name: quote.shortname || quote.symbol, qty: 0, price: 0, targetPercent: 0, sector: getMappedSector(quote.symbol, quote.quoteType, quote.sector), locked: false });
-                document.getElementById('tickerSearchInput').value = ''; container.classList.add('hidden'); renderAssetList();
-            };
-            list.appendChild(li);
-        });
-    } catch (e) { list.innerHTML = `<li class="text-center py-4 text-red-400 text-sm">오류</li>`; }
-}
-
 onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     if (user) {
@@ -442,6 +404,11 @@ onAuthStateChanged(auth, async (user) => {
                 if (data.holdings) holdings = data.holdings;
                 if (data.sectorTargets) sectorTargets = data.sectorTargets;
                 if (data.targetCapital && targetCapitalInput) { targetCapital = parseFloat(data.targetCapital) || 0; targetCapitalInput.value = targetCapital; }
+                if (data.selectedStrategyId) { 
+                    selectedStrategyId = data.selectedStrategyId; 
+                    // 로드 완료 후 카드 UI 복구 (비중 업데이트는 제외하고 UI만)
+                    setTimeout(() => selectDochi(selectedStrategyId, true), 100); 
+                }
             }
         } catch (e) { console.error("Load Error:", e); }
         updateSectorUI(); renderAssetList();
@@ -457,23 +424,21 @@ onAuthStateChanged(auth, async (user) => {
 // 6. Events & Init
 // ==========================================
 
-if (loginBtn) {
-    loginBtn.addEventListener('click', async () => {
-        try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { console.error("Login Error:", e); }
-    });
-}
-
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-        try { await signOut(auth); location.reload(); } catch (e) { console.error("Logout Error:", e); }
-    });
-}
+if (loginBtn) { loginBtn.addEventListener('click', async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { console.error("Login Error:", e); } }); }
+if (logoutBtn) { logoutBtn.addEventListener('click', async () => { try { await signOut(auth); location.reload(); } catch (e) { console.error("Logout Error:", e); } }); }
 
 document.getElementById('saveBtn')?.addEventListener('click', async () => {
     if (!currentUser) return;
     try {
         const batch = writeBatch(db);
-        batch.set(doc(db, "users", currentUser.uid), { uid: currentUser.uid, holdings, sectorTargets, targetCapital, lastUpdated: new Date() }, { merge: true });
+        batch.set(doc(db, "users", currentUser.uid), { 
+            uid: currentUser.uid, 
+            holdings, 
+            sectorTargets, 
+            targetCapital, 
+            selectedStrategyId, // 현재 전략 ID 추가 저장
+            lastUpdated: new Date() 
+        }, { merge: true });
         await batch.commit(); alert("저장 성공! 💾");
     } catch (e) { alert("저장 실패"); }
 });
