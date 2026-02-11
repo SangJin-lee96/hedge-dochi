@@ -56,16 +56,26 @@
         body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; }
         .transition-colors { transition-duration: 300ms; }
         
+        /* Tooltip Base Animation */
         .tooltip-box {
             visibility: hidden;
             opacity: 0;
-            transform: translate(-50%, 10px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+            transform: translateY(10px);
         }
         .group:hover .tooltip-box {
             visibility: visible;
             opacity: 1;
-            transform: translate(-50%, 0);
+            transform: translateY(0);
+        }
+        /* Specific centering for regular tooltips */
+        .tooltip-center {
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+        }
+        .group:hover .tooltip-center {
+            transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
@@ -263,8 +273,8 @@
                                                 <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
                                             </svg>
                                         </div>
-                                        <!-- Tooltip adjusted to left-aligned for first column -->
-                                        <div class="tooltip-box absolute top-full left-0 mt-2 w-64 p-3 bg-[#1a1f2e] text-white text-xs rounded-xl shadow-2xl z-[999] whitespace-normal text-left font-normal border border-slate-700/50 backdrop-blur-md origin-top-left">
+                                        <!-- Tooltip adjusted to left-aligned with direct override -->
+                                        <div class="tooltip-box absolute top-full left-0 mt-2 w-64 p-3 bg-[#1a1f2e] text-white text-xs rounded-xl shadow-2xl z-[999] whitespace-normal text-left font-normal border border-slate-700/50 backdrop-blur-md !transform-none">
                                             <div class="absolute bottom-full left-4 border-4 border-transparent border-b-[#1a1f2e]"></div>
                                             잠금 기능을 활성화하면 리밸런싱 계산 시 해당 종목의 비중을 고정하고 나머지 종목들로만 비중을 재분배합니다.
                                         </div>
@@ -272,8 +282,24 @@
                                     <th class="py-3 px-2 text-left min-w-[160px]">종목/섹터</th>
                                     <th class="py-3 px-2 text-right w-20 md:w-24">보유수량</th>
                                     <th class="py-3 px-2 text-right w-20 md:w-24">현재가($)</th>
-                                    <th class="py-3 px-2 text-right w-20 md:w-24 text-indigo-500">Actual %</th>
-                                    <th class="py-3 px-2 text-right w-20 md:w-24 text-blue-500">Target %</th>
+                                    <th class="py-3 px-2 text-right w-20 md:w-24 text-indigo-500 relative group">
+                                        <div class="flex items-center justify-end gap-1 cursor-help">
+                                            <span>Actual %</span>
+                                        </div>
+                                        <div class="tooltip-box tooltip-center absolute top-full mt-2 w-48 p-2 bg-[#1a1f2e] text-white text-[10px] rounded-lg shadow-2xl z-[999] whitespace-normal text-center font-normal border border-slate-700/50 backdrop-blur-md">
+                                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-[#1a1f2e]"></div>
+                                            현재가 기준 실제 자산 비중
+                                        </div>
+                                    </th>
+                                    <th class="py-3 px-2 text-right w-20 md:w-24 text-blue-500 relative group">
+                                        <div class="flex items-center justify-end gap-1 cursor-help">
+                                            <span>Target %</span>
+                                        </div>
+                                        <div class="tooltip-box tooltip-center absolute top-full mt-2 w-48 p-2 bg-[#1a1f2e] text-white text-[10px] rounded-lg shadow-2xl z-[999] whitespace-normal text-center font-normal border border-slate-700/50 backdrop-blur-md">
+                                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-[#1a1f2e]"></div>
+                                            내가 목표로 하는 자산 비중
+                                        </div>
+                                    </th>
                                     <th class="py-3 px-2 text-center w-10 md:w-12">삭제</th>
                                 </tr>
                             </thead>
