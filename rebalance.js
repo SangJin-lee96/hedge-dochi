@@ -46,8 +46,36 @@ const loginAlert = document.getElementById('loginAlert');
 const appContent = document.getElementById('appContent');
 
 // ==========================================
-// 2. Logic & Mapping
+// 2. Utility Functions
 // ==========================================
+
+function getStatusStyles(actual, target) {
+    const diff = actual - target;
+    const threshold = 1.0; // 1% threshold
+    
+    if (Math.abs(diff) <= threshold) {
+        return {
+            text: 'text-emerald-600 dark:text-emerald-400',
+            bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+            border: 'border-emerald-100 dark:border-emerald-800',
+            icon: '✅'
+        };
+    } else if (diff > 0) {
+        return {
+            text: 'text-rose-600 dark:text-rose-400',
+            bg: 'bg-rose-50 dark:bg-rose-900/20',
+            border: 'border-rose-100 dark:border-rose-800',
+            icon: '⚠️'
+        };
+    } else {
+        return {
+            text: 'text-blue-600 dark:text-blue-400',
+            bg: 'bg-blue-50 dark:bg-blue-900/20',
+            border: 'border-blue-100 dark:border-blue-800',
+            icon: '📉'
+        };
+    }
+}
 
 function getMappedSector(ticker, quoteType = "", yahooSector = "") {
     const t = ticker.toUpperCase();
@@ -146,8 +174,8 @@ function renderAssetList() {
     holdings.forEach((item, index) => {
         const actualVal = (parseFloat(item.qty || 0) * parseFloat(item.price || 0));
         const actualPct = totalActualValue > 0 ? (actualVal / totalActualValue * 100) : 0;
-        const deviation = actualPct - (parseFloat(item.targetPercent) || 0);
-        const actualColorClass = Math.abs(deviation) > 5 ? (deviation > 0 ? 'text-red-500' : 'text-blue-500') : 'text-slate-600 dark:text-slate-300';
+        const targetPct = parseFloat(item.targetPercent) || 0;
+        const style = getStatusStyles(actualPct, targetPct);
 
         const tr = document.createElement('tr');
         tr.className = `border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${item.locked ? 'bg-indigo-50/10' : ''}`;
@@ -163,7 +191,11 @@ function renderAssetList() {
             </td>
             <td class="py-3 px-2"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right focus:outline-none" onchange="updateHolding(${index}, 'qty', this.value)"></td>
             <td class="py-3 px-2"><input type="number" value="${item.price}" class="w-full bg-transparent text-right focus:outline-none" onchange="updateHolding(${index}, 'price', this.value)"></td>
-            <td class="py-3 px-2 text-right font-black ${actualColorClass}">${actualPct.toFixed(1)}%</td>
+            <td class="py-3 px-2 text-right">
+                <div class="inline-block px-2 py-1 rounded-lg font-black ${style.bg} ${style.text}">
+                    ${actualPct.toFixed(1)}%
+                </div>
+            </td>
             <td class="py-3 px-2"><input type="number" value="${item.targetPercent}" class="w-full bg-transparent text-right focus:outline-none font-bold text-blue-600" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></td>
             <td class="py-3 px-2 text-center"><button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500">✕</button></td>`;
         assetListBody.appendChild(tr);
@@ -196,30 +228,61 @@ function updateCalculation() {
     const totTarg = holdings.reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0);
     if (totalPercentDisplay) totalPercentDisplay.innerHTML = `<span class="${Math.abs(totTarg - 100) < 0.1 ? 'text-emerald-500' : 'text-blue-500'} font-bold">목표 비중 합계: ${totTarg.toFixed(2)}%</span>`;
 
+    // 섹터 대시보드 업데이트 및 시각화 강화
     Object.keys(stats).forEach(n => {
         const s = stats[n]; const curP = currentTotal > 0 ? (s.current / currentTotal) * 100 : 0;
-        const cp = document.getElementById(`current_${s.key}_pct`); if(cp) cp.innerText = `${curP.toFixed(1)}%`;
+        const style = getStatusStyles(curP, s.goal);
+        
+        const cp = document.getElementById(`current_${s.key}_pct`); 
+        if(cp) {
+            cp.innerText = `${curP.toFixed(1)}%`;
+            cp.className = `font-black ${style.text}`;
+        }
+        
         const tp = document.getElementById(`target_${s.key}_pct_val`); if(tp) tp.innerText = `${s.goal}%`;
-        const pr = document.getElementById(`progress_${s.key}_current`); if(pr) pr.style.width = `${Math.min(curP, s.goal)}%`;
-        const gp = document.getElementById(`progress_${s.key}_gap`); if(gp) gp.style.width = `${Math.max(0, s.goal - curP)}%`;
+        
+        // 프로그레스 바 색상 변경
+        const pr = document.getElementById(`progress_${s.key}_current`); 
+        if(pr) {
+            pr.style.width = `${Math.min(curP, s.goal)}%`;
+            pr.className = `h-full transition-all duration-500 ${curP > s.goal ? 'bg-rose-500' : 'bg-blue-500'}`;
+        }
+        
+        const gp = document.getElementById(`progress_${s.key}_gap`); 
+        if(gp) {
+            gp.style.width = `${Math.max(0, s.goal - curP)}%`;
+            gp.className = `h-full bg-slate-200 dark:bg-slate-700/50`;
+        }
     });
 
+    // 리밸런싱 가이드 (현재 총 자산 vs 사용자가 입력한 목표 비중)
     const base = targetCapital > 0 ? targetCapital : currentTotal;
     if (actionPlanList) {
         actionPlanList.innerHTML = '';
         let bal = true;
         holdings.forEach(h => {
-            const diff = (base * ((parseFloat(h.targetPercent) || 0) / 100)) - ((parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0));
+            const targetVal = base * ((parseFloat(h.targetPercent) || 0) / 100);
+            const currentVal = (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0);
+            const diff = targetVal - currentVal;
             if (Math.abs(diff) > Math.max(10, base * 0.01)) {
                 bal = false;
                 const d = document.createElement('div');
-                d.className = `p-3 rounded-xl border flex justify-between items-center ${diff > 0 ? 'bg-red-50/50 border-red-100' : 'bg-blue-50/50 border-blue-100'}`;
+                const style = diff > 0 ? getStatusStyles(0, 100) : getStatusStyles(100, 0); // 매수(파란색) / 매도(빨간색)
+                d.className = `p-4 rounded-2xl border ${style.bg} ${style.border} flex justify-between items-center transition-all hover:scale-[1.02]`;
                 const shares = h.price > 0 ? Math.floor(Math.abs(diff) / h.price) : 0;
-                d.innerHTML = `<div class="flex flex-col"><span class="font-bold">${h.ticker}</span><span class="text-[10px] opacity-60">${shares > 0 ? shares + '주' : '금액'} ${diff > 0 ? '매수' : '매도'}</span></div><span class="${diff > 0 ? 'text-red-600' : 'text-blue-600'} font-black">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>`;
+                d.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">${style.icon}</span>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-slate-800 dark:text-white">${h.ticker}</span>
+                            <span class="text-xs font-bold opacity-70">${shares > 0 ? shares + '주' : '금액'} ${diff > 0 ? '추가 매수' : '비중 축소'}</span>
+                        </div>
+                    </div>
+                    <span class="${style.text} font-black text-lg">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>`;
                 actionPlanList.appendChild(d);
             }
         });
-        if (bal) actionPlanList.innerHTML = '<p class="text-center py-10 text-slate-400 font-bold italic">Perfectly Balanced.</p>';
+        if (bal) actionPlanList.innerHTML = '<div class="text-center py-12 bg-emerald-50 dark:bg-emerald-900/10 rounded-3xl border border-emerald-100 dark:border-emerald-800/30"><span class="text-4xl mb-4 block">🏆</span><p class="text-emerald-700 dark:text-emerald-400 font-bold">포트폴리오가 완벽하게 정렬되었습니다!</p></div>';
     }
     updateCharts(stats, currentTotal);
 }
@@ -238,22 +301,34 @@ function updateCharts(stats, total) {
 
     chartInstance = new Chart(ctxS, {
         type: 'bar',
-        data: { labels: Object.keys(stats).map(s => s.split(' ')[0]), datasets: [{ label: '현재 (Actual)', data: Object.values(stats).map(s => total > 0 ? (s.current / total * 100).toFixed(1) : 0), backgroundColor: 'rgba(99, 102, 241, 0.8)', borderRadius: 4 }, { label: '목표 (Target)', data: Object.values(stats).map(s => s.goal), backgroundColor: 'rgba(16, 185, 129, 0.4)', borderRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col } } } }
+        data: { 
+            labels: Object.keys(stats).map(s => s.split(' ')[0]), 
+            datasets: [
+                { label: '현재 (Actual)', data: Object.values(stats).map(s => total > 0 ? (s.current / total * 100).toFixed(1) : 0), backgroundColor: 'rgba(99, 102, 241, 0.8)', borderRadius: 8 }, 
+                { label: '목표 (Target)', data: Object.values(stats).map(s => s.goal), backgroundColor: 'rgba(16, 185, 129, 0.4)', borderRadius: 8 }
+            ] 
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col, font: { weight: 'bold' } } } } }
     });
 
     tickerChartInstance = new Chart(ctxT, {
         type: 'bar',
-        data: { labels: holdings.map(h => h.ticker), datasets: [{ label: '현재 (Actual)', data: holdings.map(h => total > 0 ? ((parseFloat(h.qty)*parseFloat(h.price)) / total * 100).toFixed(1) : 0), backgroundColor: 'rgba(244, 63, 94, 0.8)', borderRadius: 4 }, { label: '목표 (Target)', data: holdings.map(h => h.targetPercent), backgroundColor: 'rgba(16, 185, 129, 0.4)', borderRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col } } } }
+        data: { 
+            labels: holdings.map(h => h.ticker), 
+            datasets: [
+                { label: '현재 (Actual)', data: holdings.map(h => total > 0 ? ((parseFloat(h.qty)*parseFloat(h.price)) / total * 100).toFixed(1) : 0), backgroundColor: 'rgba(244, 63, 94, 0.8)', borderRadius: 8 }, 
+                { label: '목표 (Target)', data: holdings.map(h => h.targetPercent), backgroundColor: 'rgba(16, 185, 129, 0.4)', borderRadius: 8 }
+            ] 
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col, font: { weight: 'bold' } } } } }
     });
 
     const years = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const rate = 0.07; const startVal = total || 10000;
     simulationChartInstance = new Chart(ctxSim, {
         type: 'line',
-        data: { labels: years.map(y => y + 'y'), datasets: [{ label: '자산 성장 예측', data: years.map(y => Math.round(startVal * Math.pow(1 + rate, y))), borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, pointRadius: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: col, callback: v => '$' + (v / 1000).toFixed(0) + 'k' } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col } } } }
+        data: { labels: years.map(y => y + 'y'), datasets: [{ label: '자산 성장 예측', data: years.map(y => Math.round(startVal * Math.pow(1 + rate, y))), borderColor: '#10b981', borderWidth: 3, fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, pointRadius: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: col, callback: v => '$' + (v / 1000).toFixed(0) + 'k' } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col, font: { weight: 'bold' } } } } }
     });
 }
 
@@ -304,7 +379,7 @@ onAuthStateChanged(auth, async (user) => {
                 const data = migrateData(docSnap.data());
                 if (data.holdings) holdings = data.holdings;
                 if (data.sectorTargets) sectorTargets = data.sectorTargets;
-                if (data.targetCapital && targetCapitalInput) { targetCapital = data.targetCapital; targetCapitalInput.value = targetCapital; }
+                if (data.targetCapital && targetCapitalInput) { targetCapital = parseFloat(data.targetCapital) || 0; targetCapitalInput.value = targetCapital; }
             }
         } catch (e) { console.error("Load Error:", e); }
         updateSectorUI(); renderAssetList();
