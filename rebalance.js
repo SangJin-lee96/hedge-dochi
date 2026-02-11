@@ -339,9 +339,20 @@ function updateCalculation() {
                 const cardBorder = isBuy ? "border-rose-100 dark:border-rose-800" : "border-blue-100 dark:border-blue-800";
                 const textColor = isBuy ? "text-rose-600 dark:text-rose-400" : "text-blue-600 dark:text-blue-400";
                 const d = document.createElement('div');
-                d.className = `p-4 rounded-2xl border ${cardBg} ${cardBorder} flex justify-between items-center transition-all hover:scale-[1.02] shadow-sm`;
+                d.className = `p-4 rounded-2xl border ${cardBg} ${cardBorder} flex justify-between items-center gap-2 transition-all hover:scale-[1.02] shadow-sm`;
                 const shares = h.price > 0 ? Math.floor(Math.abs(diff) / h.price) : 0;
-                d.innerHTML = `<div class="flex items-center gap-4"><div class="${badgeColor} text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md">${actionText}</div><div class="flex flex-col min-w-0"><span class="font-bold text-slate-800 dark:text-white text-base truncate">${h.name || h.ticker}</span><span class="text-xs font-bold opacity-70 ${textColor}">${shares > 0 ? '약 ' + shares + '주 ' + actionText : actionText + ' 필요'}</span></div></div><div class="text-right flex-shrink-0"><p class="text-[10px] font-bold text-slate-400 uppercase mb-1">필요 금액</p><span class="${textColor} font-black text-xl">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
+                d.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="${badgeColor} text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md flex-shrink-0">${actionText}</div>
+                        <div class="flex flex-col min-w-0">
+                            <span class="font-bold text-slate-800 dark:text-white text-sm md:text-base truncate" title="${h.name || h.ticker}">${h.name || h.ticker}</span>
+                            <span class="text-[10px] md:text-xs font-bold opacity-70 ${textColor} truncate">${shares > 0 ? '약 ' + shares + '주 ' + actionText : actionText + ' 필요'}</span>
+                        </div>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase mb-0.5">필요 금액</p>
+                        <span class="${textColor} font-black text-lg md:text-xl">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
+                    </div>`;
                 actionPlanList.appendChild(d);
             }
         });
