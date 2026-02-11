@@ -115,35 +115,49 @@ window.updateTargetFromProfile = (profileId) => {
         const lockedAssets = sectorHoldings.filter(h => h.locked);
         const unlockedAssets = sectorHoldings.filter(h => !h.locked);
 
-        // 잠긴 자산의 비중 합계
         const lockedSum = lockedAssets.reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0);
-        
-        // 잠기지 않은 자산들에게 할당 가능한 남은 비중
         let availableForUnlocked = Math.max(0, sectorTargetWeight - lockedSum);
 
         if (unlockedAssets.length > 0) {
-            // 균등 배분 (전략 섹터 비중 내에서)
             const share = parseFloat((availableForUnlocked / unlockedAssets.length).toFixed(2));
             let distributed = 0;
-            
             unlockedAssets.forEach((h, idx) => {
                 if (idx === unlockedAssets.length - 1) {
-                    // 마지막 자산에 소수점 오차 보정
                     h.targetPercent = parseFloat((availableForUnlocked - distributed).toFixed(2));
                 } else {
                     h.targetPercent = share;
                     distributed += share;
                 }
             });
+        } else if (lockedAssets.length > 0 && Math.abs(lockedSum - sectorTargetWeight) > 0.01) {
+            console.warn(`Sector ${sectorName} is locked with ${lockedSum}%, but target is ${sectorTargetWeight}%`);
         }
     });
 
     renderAssetList();
-    alert(`[${strategy.name}] 전략이 적용되었습니다.\n${strategy.description}`);
 };
 
-// 기존 selectDochi를 새 엔진으로 연결
-window.selectDochi = (type) => updateTargetFromProfile(type);
+// 투자 성향 선택 시 UI 업데이트를 포함한 함수
+window.selectDochi = (type) => {
+    // 1. UI 시각적 상태 업데이트 (선택된 카드 강조, 나머지 페이드)
+    const cards = document.querySelectorAll('.strategy-card');
+    const ringColors = { aggressive: 'ring-rose-500', balanced: 'ring-blue-500', defensive: 'ring-emerald-500' };
+    
+    cards.forEach(card => {
+        // 모든 카드 초기화
+        card.classList.remove('ring-4', 'ring-rose-500', 'ring-blue-500', 'ring-emerald-500', 'opacity-100', 'scale-105');
+        card.classList.add('opacity-60', 'scale-100');
+    });
+    
+    const selectedCard = document.getElementById(`card-${type}`);
+    if (selectedCard) {
+        selectedCard.classList.remove('opacity-60', 'scale-100');
+        selectedCard.classList.add('opacity-100', 'ring-4', ringColors[type], 'scale-105');
+    }
+
+    // 2. 비중 계산 로직 실행
+    updateTargetFromProfile(type);
+};
 
 function migrateData(data) {
     if (data.holdings) {
@@ -235,7 +249,6 @@ function renderAssetList() {
         const targetPct = parseFloat(item.targetPercent) || 0;
         const diff = actualPct - targetPct;
         
-        // 시각적 피드백 로직
         const threshold = 1.0;
         let colorClass = 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20';
         if (diff > threshold) colorClass = 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20';
