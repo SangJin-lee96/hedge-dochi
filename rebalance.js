@@ -97,27 +97,19 @@ function getMappedSector(ticker, quoteType = "", yahooSector = "") {
     return "주식 (Equity)";
 }
 
-// [핵심] 전략 기반 비중 업데이트 함수 (잠금 자산 보호 로직 포함)
 window.updateTargetFromProfile = (profileId) => {
     const strategy = STRATEGY_CONFIG[profileId];
     if (!strategy) return;
-
-    // 1. 섹터 가이드 업데이트
     sectorTargets = { ...strategy.weights };
     updateSectorUI();
-
-    // 2. 종목별 비중 업데이트 (잠금 자산 보호 로직)
     PRIMARY_SECTORS.forEach(sectorName => {
         const sectorHoldings = holdings.filter(h => h.sector === sectorName);
         if (sectorHoldings.length === 0) return;
-
         const sectorTargetWeight = strategy.weights[sectorName] || 0;
         const lockedAssets = sectorHoldings.filter(h => h.locked);
         const unlockedAssets = sectorHoldings.filter(h => !h.locked);
-
         const lockedSum = lockedAssets.reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0);
         let availableForUnlocked = Math.max(0, sectorTargetWeight - lockedSum);
-
         if (unlockedAssets.length > 0) {
             const share = parseFloat((availableForUnlocked / unlockedAssets.length).toFixed(2));
             let distributed = 0;
@@ -129,33 +121,23 @@ window.updateTargetFromProfile = (profileId) => {
                     distributed += share;
                 }
             });
-        } else if (lockedAssets.length > 0 && Math.abs(lockedSum - sectorTargetWeight) > 0.01) {
-            console.warn(`Sector ${sectorName} is locked with ${lockedSum}%, but target is ${sectorTargetWeight}%`);
         }
     });
-
     renderAssetList();
 };
 
-// 투자 성향 선택 시 UI 업데이트를 포함한 함수
 window.selectDochi = (type) => {
-    // 1. UI 시각적 상태 업데이트 (선택된 카드 강조, 나머지 페이드)
     const cards = document.querySelectorAll('.strategy-card');
     const ringColors = { aggressive: 'ring-rose-500', balanced: 'ring-blue-500', defensive: 'ring-emerald-500' };
-    
     cards.forEach(card => {
-        // 모든 카드 초기화
         card.classList.remove('ring-4', 'ring-rose-500', 'ring-blue-500', 'ring-emerald-500', 'opacity-100', 'scale-105');
         card.classList.add('opacity-60', 'scale-100');
     });
-    
     const selectedCard = document.getElementById(`card-${type}`);
     if (selectedCard) {
         selectedCard.classList.remove('opacity-60', 'scale-100');
         selectedCard.classList.add('opacity-100', 'ring-4', ringColors[type], 'scale-105');
     }
-
-    // 2. 비중 계산 로직 실행
     updateTargetFromProfile(type);
 };
 
@@ -286,6 +268,8 @@ window.removeAsset = (idx) => { if(confirm('삭제하시겠습니까?')) { holdi
 
 function updateCalculation() {
     let currentTotal = 0;
+    holdings.forEach(h => { currentTotal += (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0); });
+
     const stats = PRIMARY_SECTORS.reduce((acc, s) => {
         const idMap = { "주식 (Equity)": "equity", "채권 (Fixed Income)": "bonds", "귀금속 (Precious Metals)": "gold", "원자재 (Commodity)": "commodity", "가상자산 (Digital Asset)": "crypto", "현금 (Liquidity)": "cash" };
         acc[s] = { current: 0, assigned: 0, goal: sectorTargets[s] || 0, key: idMap[s] };
@@ -293,7 +277,7 @@ function updateCalculation() {
     }, {});
 
     holdings.forEach(h => {
-        const v = (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0); currentTotal += v;
+        const v = (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0);
         if (stats[h.sector]) { stats[h.sector].current += v; stats[h.sector].assigned += (parseFloat(h.targetPercent) || 0); }
     });
 
@@ -313,23 +297,48 @@ function updateCalculation() {
         const gp = document.getElementById(`progress_${s.key}_gap`); if(gp) gp.style.width = `${Math.max(0, s.goal - curP)}%`;
     });
 
+    // 리밸런싱 가이드 (매수/매도 명확화)
     const base = targetCapital > 0 ? targetCapital : currentTotal;
     if (actionPlanList) {
         actionPlanList.innerHTML = '';
         let bal = true;
         holdings.forEach(h => {
-            const diff = (base * ((parseFloat(h.targetPercent) || 0) / 100)) - ((parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0));
+            const targetVal = base * ((parseFloat(h.targetPercent) || 0) / 100);
+            const currentVal = (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0);
+            const diff = targetVal - currentVal;
+            
+            // 임계치 (10달러 이상 또는 1% 이상 차이 시 가이드 생성)
             if (Math.abs(diff) > Math.max(10, base * 0.01)) {
                 bal = false;
-                const d = document.createElement('div');
                 const isBuy = diff > 0;
-                d.className = `p-4 rounded-2xl border ${isBuy ? 'bg-blue-50 border-blue-100' : 'bg-rose-50 border-rose-100'} flex justify-between items-center transition-all hover:scale-[1.02]`;
+                const actionText = isBuy ? "매수" : "매도";
+                const badgeColor = isBuy ? "bg-rose-600" : "bg-blue-600"; // 한국식: 매수(빨강), 매도(파랑)
+                const cardBg = isBuy ? "bg-rose-50 dark:bg-rose-900/10" : "bg-blue-50 dark:bg-blue-900/10";
+                const cardBorder = isBuy ? "border-rose-100 dark:border-rose-800" : "border-blue-100 dark:border-blue-800";
+                const textColor = isBuy ? "text-rose-600 dark:text-rose-400" : "text-blue-600 dark:text-blue-400";
+                
+                const d = document.createElement('div');
+                d.className = `p-4 rounded-2xl border ${cardBg} ${cardBorder} flex justify-between items-center transition-all hover:scale-[1.02] shadow-sm`;
+                
                 const shares = h.price > 0 ? Math.floor(Math.abs(diff) / h.price) : 0;
-                d.innerHTML = `<div class="flex items-center gap-3"><span>${isBuy ? '📉' : '⚠️'}</span><div class="flex flex-col"><span class="font-bold text-slate-800">${h.ticker}</span><span class="text-xs opacity-70">${shares > 0 ? shares + '주' : '금액'} ${isBuy ? '추가 매수' : '비중 축소'}</span></div></div><span class="${isBuy ? 'text-blue-600' : 'text-rose-600'} font-black text-lg">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>`;
+                d.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="${badgeColor} text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md">${actionText}</div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-slate-800 dark:text-white text-lg">${h.ticker}</span>
+                            <span class="text-xs font-bold opacity-70 ${textColor}">
+                                ${shares > 0 ? '약 ' + shares + '주 ' + actionText : actionText + ' 필요'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">필요 금액</p>
+                        <span class="${textColor} font-black text-xl">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
+                    </div>`;
                 actionPlanList.appendChild(d);
             }
         });
-        if (bal) actionPlanList.innerHTML = '<div class="text-center py-12 bg-emerald-50 rounded-3xl border border-emerald-100 text-emerald-700 font-bold">🏆 포트폴리오 정렬 완료!</div>';
+        if (bal) actionPlanList.innerHTML = '<div class="text-center py-12 bg-emerald-50 dark:bg-emerald-900/10 rounded-3xl border border-emerald-100 dark:border-emerald-800/30"><span class="text-4xl mb-4 block">🏆</span><p class="text-emerald-700 dark:text-emerald-400 font-bold">포트폴리오가 완벽하게 정렬되었습니다!</p></div>';
     }
     updateCharts(stats, currentTotal);
 }
@@ -349,13 +358,13 @@ function updateCharts(stats, total) {
     chartInstance = new Chart(ctxS, {
         type: 'bar',
         data: { labels: Object.keys(stats).map(s => s.split(' ')[0]), datasets: [{ label: 'Actual', data: Object.values(stats).map(s => total > 0 ? (s.current / total * 100).toFixed(1) : 0), backgroundColor: 'rgba(99, 102, 241, 0.8)', borderRadius: 8 }, { label: 'Target', data: Object.values(stats).map(s => s.goal), backgroundColor: 'rgba(16, 185, 129, 0.4)', borderRadius: 8 }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } } }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col, font: { weight: 'bold' } } } } }
     });
 
     tickerChartInstance = new Chart(ctxT, {
         type: 'bar',
         data: { labels: holdings.map(h => h.ticker), datasets: [{ label: 'Actual', data: holdings.map(h => total > 0 ? ((parseFloat(h.qty)*parseFloat(h.price)) / total * 100).toFixed(1) : 0), backgroundColor: 'rgba(244, 63, 94, 0.8)', borderRadius: 8 }, { label: 'Target', data: holdings.map(h => h.targetPercent), backgroundColor: 'rgba(16, 185, 129, 0.4)', borderRadius: 8 }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } } }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: col } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col, font: { weight: 'bold' } } } } }
     });
 
     const years = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -363,7 +372,7 @@ function updateCharts(stats, total) {
     simulationChartInstance = new Chart(ctxSim, {
         type: 'line',
         data: { labels: years.map(y => y + 'y'), datasets: [{ label: '성장 예측', data: years.map(y => Math.round(startVal * Math.pow(1 + rate, y))), borderColor: '#10b981', borderWidth: 3, fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, pointRadius: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: col, callback: v => '$' + (v / 1000).toFixed(0) + 'k' } }, x: { ticks: { color: col } } } }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: col, callback: v => '$' + (v / 1000).toFixed(0) + 'k' } }, x: { ticks: { color: col } } }, plugins: { legend: { labels: { color: col, font: { weight: 'bold' } } } } }
     });
 }
 
