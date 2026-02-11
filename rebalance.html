@@ -257,23 +257,25 @@
                         </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse table-fixed min-w-[750px]">
+                        <table class="w-full text-left border-collapse table-auto min-w-[700px]">
                             <thead>
                                 <tr class="text-[11px] font-bold border-b uppercase tracking-wider text-slate-400" style="border-color: var(--color-hr-border);">
-                                    <th class="py-3 px-2 w-10 text-center flex items-center justify-center gap-1 group relative">
-                                        <span>잠금</span>
-                                        <span class="cursor-help text-slate-300">ⓘ</span>
-                                        <!-- Tooltip -->
-                                        <div class="absolute bottom-full mb-2 hidden group-hover:block w-48 p-2 bg-slate-800 text-white text-[10px] rounded-lg shadow-xl z-10 normal-case leading-relaxed font-medium">
-                                            잠금 시 '목표 비중'이 고정되며, 다른 종목의 비중을 조절해도 변하지 않습니다.
+                                    <th class="py-3 px-2 w-12 text-center relative group">
+                                        <div class="flex items-center justify-center gap-1 cursor-help">
+                                            <span>잠금</span>
+                                            <span class="text-slate-300">ⓘ</span>
+                                        </div>
+                                        <!-- Tooltip (Positioned to avoid being cut off) -->
+                                        <div class="absolute left-0 bottom-full mb-2 hidden group-hover:block w-56 p-3 bg-slate-900 text-white text-[10px] rounded-xl shadow-2xl z-[100] normal-case leading-relaxed font-semibold border border-slate-700 animate-in fade-in slide-in-from-bottom-1">
+                                            잠금(🔒) 시 '목표 비중'이 고정되며,<br>다른 종목 조절 시에도 비율이 변하지 않습니다.
                                         </div>
                                     </th>
-                                    <th class="py-3 px-2 text-left">종목/섹터</th>
-                                    <th class="py-3 px-2 text-right w-20">보유수량</th>
+                                    <th class="py-3 px-2 text-left min-w-[150px]">종목/섹터</th>
+                                    <th class="py-3 px-2 text-right w-24">보유수량</th>
                                     <th class="py-3 px-2 text-right w-24">현재가($)</th>
                                     <th class="py-3 px-2 text-right w-24 text-indigo-500">Actual %</th>
                                     <th class="py-3 px-2 text-right w-24 text-blue-500">Target %</th>
-                                    <th class="py-3 px-2 text-center w-10">삭제</th>
+                                    <th class="py-3 px-2 text-center w-12">삭제</th>
                                 </tr>
                             </thead>
                             <tbody id="assetListBody" class="text-sm font-medium"></tbody>
@@ -281,8 +283,7 @@
                     </div>
                     <div class="mt-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl text-[11px] text-slate-500 space-y-2">
                         <div class="flex items-start gap-2"><span class="text-indigo-500 font-bold whitespace-nowrap">💡 Tip 1:</span><span>상단의 종목 검색에서 내 자산에 바로 추가할 수 있습니다.</span></div>
-                        <div class="flex items-start gap-2"><span class="text-indigo-500 font-bold whitespace-nowrap">💡 Tip 2:</span><span><strong>잠금(🔒)</strong> 기능을 사용하면 특정 종목의 목표 비중을 고정한 채로 <strong>정규화</strong>를 통해 나머지 자산의 비율을 맞출 수 있습니다.</span></div>
-                        <div class="flex items-start gap-2"><span class="text-indigo-500 font-bold whitespace-nowrap">💡 Tip 3:</span><span>현금(Cash)도 하나의 종목처럼 관리하세요. 티커에 'USD'를 입력하면 됩니다.</span></div>
+                        <div class="flex items-start gap-2"><span class="text-indigo-500 font-bold whitespace-nowrap">💡 Tip 2:</span><span>현금(Cash)도 하나의 종목처럼 관리하세요. 티커에 'USD'를 입력하면 됩니다.</span></div>
                         <p id="totalPercentDisplay" class="mt-3 pt-3 border-t border-slate-200 font-bold text-lg text-right text-indigo-600">목표 비중 합계: 0%</p>
                     </div>
                 </div>
