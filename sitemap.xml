@@ -4,33 +4,37 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+<!-- Updated for Hedge Dochi Live Deployment -->
 
-
 <url>
-  <loc>https://hedge-dochi.com/</loc>
-  <lastmod>2024-05-13T06:05:01+00:00</lastmod>
+  <loc>https://hedge-dochi-live.pages.dev/</loc>
+  <lastmod>2026-02-11T10:00:00+00:00</lastmod>
+  <priority>1.00</priority>
 </url>
 <url>
-  <loc>https://hedge-dochi.com/index.html</loc>
-  <lastmod>2024-05-13T06:05:01+00:00</lastmod>
+  <loc>https://hedge-dochi-live.pages.dev/rebalance.html</loc>
+  <lastmod>2026-02-11T10:00:00+00:00</lastmod>
+  <priority>0.90</priority>
 </url>
 <url>
-  <loc>https://hedge-dochi.com/about.html</loc>
-  <lastmod>2024-05-13T06:05:01+00:00</lastmod>
+  <loc>https://hedge-dochi-live.pages.dev/lotto.html</loc>
+  <lastmod>2026-02-11T10:00:00+00:00</lastmod>
+  <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://hedge-dochi.com/lotto.html</loc>
-  <lastmod>2024-05-13T06:05:01+00:00</lastmod>
+  <loc>https://hedge-dochi-live.pages.dev/about.html</loc>
+  <lastmod>2026-02-11T10:00:00+00:00</lastmod>
+  <priority>0.50</priority>
 </url>
 <url>
-  <loc>https://hedge-dochi.com/contact-form.html</loc>
-  <lastmod>2024-05-13T06:05:01+00:00</lastmod>
+  <loc>https://hedge-dochi-live.pages.dev/contact-form.html</loc>
+  <lastmod>2026-02-11T10:00:00+00:00</lastmod>
+  <priority>0.50</priority>
 </url>
 <url>
-  <loc>https://hedge-dochi.com/privacy.html</loc>
-  <lastmod>2024-05-13T06:05:01+00:00</lastmod>
+  <loc>https://hedge-dochi-live.pages.dev/privacy.html</loc>
+  <lastmod>2026-02-11T10:00:00+00:00</lastmod>
+  <priority>0.50</priority>
 </url>
-
 
 </urlset>
