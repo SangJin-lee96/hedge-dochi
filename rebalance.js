@@ -241,15 +241,19 @@ function renderAssetList() {
         tr.innerHTML = `
             <td class="py-3 px-2 text-center align-middle"><button onclick="toggleLock(${index})" class="text-lg">${item.locked ? '🔒' : '🔓'}</button></td>
             <td class="py-3 px-2">
-                <div class="flex flex-col">
-                    <input type="text" value="${item.ticker}" class="bg-transparent font-bold uppercase focus:outline-none w-full" onchange="updateHolding(${index}, 'ticker', this.value)">
-                    <select class="text-[10px] bg-transparent text-indigo-500 font-bold outline-none" onchange="updateHolding(${index}, 'sector', this.value)">
-                        ${PRIMARY_SECTORS.map(s => `<option value="${s}" ${item.sector === s ? 'selected' : ''}>${s}</option>`).join('')}
-                    </select>
+                <div class="flex flex-col min-w-0">
+                    <span class="font-bold text-slate-800 dark:text-white truncate text-sm" title="${item.name || item.ticker}">${item.name || item.ticker}</span>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                        <input type="text" value="${item.ticker}" class="text-[10px] bg-transparent text-slate-400 font-semibold uppercase focus:outline-none w-14 hover:text-blue-500 transition-colors" onchange="updateHolding(${index}, 'ticker', this.value)">
+                        <span class="text-[10px] text-slate-300">|</span>
+                        <select class="text-[10px] bg-transparent text-indigo-500 font-bold outline-none border-none p-0 cursor-pointer" onchange="updateHolding(${index}, 'sector', this.value)">
+                            ${PRIMARY_SECTORS.map(s => `<option value="${s}" ${item.sector === s ? 'selected' : ''}>${s}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
             </td>
-            <td class="py-3 px-2"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right focus:outline-none" onchange="updateHolding(${index}, 'qty', this.value)"></td>
-            <td class="py-3 px-2"><input type="number" value="${item.price}" class="w-full bg-transparent text-right focus:outline-none" onchange="updateHolding(${index}, 'price', this.value)"></td>
+            <td class="py-3 px-2"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right focus:outline-none font-medium" onchange="updateHolding(${index}, 'qty', this.value)"></td>
+            <td class="py-3 px-2"><input type="number" value="${item.price}" class="w-full bg-transparent text-right focus:outline-none font-medium" onchange="updateHolding(${index}, 'price', this.value)"></td>
             <td class="py-3 px-2 text-right"><div class="inline-block px-2 py-1 rounded-lg font-black ${colorClass}">${actualPct.toFixed(1)}%</div></td>
             <td class="py-3 px-2"><input type="number" value="${item.targetPercent}" class="w-full bg-transparent text-right focus:outline-none font-bold text-blue-600" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></td>
             <td class="py-3 px-2 text-center"><button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500">✕</button></td>`;
@@ -258,9 +262,24 @@ function renderAssetList() {
     updateCalculation();
 }
 
-window.updateHolding = (idx, field, val) => {
+window.updateHolding = async (idx, field, val) => {
     holdings[idx][field] = (['qty', 'price', 'targetPercent'].includes(field)) ? parseFloat(val) || 0 : val;
-    if (field === 'ticker') holdings[idx].sector = getMappedSector(val);
+    
+    // 티커 변경 시 데이터 실시간 패칭 (종목명, 섹터, 가격 자동 업데이트)
+    if (field === 'ticker' && val.length >= 1) {
+        try {
+            const data = await fetchInternalAPI('price', { ticker: val.toUpperCase() });
+            const meta = data?.chart?.result?.[0]?.meta;
+            if (meta) {
+                holdings[idx].name = meta.shortName || meta.symbol;
+                holdings[idx].price = meta.regularMarketPrice || meta.chartPreviousClose || 0;
+                holdings[idx].sector = getMappedSector(val);
+            }
+        } catch (e) {
+            holdings[idx].sector = getMappedSector(val);
+        }
+    }
+    
     if (!['targetPercent'].includes(field)) renderAssetList(); else updateCalculation();
 };
 
@@ -307,12 +326,11 @@ function updateCalculation() {
             const currentVal = (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0);
             const diff = targetVal - currentVal;
             
-            // 임계치 (10달러 이상 또는 1% 이상 차이 시 가이드 생성)
             if (Math.abs(diff) > Math.max(10, base * 0.01)) {
                 bal = false;
                 const isBuy = diff > 0;
                 const actionText = isBuy ? "매수" : "매도";
-                const badgeColor = isBuy ? "bg-rose-600" : "bg-blue-600"; // 한국식: 매수(빨강), 매도(파랑)
+                const badgeColor = isBuy ? "bg-rose-600" : "bg-blue-600";
                 const cardBg = isBuy ? "bg-rose-50 dark:bg-rose-900/10" : "bg-blue-50 dark:bg-blue-900/10";
                 const cardBorder = isBuy ? "border-rose-100 dark:border-rose-800" : "border-blue-100 dark:border-blue-800";
                 const textColor = isBuy ? "text-rose-600 dark:text-rose-400" : "text-blue-600 dark:text-blue-400";
@@ -324,14 +342,14 @@ function updateCalculation() {
                 d.innerHTML = `
                     <div class="flex items-center gap-4">
                         <div class="${badgeColor} text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md">${actionText}</div>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-slate-800 dark:text-white text-lg">${h.ticker}</span>
+                        <div class="flex flex-col min-w-0">
+                            <span class="font-bold text-slate-800 dark:text-white text-base truncate">${h.name || h.ticker}</span>
                             <span class="text-xs font-bold opacity-70 ${textColor}">
                                 ${shares > 0 ? '약 ' + shares + '주 ' + actionText : actionText + ' 필요'}
                             </span>
                         </div>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right flex-shrink-0">
                         <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">필요 금액</p>
                         <span class="${textColor} font-black text-xl">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
                     </div>`;
