@@ -257,20 +257,23 @@
                         </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse table-auto min-w-[700px]">
+                        <table class="w-full text-left border-collapse table-auto min-w-[750px]">
                             <thead>
                                 <tr class="text-[11px] font-bold border-b uppercase tracking-wider text-slate-400" style="border-color: var(--color-hr-border);">
-                                    <th class="py-3 px-2 w-12 text-center relative group">
+                                    <th class="py-3 px-2 text-center relative group whitespace-nowrap">
                                         <div class="flex items-center justify-center gap-1 cursor-help">
                                             <span>잠금</span>
-                                            <span class="text-slate-300">ⓘ</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
                                         </div>
-                                        <!-- Tooltip (Positioned to avoid being cut off) -->
-                                        <div class="absolute left-0 bottom-full mb-2 hidden group-hover:block w-56 p-3 bg-slate-900 text-white text-[10px] rounded-xl shadow-2xl z-[100] normal-case leading-relaxed font-semibold border border-slate-700 animate-in fade-in slide-in-from-bottom-1">
-                                            잠금(🔒) 시 '목표 비중'이 고정되며,<br>다른 종목 조절 시에도 비율이 변하지 않습니다.
+                                        <!-- Improved Tooltip -->
+                                        <div class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 bg-slate-800 text-white text-[10px] rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity z-[100] normal-case leading-relaxed font-semibold border border-slate-700">
+                                            잠금(🔒) 시 '목표 비중'이 고정되어,<br>다른 종목 조절 시에도 비율이 변하지 않습니다.
+                                            <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
                                         </div>
                                     </th>
-                                    <th class="py-3 px-2 text-left min-w-[150px]">종목/섹터</th>
+                                    <th class="py-3 px-2 text-left min-w-[180px]">종목/섹터</th>
                                     <th class="py-3 px-2 text-right w-24">보유수량</th>
                                     <th class="py-3 px-2 text-right w-24">현재가($)</th>
                                     <th class="py-3 px-2 text-right w-24 text-indigo-500">Actual %</th>
