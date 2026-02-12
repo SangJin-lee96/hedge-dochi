@@ -32,12 +32,12 @@ const EXCHANGE_PRESETS = {
 };
 
 const SECTOR_GUIDE_PRESETS = {
-    '주식 (Equity)': '시장 지수 추종 ETF (예: S&P500)',
-    '채권 (Fixed Income)': '중장기 국채 (예: US-10Y)',
-    '귀금속 (Precious Metals)': '금 현물/ETF (Gold)',
-    '원자재 (Commodity)': '원자재 인덱스 (Commodity)',
-    '가상자산 (Digital Asset)': '메이저 가상자산 (Market Cap)',
-    '현금 (Liquidity)': '파킹통장/MMF (Liquidity)'
+    '주식 (Equity)': { us: 'VOO', kr: 'TIGER 미국S&P500', label: '시장 지수 ETF' },
+    '채권 (Fixed Income)': { us: 'TLT', kr: 'KODEX 미국채10년', label: '중장기 국채' },
+    '귀금속 (Precious Metals)': { us: 'GLD', kr: 'ACE KRX금현물', label: '금 현물' },
+    '원자재 (Commodity)': { us: 'DBC', kr: 'KODEX 구리선물', label: '원자재 인덱스' },
+    '가상자산 (Digital Asset)': { us: 'BTC', kr: 'BTC', label: '비트코인' },
+    '현금 (Liquidity)': { us: 'BIL', kr: 'KODEX KOFR금리', label: '현금성 자산' }
 };
 
 const STRATEGY_CONFIG = {
@@ -359,18 +359,25 @@ function renderAssetList() {
 
     // 2. 공백 섹터 가이드 (Ghost Rows)
     ghostRows.forEach(ghost => {
-        const keywordMap = {
-            "주식 (Equity)": "VOO",
-            "채권 (Fixed Income)": "TLT",
-            "귀금속 (Precious Metals)": "GLD",
-            "원자재 (Commodity)": "DBC",
-            "가상자산 (Digital Asset)": "BTC",
-            "현금 (Liquidity)": "BIL"
-        };
-        const keyword = keywordMap[ghost.sector] || "ETF";
-
+        const preset = SECTOR_GUIDE_PRESETS[ghost.sector];
         const tr = document.createElement('tr');
         tr.className = `bg-slate-50/50 dark:bg-slate-800/30 italic border-b border-dashed border-slate-200 dark:border-slate-700 opacity-80`;
+        
+        let actionHTML = '';
+        if (preset) {
+            actionHTML = `
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-1">
+                    <button onclick="triggerGuideSearch('${preset.us}')" class="flex items-center gap-1 border border-blue-400 text-blue-500 hover:bg-blue-50 px-2 py-1 rounded text-[9px] font-black whitespace-nowrap transition-colors">
+                        <span class="bg-blue-500 text-white px-1 rounded-[3px] text-[8px]">US</span> ${preset.us}
+                    </button>
+                    <button onclick="triggerGuideSearch('${preset.kr}')" class="flex items-center gap-1 border border-indigo-400 text-indigo-500 hover:bg-indigo-50 px-2 py-1 rounded text-[9px] font-black whitespace-nowrap transition-colors">
+                        <span class="bg-indigo-500 text-white px-1 rounded-[3px] text-[8px]">KR</span> ${preset.kr}
+                    </button>
+                </div>`;
+        } else {
+            actionHTML = `<button onclick="triggerGuideSearch('ETF')" class="text-blue-500 hover:text-blue-600 font-black text-[10px] whitespace-nowrap">🔍 ETF 검색</button>`;
+        }
+
         tr.innerHTML = `
             <td class="py-3 px-2 text-center align-middle">👻</td>
             <td class="py-3 px-2"><div class="flex flex-col min-w-0"><span class="font-bold text-slate-500 dark:text-slate-400 truncate text-sm" style="word-break: keep-all;">[가이드] ${ghost.name}</span><span class="text-[10px] text-indigo-400 font-bold">${ghost.sector}</span></div></td>
@@ -378,7 +385,7 @@ function renderAssetList() {
             <td class="py-3 px-2 text-center font-bold text-slate-400">-</td>
             <td class="py-3 px-2 text-right"><div class="inline-block px-2 py-1 rounded-lg font-black bg-slate-100 dark:bg-slate-700 text-slate-400">0.0%</div></td>
             <td class="py-3 px-2 text-right font-black text-blue-400/70 pr-4">${ghost.targetPercent.toFixed(1)}%</td>
-            <td class="py-3 px-2 text-center"><button onclick="triggerGuideSearch('${keyword}')" class="text-blue-500 hover:text-blue-600 font-black text-[10px] whitespace-nowrap">🔍 ${keyword} 검색</button></td>`;
+            <td class="py-3 px-2 text-center">${actionHTML}</td>`;
         assetListBody.appendChild(tr);
     });
     updateCalculation();
@@ -387,7 +394,7 @@ function renderAssetList() {
 window.triggerGuideSearch = (keyword) => {
     const input = document.getElementById('tickerSearchInput');
     if (!input) return;
-    const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const cleanKeyword = keyword.trim().toUpperCase();
     input.value = cleanKeyword;
     input.focus();
     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -396,7 +403,7 @@ window.triggerGuideSearch = (keyword) => {
     setTimeout(() => {
         const list = document.getElementById('searchResults');
         if (list && (list.innerHTML === '' || list.innerText.includes('결과 없음'))) {
-            alert(`해당 키워드(${cleanKeyword})의 결과가 없습니다. 'ETF' 또는 다른 관련 티커로 검색해 보세요.`);
+            alert(`해당 키워드(${cleanKeyword})의 결과가 없습니다. 다른 관련 티커로 검색해 보세요.`);
         }
     }, 2000);
 
