@@ -359,11 +359,15 @@ function renderAssetList() {
 
     // 2. 공백 섹터 가이드 (Ghost Rows)
     ghostRows.forEach(ghost => {
-        let keyword = "";
-        if (ghost.sector.includes("Equity")) keyword = "S&P500";
-        else if (ghost.sector.includes("Fixed Income")) keyword = "미국채";
-        else if (ghost.sector.includes("Precious Metals")) keyword = "금";
-        else if (ghost.sector.includes("Digital Asset")) keyword = "비트코인";
+        const keywordMap = {
+            "주식 (Equity)": "VOO",
+            "채권 (Fixed Income)": "TLT",
+            "귀금속 (Precious Metals)": "GLD",
+            "원자재 (Commodity)": "DBC",
+            "가상자산 (Digital Asset)": "BTC",
+            "현금 (Liquidity)": "BIL"
+        };
+        const keyword = keywordMap[ghost.sector] || "ETF";
 
         const tr = document.createElement('tr');
         tr.className = `bg-slate-50/50 dark:bg-slate-800/30 italic border-b border-dashed border-slate-200 dark:border-slate-700 opacity-80`;
@@ -374,7 +378,7 @@ function renderAssetList() {
             <td class="py-3 px-2 text-center font-bold text-slate-400">-</td>
             <td class="py-3 px-2 text-right"><div class="inline-block px-2 py-1 rounded-lg font-black bg-slate-100 dark:bg-slate-700 text-slate-400">0.0%</div></td>
             <td class="py-3 px-2 text-right font-black text-blue-400/70 pr-4">${ghost.targetPercent.toFixed(1)}%</td>
-            <td class="py-3 px-2 text-center"><button onclick="triggerGuideSearch('${keyword}')" class="text-blue-500 hover:text-blue-600 font-black text-[10px] whitespace-nowrap">🔍 검색</button></td>`;
+            <td class="py-3 px-2 text-center"><button onclick="triggerGuideSearch('${keyword}')" class="text-blue-500 hover:text-blue-600 font-black text-[10px] whitespace-nowrap">🔍 ${keyword} 검색</button></td>`;
         assetListBody.appendChild(tr);
     });
     updateCalculation();
@@ -383,9 +387,18 @@ function renderAssetList() {
 window.triggerGuideSearch = (keyword) => {
     const input = document.getElementById('tickerSearchInput');
     if (!input) return;
-    input.value = keyword;
+    const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    input.value = cleanKeyword;
     input.focus();
     input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // Fallback alert if no results found after debounce and API call
+    setTimeout(() => {
+        const list = document.getElementById('searchResults');
+        if (list && (list.innerHTML === '' || list.innerText.includes('결과 없음'))) {
+            alert(`해당 키워드(${cleanKeyword})의 결과가 없습니다. 'ETF' 또는 다른 관련 티커로 검색해 보세요.`);
+        }
+    }, 2000);
 
     const searchSection = document.getElementById('section-search');
     if (searchSection) {
@@ -425,7 +438,14 @@ function updateCalculation() {
     PRIMARY_SECTORS.forEach(sector => {
         const targetWeight = sectorTargets[sector] || 0;
         if (targetWeight > 0 && !holdings.some(h => h.sector === sector)) {
-            ghostRows.push({ name: SECTOR_GUIDE_PRESETS[sector], sector: sector, isGhost: true, actualPercent: 0, targetPercent: targetWeight });
+            ghostRows.push({ 
+                name: SECTOR_GUIDE_PRESETS[sector], 
+                sector: sector, 
+                isGhost: true, 
+                actualPercent: 0, 
+                targetPercent: targetWeight,
+                price: 100 // Dummy price for calculation stability
+            });
         }
     });
 
@@ -485,9 +505,10 @@ function updateCalculation() {
         ghostRows.forEach(ghost => {
             bal = false;
             const targetVal = base * (ghost.targetPercent / 100);
+            const shares = ghost.price > 0 ? Math.floor(targetVal / ghost.price) : 0;
             const d = document.createElement('div');
             d.className = `p-4 rounded-2xl border border-dashed border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-900/10 flex justify-between items-center gap-2 transition-all hover:scale-[1.02] shadow-sm`;
-            d.innerHTML = `<div class="flex items-center gap-3 min-w-0"><div class="bg-indigo-600 text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md flex-shrink-0">신규</div><div class="flex flex-col min-w-0"><span class="font-bold text-slate-500 dark:text-slate-400 text-sm md:text-base truncate" title="${ghost.name}">${ghost.name}</span><span class="text-[10px] md:text-xs font-bold text-indigo-500 truncate" style="word-break: keep-all;">${ghost.sector} 확보 필요</span></div></div><div class="text-right flex-shrink-0"><p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase mb-0.5">권장 금액</p><span class="text-indigo-600 font-black text-lg md:text-xl">$${targetVal.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
+            d.innerHTML = `<div class="flex items-center gap-3 min-w-0"><div class="bg-indigo-600 text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md flex-shrink-0">신규</div><div class="flex flex-col min-w-0"><span class="font-bold text-slate-500 dark:text-slate-400 text-sm md:text-base truncate" title="${ghost.name}">${ghost.name}</span><span class="text-[10px] md:text-xs font-bold text-indigo-500 truncate" style="word-break: keep-all;">${shares > 0 ? '약 ' + shares + '주 ' : ''}${ghost.sector} 확보 필요</span></div></div><div class="text-right flex-shrink-0"><p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase mb-0.5">권장 금액</p><span class="text-indigo-600 font-black text-lg md:text-xl">$${targetVal.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
             actionPlanList.appendChild(d);
         });
         const costDisplay = document.getElementById('totalFrictionCostDisplay'), costValue = document.getElementById('frictionCostValue'), costWarning = document.getElementById('frictionCostWarning');
