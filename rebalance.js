@@ -305,14 +305,19 @@ function updateSectorUI() {
         "가상자산 (Digital Asset)": "target_crypto", 
         "현금 (Liquidity)": "target_cash" 
     };
+    
+    let totalGoal = 0;
     Object.keys(idMap).forEach(s => {
         const el = document.getElementById(idMap[s]);
-        if (el) el.value = sectorTargets[s] || 0;
+        const targetValue = parseFloat(sectorTargets[s] || 0);
+        if (el) el.value = targetValue;
+        totalGoal += targetValue;
     });
-    const totalGoal = Object.values(sectorTargets).reduce((a, b) => a + b, 0);
+
     const status = document.getElementById('sectorTotalStatus');
     if (status) {
         status.innerText = `Goal: ${totalGoal.toFixed(1)}%`;
+        // 정확히 100%가 되도록 유도
         status.className = `text-sm font-bold px-3 py-1 rounded-full ${Math.abs(totalGoal - 100) < 0.1 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`;
     }
 }
