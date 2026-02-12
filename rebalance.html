@@ -148,10 +148,23 @@
             <button onclick="document.getElementById('loginBtn').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1">지금 시작하기</button>
         </div>
 
-        <div id="appContent" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-            <!-- 왼쪽 영역 -->
-            <div class="lg:col-span-7 space-y-6 md:space-y-8">
-                <!-- 1. 종목 검색 및 추가 -->
+        <div id="appContent" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
+            <!-- 1. 요약 대시보드 (Mobile Order: 1, PC: Right Top) -->
+            <div id="section-summary" class="lg:col-span-5 lg:col-start-8 order-1 space-y-6">
+                <div class="p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                    <div class="flex justify-between items-start mb-6">
+                        <div><p class="text-xs font-bold uppercase mb-1 opacity-80">현재 총 자산</p><h2 id="totalValueDisplay" class="text-2xl md:text-3xl font-black">$0.00</h2></div>
+                        <div class="text-right"><p class="text-xs font-bold uppercase mb-1 opacity-80">목표 투자 금액</p><div class="relative inline-block"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-indigo-300 font-bold">$</span><input type="number" id="targetCapitalInput" class="bg-white/10 border border-white/20 rounded-lg py-1 px-3 pl-6 text-xl font-black text-white w-28 md:w-32 focus:outline-none" placeholder="0"></div></div>
+                    </div>
+                    <div id="rebalanceStatus" class="p-4 bg-white/10 rounded-xl backdrop-blur-md border border-white/20 flex items-center gap-3">
+                        <span id="statusIcon" class="text-xl md:text-2xl">✅</span>
+                        <div><h4 id="statusTitle" class="font-bold text-sm md:text-base">계산기 준비 완료</h4><p id="statusDesc" class="text-xs md:text-sm opacity-90">목표 금액과 비중을 설정하세요.</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 종목 검색 및 추가 (Mobile Order: 2, PC: Left Top) -->
+            <div id="section-search" class="lg:col-span-7 lg:col-start-1 lg:row-start-1 order-2">
                 <div class="p-5 md:p-8 rounded-2xl md:rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
                     <h3 class="text-lg md:text-xl font-bold mb-4 flex items-center gap-2"><span>🔍</span> 종목 검색 및 추가</h3>
                     <div class="relative">
@@ -162,106 +175,10 @@
                         <ul id="searchResults" class="space-y-2 max-h-60 overflow-y-auto pr-2"></ul>
                     </div>
                 </div>
+            </div>
 
-                <!-- 2. 투자 성향 선택 -->
-                <div class="space-y-4">
-                    <h3 class="text-lg md:text-xl font-bold flex items-center gap-2 px-2 text-slate-800 dark:text-slate-100">
-                        <span class="text-2xl">🦔</span> 투자 성향 선택
-                    </h3>
-                    <div id="strategyContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-                        <div id="card-aggressive" onclick="selectDochi('aggressive')" class="strategy-card group cursor-pointer p-6 md:p-8 rounded-2xl bg-white dark:bg-[#252a3d] border border-slate-200 dark:border-rose-500/30 hover:border-rose-500 hover:shadow-[0_0_30px_rgba(244,63,94,0.2)] transition-all duration-500 transform hover:-translate-y-2 text-center">
-                            <div class="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-4xl shadow-xl group-hover:scale-110 transition-transform duration-300">🦔🔥</div>
-                            <h4 class="text-xl md:text-2xl font-black mb-1 text-rose-500">공격도치</h4>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2 md:mb-4">High Risk</p>
-                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-300 leading-relaxed font-medium">베타(β) 가속 중심<br>수익률 극대화 포트폴리오</p>
-                        </div>
-                        <div id="card-balanced" onclick="selectDochi('balanced')" class="strategy-card group cursor-pointer p-6 md:p-8 rounded-2xl bg-white dark:bg-[#252a3d] border border-slate-200 dark:border-blue-500/30 hover:border-blue-500 hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all duration-500 transform hover:-translate-y-2 text-center">
-                            <div class="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-tr from-blue-500 to-indigo-400 rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-4xl shadow-xl group-hover:scale-110 transition-transform duration-300">🦔⚖️</div>
-                            <h4 class="text-xl md:text-2xl font-black mb-1 text-blue-500">중도도치</h4>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2 md:mb-4">Balanced</p>
-                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-300 leading-relaxed font-medium">샤프 지수 최적화<br>위험 대비 수익의 효율적 균형</p>
-                        </div>
-                        <div id="card-defensive" onclick="selectDochi('defensive')" class="strategy-card group cursor-pointer p-6 md:p-8 rounded-2xl bg-white dark:bg-[#252a3d] border border-slate-200 dark:border-emerald-500/30 hover:border-emerald-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] transition-all duration-500 transform hover:-translate-y-2 text-center">
-                            <div class="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-4xl shadow-xl group-hover:scale-110 transition-transform duration-300">🦔🛡️</div>
-                            <h4 class="text-xl md:text-2xl font-black mb-1 text-emerald-500">수비도치</h4>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2 md:mb-4">Preservation</p>
-                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-300 leading-relaxed font-medium">변동성(σ) 제어 중심<br>원금 보호와 자산 방어 우선</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. 섹터별 비중 현황 -->
-                <div class="p-5 md:p-8 rounded-2xl md:rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg md:text-xl font-bold flex items-center gap-2"><span>📊</span> 섹터별 비중 현황</h3>
-                        <div id="sectorTotalStatus" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Total: 100%</div>
-                    </div>
-                    <div id="sectorDashboard" class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
-                        <!-- Sector IDs used by JS -->
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between gap-2">
-                                <div class="flex items-center gap-1.5 min-w-0 flex-1">
-                                    <span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">📈 주식 (Equity)</span>
-                                    <button onclick="distributeSector('주식 (Equity)')" class="flex-shrink-0 whitespace-nowrap text-[8px] bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">균등배분</button>
-                                </div>
-                                <div class="flex items-center gap-1 flex-shrink-0">
-                                    <input type="number" id="target_equity" value="0" class="w-10 text-right font-bold text-blue-600 bg-transparent border-b border-blue-500 focus:outline-none" onchange="updateSectorTarget('주식 (Equity)', this.value)">
-                                    <span class="text-[10px] font-bold text-slate-400">%</span>
-                                </div>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex">
-                                <div id="progress_equity_current" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
-                                <div id="progress_equity_gap" class="h-full bg-blue-300/30 transition-all duration-500" style="width: 0%"></div>
-                            </div>
-                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter mt-1">
-                                <span class="text-slate-400">Actual: <span id="current_equity_pct">0%</span></span>
-                                <span class="text-slate-400">Target: <span id="target_equity_pct_val" class="text-blue-500">0%</span></span>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between gap-2">
-                                <div class="flex items-center gap-1.5 min-w-0 flex-1"><span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">🛡️ 채권 (Fixed Income)</span><button onclick="distributeSector('채권 (Fixed Income)')" class="flex-shrink-0 whitespace-nowrap text-[8px] bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">균등배분</button></div>
-                                <div class="flex items-center gap-1 flex-shrink-0"><input type="number" id="target_bonds" value="0" class="w-10 text-right font-bold text-emerald-600 bg-transparent border-b border-emerald-500 focus:outline-none" onchange="updateSectorTarget('채권 (Fixed Income)', this.value)"><span class="text-[10px] font-bold text-slate-400">%</span></div>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex"><div id="progress_bonds_current" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div><div id="progress_bonds_gap" class="h-full bg-emerald-300/30 transition-all duration-500" style="width: 0%"></div></div>
-                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter mt-1"><span class="text-slate-400">Actual: <span id="current_bonds_pct">0%</span></span><span class="text-slate-400">Target: <span id="target_bonds_pct_val" class="text-emerald-500">0%</span></span></div>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between gap-2">
-                                <div class="flex items-center gap-1.5 min-w-0 flex-1"><span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">✨ 귀금속 (Precious Metals)</span><button onclick="distributeSector('귀금속 (Precious Metals)')" class="flex-shrink-0 whitespace-nowrap text-[8px] bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">균등배분</button></div>
-                                <div class="flex items-center gap-1 flex-shrink-0"><input type="number" id="target_gold" value="0" class="w-10 text-right font-bold text-amber-600 bg-transparent border-b border-amber-500 focus:outline-none" onchange="updateSectorTarget('귀금속 (Precious Metals)', this.value)"><span class="text-[10px] font-bold text-slate-400">%</span></div>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex"><div id="progress_gold_current" class="h-full bg-amber-500 transition-all duration-500" style="width: 0%"></div><div id="progress_gold_gap" class="h-full bg-amber-300/30 transition-all duration-500" style="width: 0%"></div></div>
-                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter mt-1"><span class="text-slate-400">Actual: <span id="current_gold_pct">0%</span></span><span class="text-slate-400">Target: <span id="target_gold_pct_val" class="text-amber-500">0%</span></span></div>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between gap-2">
-                                <div class="flex items-center gap-1.5 min-w-0 flex-1"><span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">📀 원자재 (Commodity)</span><button onclick="distributeSector('원자재 (Commodity)')" class="flex-shrink-0 whitespace-nowrap text-[8px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">균등배분</button></div>
-                                <div class="flex items-center gap-1 flex-shrink-0"><input type="number" id="target_commodity" value="0" class="w-10 text-right font-bold text-orange-600 bg-transparent border-b border-orange-500 focus:outline-none" onchange="updateSectorTarget('원자재 (Commodity)', this.value)"><span class="text-[10px] font-bold text-slate-400">%</span></div>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex"><div id="progress_commodity_current" class="h-full bg-orange-500 transition-all duration-500" style="width: 0%"></div><div id="progress_commodity_gap" class="h-full bg-orange-300/30 transition-all duration-500" style="width: 0%"></div></div>
-                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter mt-1"><span class="text-slate-400">Actual: <span id="current_commodity_pct">0%</span></span><span class="text-slate-400">Target: <span id="target_commodity_pct_val" class="text-orange-500">0%</span></span></div>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between gap-2">
-                                <div class="flex items-center gap-1.5 min-w-0 flex-1"><span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">₿ 가상자산 (Digital Asset)</span><button onclick="distributeSector('가상자산 (Digital Asset)')" class="flex-shrink-0 whitespace-nowrap text-[8px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">균등배분</button></div>
-                                <div class="flex items-center gap-1 flex-shrink-0"><input type="number" id="target_crypto" value="0" class="w-10 text-right font-bold text-purple-600 bg-transparent border-b border-purple-500 focus:outline-none" onchange="updateSectorTarget('가상자산 (Digital Asset)', this.value)"><span class="text-[10px] font-bold text-slate-400">%</span></div>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex"><div id="progress_crypto_current" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div><div id="progress_crypto_gap" class="h-full bg-purple-300/30 transition-all duration-500" style="width: 0%"></div></div>
-                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter mt-1"><span class="text-slate-400">Actual: <span id="current_crypto_pct">0%</span></span><span class="text-slate-400">Target: <span id="target_crypto_pct_val" class="text-purple-500">0%</span></span></div>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between gap-2">
-                                <div class="flex items-center gap-1.5 min-w-0 flex-1"><span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">💵 현금 (Liquidity)</span><button onclick="distributeSector('현금 (Liquidity)')" class="flex-shrink-0 whitespace-nowrap text-[8px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">균등배분</button></div>
-                                <div class="flex items-center gap-1 flex-shrink-0"><input type="number" id="target_cash" value="0" class="w-10 text-right font-bold text-slate-600 bg-transparent border-b border-slate-500 focus:outline-none" onchange="updateSectorTarget('현금 (Liquidity)', this.value)"><span class="text-[10px] font-bold text-slate-400">%</span></div>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex"><div id="progress_cash_current" class="h-full bg-slate-500 transition-all duration-500" style="width: 0%"></div><div id="progress_cash_gap" class="h-full bg-slate-300/30 transition-all duration-500" style="width: 0%"></div></div>
-                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter mt-1"><span class="text-slate-400">Actual: <span id="current_cash_pct">0%</span></span><span class="text-slate-400">Target: <span id="target_cash_pct_val" class="text-slate-500">0%</span></span></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4. 보유 자산 목록 -->
+            <!-- 3. 보유 자산 목록 (Mobile Order: 3, PC: Left Bottom) -->
+            <div id="section-list" class="lg:col-span-7 lg:col-start-1 lg:row-start-4 order-3">
                 <div class="p-5 md:p-8 rounded-2xl md:rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
                     <div class="flex items-center justify-between mb-6 gap-2">
                         <h3 class="text-base md:text-xl font-bold whitespace-nowrap">📋 보유 자산 목록</h3>
@@ -294,7 +211,6 @@
                                                 <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
                                             </svg>
                                         </div>
-                                        <!-- Tooltip adjusted to left-aligned with direct override -->
                                         <div class="tooltip-box absolute top-full left-0 mt-2 w-64 p-3 bg-[#1a1f2e] text-white text-xs rounded-xl shadow-2xl z-[999] whitespace-normal text-left font-normal border border-slate-700/50 backdrop-blur-md !transform-none">
                                             <div class="absolute bottom-full left-4 border-4 border-transparent border-b-[#1a1f2e]"></div>
                                             잠금 기능을 활성화하면 리밸런싱 계산 시 해당 종목의 비중을 고정하고 나머지 종목들로만 비중을 재분배합니다.
@@ -304,18 +220,14 @@
                                     <th class="py-3 px-2 text-right w-20 md:w-24">보유수량</th>
                                     <th class="py-3 px-2 text-right w-20 md:w-24">현재가($)</th>
                                     <th class="py-3 px-2 text-right w-20 md:w-24 text-indigo-500 relative group">
-                                        <div class="flex items-center justify-end gap-1 cursor-help">
-                                            <span>Actual %</span>
-                                        </div>
+                                        <div class="flex items-center justify-end gap-1 cursor-help"><span>Actual %</span></div>
                                         <div class="tooltip-box tooltip-center absolute top-full mt-2 w-48 p-2 bg-[#1a1f2e] text-white text-[10px] rounded-lg shadow-2xl z-[999] whitespace-normal text-center font-normal border border-slate-700/50 backdrop-blur-md">
                                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-[#1a1f2e]"></div>
                                             현재가 기준 실제 자산 비중
                                         </div>
                                     </th>
                                     <th class="py-3 px-2 text-right w-20 md:w-24 text-blue-500 relative group">
-                                        <div class="flex items-center justify-end gap-1 cursor-help">
-                                            <span>Target %</span>
-                                        </div>
+                                        <div class="flex items-center justify-end gap-1 cursor-help"><span>Target %</span></div>
                                         <div class="tooltip-box tooltip-center absolute top-full mt-2 w-48 p-2 bg-[#1a1f2e] text-white text-[10px] rounded-lg shadow-2xl z-[999] whitespace-normal text-center font-normal border border-slate-700/50 backdrop-blur-md">
                                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-[#1a1f2e]"></div>
                                             내가 목표로 하는 자산 비중
@@ -335,20 +247,103 @@
                 </div>
             </div>
 
-            <!-- 오른쪽 영역 -->
-            <div class="lg:col-span-5 space-y-6">
-                <!-- 5. 요약 대시보드 -->
-                <div class="p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                    <div class="flex justify-between items-start mb-6">
-                        <div><p class="text-xs font-bold uppercase mb-1 opacity-80">현재 총 자산</p><h2 id="totalValueDisplay" class="text-2xl md:text-3xl font-black">$0.00</h2></div>
-                        <div class="text-right"><p class="text-xs font-bold uppercase mb-1 opacity-80">목표 투자 금액</p><div class="relative inline-block"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-indigo-300 font-bold">$</span><input type="number" id="targetCapitalInput" class="bg-white/10 border border-white/20 rounded-lg py-1 px-3 pl-6 text-xl font-black text-white w-28 md:w-32 focus:outline-none" placeholder="0"></div></div>
+            <!-- 4. 투자 성향 선택 (Mobile Order: 4, PC: Left Row 2) -->
+            <div id="section-strategy" class="lg:col-span-7 lg:col-start-1 lg:row-start-2 order-4 space-y-4">
+                <h3 class="text-lg md:text-xl font-bold flex items-center gap-2 px-2 text-slate-800 dark:text-slate-100">
+                    <span class="text-2xl">🦔</span> 투자 성향 선택
+                </h3>
+                <div id="strategyContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                    <div id="card-aggressive" onclick="selectDochi('aggressive')" class="strategy-card group cursor-pointer p-6 md:p-8 rounded-2xl bg-white dark:bg-[#252a3d] border border-slate-200 dark:border-rose-500/30 hover:border-rose-500 transition-all duration-500 text-center">
+                        <div class="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-4xl shadow-xl">🦔🔥</div>
+                        <h4 class="text-xl md:text-2xl font-black mb-1 text-rose-500">공격도치</h4>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2 md:mb-4">High Risk</p>
+                        <p class="text-xs md:text-sm text-slate-500 dark:text-slate-300 leading-relaxed font-medium">베타(β) 가속 중심<br>수익률 극대화 포트폴리오</p>
                     </div>
-                    <div id="rebalanceStatus" class="p-4 bg-white/10 rounded-xl backdrop-blur-md border border-white/20 flex items-center gap-3">
-                        <span id="statusIcon" class="text-xl md:text-2xl">✅</span>
-                        <div><h4 id="statusTitle" class="font-bold text-sm md:text-base">계산기 준비 완료</h4><p id="statusDesc" class="text-xs md:text-sm opacity-90">목표 금액과 비중을 설정하세요.</p></div>
+                    <div id="card-balanced" onclick="selectDochi('balanced')" class="strategy-card group cursor-pointer p-6 md:p-8 rounded-2xl bg-white dark:bg-[#252a3d] border border-slate-200 dark:border-blue-500/30 hover:border-blue-500 transition-all duration-500 text-center">
+                        <div class="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-tr from-blue-500 to-indigo-400 rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-4xl shadow-xl">🦔⚖️</div>
+                        <h4 class="text-xl md:text-2xl font-black mb-1 text-blue-500">중도도치</h4>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2 md:mb-4">Balanced</p>
+                        <p class="text-xs md:text-sm text-slate-500 dark:text-slate-300 leading-relaxed font-medium">샤프 지수 최적화<br>위험 대비 수익의 효율적 균형</p>
+                    </div>
+                    <div id="card-defensive" onclick="selectDochi('defensive')" class="strategy-card group cursor-pointer p-6 md:p-8 rounded-2xl bg-white dark:bg-[#252a3d] border border-slate-200 dark:border-emerald-500/30 hover:border-emerald-500 transition-all duration-500 text-center">
+                        <div class="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-4xl shadow-xl">🦔🛡️</div>
+                        <h4 class="text-xl md:text-2xl font-black mb-1 text-emerald-500">수비도치</h4>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2 md:mb-4">Preservation</p>
+                        <p class="text-xs md:text-sm text-slate-500 dark:text-slate-300 leading-relaxed font-medium">변동성(σ) 제어 중심<br>원금 보호와 자산 방어 우선</p>
                     </div>
                 </div>
-                <!-- 6. 차트 영역 -->
+            </div>
+
+            <!-- 5. 섹터별 비중 현황 (Mobile Order: 5, PC: Left Row 3) -->
+            <div id="section-sector" class="lg:col-span-7 lg:col-start-1 lg:row-start-3 order-5">
+                <div class="p-5 md:p-8 rounded-2xl md:rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg md:text-xl font-bold flex items-center gap-2"><span>📊</span> 섹터별 비중 현황</h3>
+                        <div id="sectorTotalStatus" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Total: 100%</div>
+                    </div>
+                    <div id="sectorDashboard" class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 min-w-0 flex-1"><span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">📈 주식 (Equity)</span><button onclick="distributeSector('주식 (Equity)')" class="flex-shrink-0 text-[8px] bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded font-bold hover:bg-blue-100 transition-colors">균등배분</button></div>
+                                <div class="flex items-center gap-1 flex-shrink-0"><input type="number" id="target_equity" value="0" class="w-10 text-right font-bold text-blue-600 bg-transparent border-b border-blue-500 focus:outline-none" onchange="updateSectorTarget('주식 (Equity)', this.value)"><span class="text-[10px] font-bold text-slate-400">%</span></div>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex"><div id="progress_equity_current" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div><div id="progress_equity_gap" class="h-full bg-blue-300/30 transition-all duration-500" style="width: 0%"></div></div>
+                            <div class="flex justify-between text-[10px] font-bold uppercase mt-1"><span class="text-slate-400">Actual: <span id="current_equity_pct">0%</span></span><span class="text-slate-400">Target: <span id="target_equity_pct_val" class="text-blue-500">0%</span></span></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 min-w-0 flex-1"><span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">🛡️ 채권 (Fixed Income)</span><button onclick="distributeSector('채권 (Fixed Income)')" class="flex-shrink-0 text-[8px] bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded font-bold hover:bg-blue-100 transition-colors">균등배분</button></div>
+                                <div class="flex items-center gap-1 flex-shrink-0"><input type="number" id="target_bonds" value="0" class="w-10 text-right font-bold text-emerald-600 bg-transparent border-b border-emerald-500 focus:outline-none" onchange="updateSectorTarget('채권 (Fixed Income)', this.value)"><span class="text-[10px] font-bold text-slate-400">%</span></div>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex"><div id="progress_bonds_current" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div><div id="progress_bonds_gap" class="h-full bg-emerald-300/30 transition-all duration-500" style="width: 0%"></div></div>
+                            <div class="flex justify-between text-[10px] font-bold uppercase mt-1"><span class="text-slate-400">Actual: <span id="current_bonds_pct">0%</span></span><span class="text-slate-400">Target: <span id="target_bonds_pct_val" class="text-emerald-500">0%</span></span></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 min-w-0 flex-1"><span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">✨ 귀금속 (Precious Metals)</span><button onclick="distributeSector('귀금속 (Precious Metals)')" class="flex-shrink-0 text-[8px] bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded font-bold hover:bg-blue-100 transition-colors">균등배분</button></div>
+                                <div class="flex items-center gap-1 flex-shrink-0"><input type="number" id="target_gold" value="0" class="w-10 text-right font-bold text-amber-600 bg-transparent border-b border-amber-500 focus:outline-none" onchange="updateSectorTarget('귀금속 (Precious Metals)', this.value)"><span class="text-[10px] font-bold text-slate-400">%</span></div>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex"><div id="progress_gold_current" class="h-full bg-amber-500 transition-all duration-500" style="width: 0%"></div><div id="progress_gold_gap" class="h-full bg-amber-300/30 transition-all duration-500" style="width: 0%"></div></div>
+                            <div class="flex justify-between text-[10px] font-bold uppercase mt-1"><span class="text-slate-400">Actual: <span id="current_gold_pct">0%</span></span><span class="text-slate-400">Target: <span id="target_gold_pct_val" class="text-amber-500">0%</span></span></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 min-w-0 flex-1"><span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">📀 원자재 (Commodity)</span><button onclick="distributeSector('원자재 (Commodity)')" class="flex-shrink-0 text-[8px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold hover:bg-blue-100 transition-colors">균등배분</button></div>
+                                <div class="flex items-center gap-1 flex-shrink-0"><input type="number" id="target_commodity" value="0" class="w-10 text-right font-bold text-orange-600 bg-transparent border-b border-orange-500 focus:outline-none" onchange="updateSectorTarget('원자재 (Commodity)', this.value)"><span class="text-[10px] font-bold text-slate-400">%</span></div>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex"><div id="progress_commodity_current" class="h-full bg-orange-500 transition-all duration-500" style="width: 0%"></div><div id="progress_commodity_gap" class="h-full bg-orange-300/30 transition-all duration-500" style="width: 0%"></div></div>
+                            <div class="flex justify-between text-[10px] font-bold uppercase mt-1"><span class="text-slate-400">Actual: <span id="current_commodity_pct">0%</span></span><span class="text-slate-400">Target: <span id="target_commodity_pct_val" class="text-orange-500">0%</span></span></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 min-w-0 flex-1"><span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">₿ 가상자산 (Digital Asset)</span><button onclick="distributeSector('가상자산 (Digital Asset)')" class="flex-shrink-0 text-[8px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold hover:bg-blue-100 transition-colors">균등배분</button></div>
+                                <div class="flex items-center gap-1 flex-shrink-0"><input type="number" id="target_crypto" value="0" class="w-10 text-right font-bold text-purple-600 bg-transparent border-b border-purple-500 focus:outline-none" onchange="updateSectorTarget('가상자산 (Digital Asset)', this.value)"><span class="text-[10px] font-bold text-slate-400">%</span></div>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex"><div id="progress_crypto_current" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div><div id="progress_crypto_gap" class="h-full bg-purple-300/30 transition-all duration-500" style="width: 0%"></div></div>
+                            <div class="flex justify-between text-[10px] font-bold uppercase mt-1"><span class="text-slate-400">Actual: <span id="current_crypto_pct">0%</span></span><span class="text-slate-400">Target: <span id="target_crypto_pct_val" class="text-purple-500">0%</span></span></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 min-w-0 flex-1"><span class="text-sm font-bold truncate text-slate-800 dark:text-slate-200">💵 현금 (Liquidity)</span><button onclick="distributeSector('현금 (Liquidity)')" class="flex-shrink-0 text-[8px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold hover:bg-blue-100 transition-colors">균등배분</button></div>
+                                <div class="flex items-center gap-1 flex-shrink-0"><input type="number" id="target_cash" value="0" class="w-10 text-right font-bold text-slate-600 bg-transparent border-b border-slate-500 focus:outline-none" onchange="updateSectorTarget('현금 (Liquidity)', this.value)"><span class="text-[10px] font-bold text-slate-400">%</span></div>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden flex"><div id="progress_cash_current" class="h-full bg-slate-500 transition-all duration-500" style="width: 0%"></div><div id="progress_cash_gap" class="h-full bg-slate-300/30 transition-all duration-500" style="width: 0%"></div></div>
+                            <div class="flex justify-between text-[10px] font-bold uppercase mt-1"><span class="text-slate-400">Actual: <span id="current_cash_pct">0%</span></span><span class="text-slate-400">Target: <span id="target_cash_pct_val" class="text-slate-500">0%</span></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. 리밸런싱 가이드 (Mobile Order: 6, PC: Right Mid) -->
+            <div id="section-guide" class="lg:col-span-5 lg:col-start-8 lg:row-start-2 order-6">
+                <div class="p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
+                    <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">🚀 리밸런싱 가이드</h3><div class="flex items-center gap-2"><label class="text-xs font-semibold cursor-pointer">정수 단위 매매</label><input type="checkbox" id="integerModeToggle" class="w-4 h-4"></div></div>
+                    <div id="actionPlanList" class="space-y-3"><p class="text-sm text-slate-500 py-4 text-center">데이터를 입력하면 가이드가 생성됩니다.</p></div>
+                </div>
+            </div>
+
+            <!-- 7. 자산군별 비중 그래프 (Mobile Order: 7, PC: Right Mid) -->
+            <div id="section-charts" class="lg:col-span-5 lg:col-start-8 lg:row-start-3 order-7">
                 <div class="p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
                     <h3 class="text-xs font-bold uppercase text-center mb-4 text-slate-400">자산군별 비중 (현재 vs 목표)</h3>
                     <div class="relative h-60 md:h-64 mb-8"><canvas id="portfolioChart"></canvas></div>
@@ -356,20 +351,18 @@
                     <h3 class="text-xs font-bold uppercase text-center mb-4 text-slate-400">종목별 비중 (현재 vs 목표)</h3>
                     <div class="relative h-60 md:h-64"><canvas id="tickerChart"></canvas></div>
                 </div>
-                <!-- 리밸런싱 가이드 -->
-                <div class="p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
-                    <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">🚀 리밸런싱 가이드</h3><div class="flex items-center gap-2"><label class="text-xs font-semibold cursor-pointer">정수 단위 매매</label><input type="checkbox" id="integerModeToggle" class="w-4 h-4"></div></div>
-                    <div id="actionPlanList" class="space-y-3"><p class="text-sm text-slate-500 py-4 text-center">데이터를 입력하면 가이드가 생성됩니다.</p></div>
-                </div>
-                <!-- 시뮬레이션 차트 -->
+            </div>
+
+            <!-- 8. 시뮬레이션 차트 (Mobile Order: 8, PC: Right Bottom) -->
+            <div id="section-simulation" class="lg:col-span-5 lg:col-start-8 lg:row-start-4 order-8">
                 <div class="p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-xl border transition-all" style="background-color: var(--color-card-background); border-color: var(--color-card-border);">
                     <h3 class="text-xs font-bold uppercase text-center mb-4 text-slate-400">📈 10년 자산 성장 예측</h3>
                     <div class="relative h-60 md:h-64"><canvas id="simulationChart"></canvas></div>
                 </div>
             </div>
 
-            <!-- AdSense Content Boost: 하단 전체 너비 가이드 -->
-            <div class="lg:col-span-12 mt-4 md:mt-8">
+            <!-- 9. AdSense Content Boost: 하단 전체 너비 가이드 (Mobile Order: 9, PC: Bottom) -->
+            <div id="section-bottom-info" class="lg:col-span-12 order-9 mt-4 md:mt-8">
                 <div class="p-6 md:p-12 rounded-2xl md:rounded-3xl shadow-xl border bg-slate-50 dark:bg-slate-800/50 transition-all border-slate-200 dark:border-slate-700">
                     <h3 class="text-xl md:text-2xl font-bold mb-6 md:mb-8 flex items-center gap-3">
                         <span class="bg-blue-600 text-white p-2 rounded-xl shadow-lg">🎓</span> 
