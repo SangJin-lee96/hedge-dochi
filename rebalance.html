@@ -121,7 +121,7 @@
 
         <div id="appContent" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
-            <!-- LEFT COLUMN -->
+            <!-- LEFT COLUMN (Search, Strategy, Sector, List) -->
             <div id="col-left" class="contents-mobile lg:col-span-7 flex flex-col gap-6">
                 
                 <!-- 2. 종목 검색 (Order 2) -->
@@ -227,31 +227,44 @@
                         <h3 class="text-base md:text-lg font-bold whitespace-nowrap">📋 보유 자산 목록</h3>
                         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
                              <button id="refreshPricesBtn" class="bg-slate-100 dark:bg-slate-700 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border border-slate-200 dark:border-slate-600 whitespace-nowrap">🔄 시세</button>
+                             <label class="cursor-pointer bg-slate-100 dark:bg-slate-700 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border border-slate-200 dark:border-slate-600 whitespace-nowrap"><span>📤</span> CSV<input type="file" id="csvFileInput" class="hidden" accept=".csv"></label>
                              <button onclick="normalizeWeights()" class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border border-indigo-100 dark:border-indigo-800 whitespace-nowrap">⚖️ 비중 맞춤</button>
-                             <button id="saveBtn" class="bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap">💾 저장</button>
+                             <button id="addAssetBtn" class="bg-indigo-600 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold shadow-sm whitespace-nowrap">+ 종목</button>
+                             <button id="saveBtn" class="bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold shadow-sm whitespace-nowrap">💾 저장</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto pb-4 -mx-5 px-5 sm:mx-0 sm:px-0"> 
-                        <table class="w-full text-left border-collapse table-auto min-w-[600px]">
+                        <table class="w-full text-left border-collapse table-auto min-w-[650px]">
                             <thead>
-                                <tr class="text-[10px] font-bold border-b uppercase tracking-wider text-slate-400">
-                                    <th class="py-3 px-2 w-10 text-center">🔐</th>
-                                    <th class="py-3 px-2 text-left min-w-[140px]">종목/섹터</th>
-                                    <th class="py-3 px-2 text-right w-20">보유수량</th>
-                                    <th class="py-3 px-2 text-right w-20">현재가($)</th>
-                                    <th class="py-3 px-2 text-right w-20 text-indigo-500">Actual%</th>
-                                    <th class="py-3 px-2 text-right w-20 text-blue-500">Target%</th>
-                                    <th class="py-3 px-2 text-center w-8">✕</th>
+                                <tr class="text-[10px] font-bold border-b uppercase tracking-wider text-slate-400" style="border-color: var(--color-hr-border);">
+                                    <th class="py-3 px-2 w-14 text-center relative group whitespace-nowrap">
+                                        <div class="flex items-center justify-center gap-1 cursor-help">
+                                            <span>잠금</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 group-hover:text-blue-500 transition-colors"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                        </div>
+                                        <div class="tooltip-box absolute top-full left-0 mt-2 w-64 p-3 bg-[#1a1f2e] text-white text-xs rounded-xl shadow-2xl z-[999] whitespace-normal text-left font-normal border border-slate-700/50 backdrop-blur-md !transform-none">
+                                            <div class="absolute bottom-full left-4 border-4 border-transparent border-b-[#1a1f2e]"></div>
+                                            잠금 기능을 활성화하면 리밸런싱 계산 시 해당 종목의 비중을 고정하고 나머지 종목들로만 비중을 재분배합니다.
+                                        </div>
+                                    </th>
+                                    <th class="py-3 px-2 text-left min-w-[160px]">종목/섹터</th>
+                                    <th class="py-3 px-2 text-right w-24">보유수량</th>
+                                    <th class="py-3 px-2 text-right w-24">현재가($)</th>
+                                    <th class="py-3 px-2 text-right w-24 text-indigo-500">Actual%</th>
+                                    <th class="py-3 px-2 text-right w-24 text-blue-500">Target%</th>
+                                    <th class="py-3 px-2 text-center w-10">✕</th>
                                 </tr>
                             </thead>
                             <tbody id="assetListBody" class="text-xs md:text-sm font-medium"></tbody>
                         </table>
                     </div>
-                    <p id="totalPercentDisplay" class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 font-bold text-base text-right text-indigo-600">목표 합계: 0%</p>
+                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-right">
+                        <p id="totalPercentDisplay" class="font-bold text-base text-indigo-600">목표 비중 합계: 0%</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN -->
+            <!-- RIGHT COLUMN (Summary, Guide, Charts, Simulation) -->
             <div id="col-right" class="contents-mobile lg:col-span-5 flex flex-col gap-6">
                 
                 <!-- 1. 요약 대시보드 (Order 1) -->
@@ -262,13 +275,19 @@
                     </div>
                     <div id="rebalanceStatus" class="p-4 bg-white/10 rounded-xl backdrop-blur-md border border-white/20 flex items-center gap-3">
                         <span id="statusIcon" class="text-xl md:text-2xl">✅</span>
-                        <div><h4 id="statusTitle" class="font-bold text-sm md:text-base">계산기 준비 완료</h4><p id="statusDesc" class="text-xs md:text-sm opacity-90">목표를 설정하세요.</p></div>
+                        <div><h4 id="statusTitle" class="font-bold text-sm md:text-base">계산기 준비 완료</h4><p id="statusDesc" class="text-xs md:text-sm opacity-90">목표 금액과 비중을 설정하세요.</p></div>
                     </div>
                 </div>
 
                 <!-- 6. 리밸런싱 가이드 (Order 6) -->
                 <div id="section-guide" class="order-6 p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700">
-                    <h3 class="text-lg md:text-xl font-bold mb-4">🚀 리밸런싱 가이드</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg md:text-xl font-bold">🚀 리밸런싱 가이드</h3>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs font-semibold cursor-pointer">정수 단위 매매</label>
+                            <input type="checkbox" id="integerModeToggle" class="w-4 h-4">
+                        </div>
+                    </div>
                     <div id="actionPlanList" class="space-y-3"><p class="text-sm text-slate-500 py-4 text-center">데이터를 입력하면 가이드가 생성됩니다.</p></div>
                 </div>
 
