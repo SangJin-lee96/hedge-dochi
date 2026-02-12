@@ -67,19 +67,20 @@
     </style>
 </head>
 <body class="min-h-screen relative overflow-x-hidden transition-colors">
+    <!-- 배경 장식 -->
     <div class="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden pointer-events-none">
         <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-400/10 blur-[120px]"></div>
         <div class="absolute top-[20%] -right-[5%] w-[30%] h-[30%] rounded-full bg-purple-400/10 blur-[100px]"></div>
         <div class="absolute -bottom-[10%] left-[20%] w-[35%] h-[35%] rounded-full bg-indigo-400/10 blur-[120px]"></div>
     </div>
 
+    <!-- 헤더 네비게이션 -->
     <header class="sticky top-0 z-50 w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
                 <span class="text-xl">💎</span>
                 <span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
             </div>
-            
             <nav class="hidden md:flex items-center gap-4">
                 <a href="index.html" class="text-sm font-extrabold px-3 py-2 rounded-lg transition-colors bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">자산 시뮬레이터</a>
                 <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
@@ -87,7 +88,6 @@
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
             </nav>
-
             <div class="flex items-center gap-2 md:hidden">
                 <button id="darkModeToggleMobile" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
                 <button id="mobileMenuBtn" class="p-2 rounded-lg" style="color: var(--color-primary-text);">
@@ -95,7 +95,6 @@
                 </button>
             </div>
         </div>
-
         <div id="mobileMenu" class="hidden md:hidden absolute top-16 left-0 w-full border-b shadow-lg transition-all" style="background-color: var(--color-nav-bg); border-color: var(--color-nav-border);">
             <nav class="flex flex-col p-4 space-y-2">
                 <a href="index.html" class="text-base font-extrabold p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600">자산 시뮬레이터</a>
@@ -106,23 +105,21 @@
         </div>
     </header>
 
-    <main class="py-6 px-4 md:py-12 max-w-6xl mx-auto">
+    <main class="py-4 px-4 md:py-12 max-w-6xl mx-auto overflow-x-hidden">
         <header class="mb-8 md:mb-12 text-center md:text-left">
-            <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight" style="color: var(--color-primary-text);">나의 10년 후 자산 등급은?</h1>
-            <p class="mt-3 text-base md:text-xl font-medium text-slate-500">연봉 상승과 고정 지출을 반영한 현실 시뮬레이션</p>
+            <h1 class="text-2xl md:text-5xl font-extrabold tracking-tight leading-tight" style="color: var(--color-primary-text);">나의 10년 후 자산 등급은?</h1>
+            <p class="mt-2 text-base md:text-xl font-medium text-slate-500">연봉 상승과 고정 지출을 반영한 현실 시뮬레이션</p>
         </header>
 
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 md:gap-8">
+            <!-- 입력 설정 -->
             <div class="xl:col-span-4 space-y-6 p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl border h-fit transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700">
                 <section>
                     <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">수입 및 초기 자산</h3>
                     <div class="space-y-5">
                         <div class="input-group">
                             <label class="block text-sm font-semibold mb-2">현재 세후 연봉</label>
-                            <div class="relative">
-                                <input type="number" id="annualSalary" value="4500" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-bold text-lg">
-                                <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">만원</span>
-                            </div>
+                            <div class="relative"><input type="number" id="annualSalary" value="4500" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-bold text-lg"><span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">만원</span></div>
                         </div>
                         <div class="input-group">
                             <label class="block text-sm font-semibold mb-2">연봉 상승률 (연 %)</label>
@@ -130,10 +127,7 @@
                         </div>
                         <div class="input-group">
                             <label class="block text-sm font-semibold mb-2">현재 보유 자산</label>
-                            <div class="relative">
-                                <input type="number" id="initialSeed" value="3000" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-bold text-lg">
-                                <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">만원</span>
-                            </div>
+                            <div class="relative"><input type="number" id="initialSeed" value="3000" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-bold text-lg"><span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">만원</span></div>
                         </div>
                     </div>
                 </section>
@@ -143,11 +137,7 @@
                     <div class="space-y-5">
                         <div class="input-group">
                             <label class="block text-sm font-semibold mb-2">생활비/주거/보험 등</label>
-                            <div class="relative">
-                                <input type="number" id="monthlyExpense" value="200" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 pr-12 focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all font-bold text-lg">
-                                <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">만원</span>
-                            </div>
-                            <p class="text-xs mt-3 ps-1 text-slate-500">💡 솔직하게 적을수록 결과가 정확해집니다.</p>
+                            <div class="relative"><input type="number" id="monthlyExpense" value="200" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 pr-12 focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all font-bold text-lg"><span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">만원</span></div>
                         </div>
                     </div>
                 </section>
@@ -156,101 +146,91 @@
                     <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">투자 환경</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="input-group">
-                            <label class="block text-xs font-bold mb-2">투자 수익 (%)</label>
-                            <input type="number" id="investmentReturn" value="5.0" step="0.1" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 transition-all font-bold text-center">
+                            <label class="block text-[10px] md:text-xs font-bold mb-2">투자 수익 (%)</label>
+                            <input type="number" id="investmentReturn" value="5.0" step="0.1" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 transition-all font-bold text-center text-sm md:text-base">
                         </div>
                         <div class="input-group">
-                            <label class="block text-xs font-bold mb-2">물가 상승 (%)</label>
-                            <input type="number" id="inflationRate" value="2.5" step="0.1" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 transition-all font-bold text-center">
+                            <label class="block text-[10px] md:text-xs font-bold mb-2">물가 상승 (%)</label>
+                            <input type="number" id="inflationRate" value="2.5" step="0.1" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 transition-all font-bold text-center text-sm md:text-base">
                         </div>
                     </div>
                 </section>
             </div>
 
+            <!-- 결과 영역 -->
             <div class="xl:col-span-8 space-y-6">
-                <div id="gradeSection" class="capture-area bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-10 rounded-2xl md:rounded-3xl shadow-2xl text-center transition-all duration-700 transform hover:scale-[1.01]">
-                    <h3 class="text-xs font-bold uppercase tracking-[0.3em] mb-6 text-white/80">10 YEAR WEALTH TIER</h3>
+                <div id="gradeSection" class="capture-area bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-2xl text-center transition-all duration-700 transform hover:scale-[1.01]">
+                    <h3 class="text-[10px] font-bold uppercase tracking-[0.3em] mb-6 text-white/80">10 YEAR WEALTH TIER</h3>
                     <div class="flex flex-col items-center justify-center">
-                        <div id="gradeBadgeIcon" class="text-7xl md:text-8xl mb-6 drop-shadow-2xl transition-all duration-700">💎</div>
-                        <h2 id="gradeTitle" class="text-5xl md:text-6xl font-black text-white mb-3 transition-all duration-700 tracking-tight">다이아몬드</h2>
-                        <p id="gradeDesc" class="text-white/90 text-lg md:text-xl font-medium max-w-xl mx-auto transition-all duration-700 leading-relaxed">TOP TIER 달성! 10년 후, 당신은 경제적 자유를 누리게 됩니다.</p>
+                        <div id="gradeBadgeIcon" class="text-6xl md:text-8xl mb-6 drop-shadow-2xl transition-all duration-700">💎</div>
+                        <h2 id="gradeTitle" class="text-4xl md:text-6xl font-black text-white mb-3 transition-all duration-700 tracking-tight">다이아몬드</h2>
+                        <p id="gradeDesc" class="text-white/90 text-sm md:text-xl font-medium max-w-xl mx-auto transition-all duration-700 leading-relaxed px-2">TOP TIER 달성! 10년 후, 당신은 경제적 자유를 누리게 됩니다.</p>
                     </div>
                     <div class="mt-10 flex flex-col items-center gap-4">
-                        <div class="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold backdrop-blur-md bg-white/20 text-white border border-white/30">
-                            <span>📸 결과를 캡처해서 친구들과 공유해보세요!</span>
+                        <div class="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold backdrop-blur-md bg-white/20 text-white border border-white/30">
+                            <span>📸 결과를 캡처해 친구들과 공유하세요!</span>
                         </div>
-                        <button id="showStrategyBtn" class="group flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-indigo-600 font-bold shadow-xl hover:bg-indigo-50 transition-all transform hover:-translate-y-1">
-                            <span>🎯 나의 맞춤 투자 전략 확인하기</span>
+                        <button id="showStrategyBtn" class="group flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white text-indigo-600 font-bold shadow-xl hover:bg-indigo-50 transition-all transform hover:-translate-y-1 mx-2">
+                            <span class="text-sm md:text-base">🎯 맞춤 투자 전략 확인</span>
                             <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                         </button>
                     </div>
                     <div class="mt-8 flex justify-center gap-3">
-                        <button onclick="shareToX()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 transition-all border border-white/20 shadow-lg" title="X 공유">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
-                        </button>
-                        <button onclick="copyLink()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 transition-all border border-white/20 shadow-lg" title="링크 복사">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                        </button>
+                        <button onclick="shareToX()" class="w-11 h-11 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 shadow-lg"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg></button>
+                        <button onclick="copyLink()" class="w-11 h-11 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 shadow-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg></button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="p-8 rounded-2xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700 shadow-sm">
-                        <p class="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">10년 후 명목 자산</p>
-                        <h2 class="text-4xl font-black mt-3 tracking-tight text-blue-600 dark:text-blue-400" id="finalWealthText">12.0억</h2>
-                        <p class="text-xs mt-1 font-medium opacity-60">단순 수치 합계</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-6 rounded-2xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700 shadow-sm">
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">10년 후 명목 자산</p>
+                        <h2 class="text-2xl md:text-3xl font-black mt-2 text-blue-600 dark:text-blue-400" id="finalWealthText">12.0억</h2>
                     </div>
-                    <div class="p-8 rounded-2xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700 shadow-sm">
-                        <p class="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">실질 가치 (물가반영)</p>
-                        <h2 class="text-4xl font-black mt-3 tracking-tight text-slate-800 dark:text-white" id="realValueText">9.3억</h2>
-                        <p class="text-xs mt-1 font-medium opacity-60">현재 화폐 가치 기준</p>
+                    <div class="p-6 rounded-2xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700 shadow-sm">
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">실질 가치 (물가반영)</p>
+                        <h2 class="text-2xl md:text-3xl font-black mt-2 text-slate-800 dark:text-white" id="realValueText">9.3억</h2>
                     </div>
-                    <div class="bg-indigo-600 p-8 rounded-2xl shadow-xl shadow-indigo-500/20 text-white transition-all">
-                        <p class="text-indigo-200 text-xs font-bold uppercase tracking-widest">월 평균 저축가능액</p>
-                        <h2 class="text-4xl font-black mt-3 tracking-tight" id="netSavingsText">175만</h2>
-                        <p class="text-indigo-200/60 text-xs mt-1 font-medium">매월 투자 가능 금액</p>
+                    <div class="bg-indigo-600 p-6 rounded-2xl shadow-xl shadow-indigo-500/20 text-white">
+                        <p class="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">월 평균 저축가능액</p>
+                        <h2 class="text-2xl md:text-3xl font-black mt-2" id="netSavingsText">175만</h2>
                     </div>
                 </div>
 
-                <div class="p-6 md:p-8 rounded-2xl md:rounded-3xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700 shadow-sm">
-                    <div class="flex justify-between items-center mb-8">
-                        <h3 class="text-xl font-bold">📉 자산 성장 추이</h3>
-                        <span class="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 uppercase tracking-wider">10-Year Projection</span>
-                    </div>
-                    <div class="relative h-[350px]">
-                        <canvas id="wealthChart"></canvas>
-                    </div>
+                <div class="p-5 md:p-8 rounded-2xl md:rounded-3xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center mb-8"><h3 class="text-lg font-bold">📉 자산 성장 추이</h3><span class="text-[10px] font-bold px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 uppercase">10-Year</span></div>
+                    <div class="relative h-[280px] md:h-[350px]"><canvas id="wealthChart"></canvas></div>
                 </div>
 
-                <div id="insightBox" class="p-8 rounded-2xl border-2 transition-all bg-amber-50 dark:bg-amber-900/10 border-amber-100/50 dark:border-amber-900/30">
-                    <h4 class="font-bold mb-3 flex items-center text-lg text-amber-800 dark:text-amber-300"><span class="mr-2">💡</span> AI 분석 코멘트</h4>
-                    <p id="aiInsight" class="leading-relaxed font-medium text-amber-900/80 dark:text-amber-200/80">데이터를 분석 중입니다...</p>
+                <div id="insightBox" class="p-6 md:p-8 rounded-2xl border-2 transition-all bg-amber-50 dark:bg-amber-900/10 border-amber-100/50 dark:border-amber-900/30">
+                    <h4 class="font-bold mb-2 flex items-center text-base text-amber-800 dark:text-amber-300"><span class="mr-2">💡</span> AI 분석 코멘트</h4>
+                    <p id="aiInsight" class="text-sm md:text-base leading-relaxed text-amber-900/80 dark:text-amber-200/80">분석 중...</p>
                 </div>
                 
-                <div class="mt-12 p-8 md:p-12 rounded-3xl border bg-white/50 dark:bg-slate-800/30 backdrop-blur-sm transition-all border-slate-200 dark:border-slate-700">
-                    <h3 class="text-xl md:text-2xl font-bold mb-8 flex items-center gap-3">
-                        <span class="bg-indigo-600 text-white p-2 rounded-xl shadow-lg">📚</span> 
-                        자산 관리 가이드 및 자주 묻는 질문
+                <!-- 자산 관리 가이드 - 모바일 최적화 -->
+                <div class="mt-8 md:mt-12 px-4 py-8 md:p-12 rounded-2xl md:rounded-3xl border bg-white/50 dark:bg-slate-800/30 backdrop-blur-sm transition-all border-slate-200 dark:border-slate-700">
+                    <h3 class="text-lg md:text-2xl font-bold mb-8 flex flex-wrap items-center gap-3">
+                        <span class="bg-indigo-600 text-white p-1.5 md:p-2 rounded-xl shadow-lg flex-shrink-0 text-sm md:text-base">📚</span> 
+                        <span class="leading-tight">자산 관리 가이드 및 FAQ</span>
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+                        <div class="space-y-8">
                             <div>
-                                <h4 class="font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2"><span class="text-indigo-500">Q.</span> 실질 가치와 명목 가치의 차이는 무엇인가요?</h4>
-                                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">명목 가치는 단순히 미래에 찍힐 숫자를 의미하며, 실질 가치는 물가 상승률을 반영하여 '현재의 돈으로는 얼마만큼의 가치가 있는가'를 계산한 값입니다. Hedge Dochi는 물가 상승률을 반영하여 보다 현실적인 목표 설정을 돕습니다.</p>
+                                <h4 class="font-bold text-sm md:text-base text-slate-800 dark:text-white mb-3 flex items-start gap-2"><span class="text-indigo-500 font-black">Q.</span><span>실질 가치와 명목 가치의 차이는?</span></h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">명목 가치는 미래에 찍힐 숫자이며, 실질 가치는 물가 상승률을 반영하여 '현재 돈의 가치'로 환산한 값입니다. Hedge Dochi는 현실적인 목표 설정을 돕습니다.</p>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2"><span class="text-indigo-500">Q.</span> 연봉 상승률은 어떻게 설정하는 것이 좋나요?</h4>
-                                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">일반적으로 기업의 평균 임금 인상률이나 본인의 직무 성격에 따른 커리어 성장을 고려합니다. 보수적으로는 2~3%, 적극적으로는 5% 이상으로 설정하여 시나리오별 차이를 확인해보세요.</p>
+                                <h4 class="font-bold text-sm md:text-base text-slate-800 dark:text-white mb-3 flex items-start gap-2"><span class="text-indigo-500 font-black">Q.</span><span>연봉 상승률 설정 팁</span></h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">보수적으로는 2~3%, 적극적으로는 5% 이상으로 설정해보세요. 직무 전문성과 기업의 평균 인상률을 고려하는 것이 좋습니다.</p>
                             </div>
                         </div>
-                        <div class="space-y-6">
+                        <div class="space-y-8">
                             <div>
-                                <h4 class="font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2"><span class="text-indigo-500">Q.</span> 복리 효과를 극대화하는 방법은?</h4>
-                                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">복리는 '시간'과 '수익률'의 곱으로 나타납니다. Hedge Dochi 시뮬레이션에서 보듯, 초기 자산이 적더라도 월 저축액을 늘리고 꾸준한 수익률을 유지하면 10년 후 결과는 기하급수적으로 차이가 납니다.</p>
+                                <h4 class="font-bold text-sm md:text-base text-slate-800 dark:text-white mb-3 flex items-start gap-2"><span class="text-indigo-500 font-black">Q.</span><span>복리 효과를 높이려면?</span></h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">복리는 시간과 수익률의 곱입니다. 초기 자산이 적더라도 저축액을 늘리고 꾸준한 수익률을 유지하면 10년 후 결과는 기하급수적으로 바뀝니다.</p>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2"><span class="text-indigo-500">Q.</span> 왜 10년 시뮬레이션인가요?</h4>
-                                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">10년은 경제 주기가 한 번 완성되는 시간이며, 개인의 자산이 의미 있는 성장을 이루는 최소한의 단위입니다. 장기적인 관점에서의 자산 배분 전략이 단기 매매보다 성공 확률이 훨씬 높기 때문입니다.</p>
+                                <h4 class="font-bold text-sm md:text-base text-slate-800 dark:text-white mb-3 flex items-start gap-2"><span class="text-indigo-500 font-black">Q.</span><span>왜 10년 시뮬레이션인가요?</span></h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">10년은 경제 주기가 완성되는 시간이며 자산이 의미 있게 성장하는 최소 단위입니다. 장기 관점의 배분이 성공 확률을 높입니다.</p>
                             </div>
                         </div>
                     </div>
@@ -261,33 +241,26 @@
 
     <div id="strategyModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
         <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0 duration-300" id="modalContainer">
-            <div class="p-8">
-                <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center gap-3">
-                        <span id="modalIcon" class="text-3xl">🎯</span>
-                        <h3 class="text-2xl font-black tracking-tight">맞춤 투자 전략</h3>
-                    </div>
-                    <button id="closeModal" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
+            <div class="p-6 md:p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="flex items-center gap-3"><span id="modalIcon" class="text-2xl md:text-3xl flex-shrink-0">🎯</span><h3 class="text-xl md:text-2xl font-black tracking-tight" style="color: var(--color-primary-text);">맞춤 투자 전략</h3></div>
+                    <button id="closeModal" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                 </div>
-                <div id="modalContent" class="space-y-6"></div>
-                <div class="mt-8">
-                    <button id="closeModalBtn" class="w-full py-4 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold hover:opacity-90 transition-opacity">확인했습니다</button>
-                </div>
+                <div id="modalContent" class="space-y-6 text-sm md:text-base leading-relaxed overflow-y-auto max-h-[60vh] pr-2 no-scrollbar"></div>
+                <div class="mt-8"><button id="closeModalBtn" class="w-full py-4 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold">확인했습니다</button></div>
             </div>
         </div>
     </div>
 
     <footer class="text-center mt-12 py-8 border-t border-slate-100 dark:border-slate-800">
-        <div class="max-w-6xl mx-auto text-sm text-slate-400">
+        <div class="max-w-6xl mx-auto text-xs md:text-sm text-slate-400 px-4">
             <div class="flex justify-center space-x-6 font-bold mb-4">
                 <a href="about.html" class="hover:text-blue-600">소개</a>
                 <a href="privacy.html" class="hover:text-blue-600">약관</a>
                 <a href="contact-form.html" class="hover:text-blue-600">문의</a>
             </div>
             <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
-            <p class="mt-2 text-[10px] opacity-60 px-4">본 사이트의 모든 콘텐츠는 정보 제공을 목적으로 하며, 법적 조언이나 투자 권유를 구성하지 않습니다.</p>
+            <p class="mt-2 opacity-60">본 사이트의 모든 콘텐츠는 정보 제공을 목적으로 하며, 법적 조언이나 투자 권유를 구성하지 않습니다.</p>
         </div>
     </footer>
 
