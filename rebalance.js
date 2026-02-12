@@ -66,7 +66,7 @@ const STRATEGY_CONFIG = {
 
 let currentUser = null;
 let holdings = []; 
-let selectedStrategyId = null; // 현재 선택된 전략 ID 저장
+let selectedStrategyId = null; 
 const PRIMARY_SECTORS = ["주식 (Equity)", "채권 (Fixed Income)", "귀금속 (Precious Metals)", "원자재 (Commodity)", "가상자산 (Digital Asset)", "현금 (Liquidity)"];
 let sectorTargets = { ...STRATEGY_CONFIG.balanced.weights };
 let targetCapital = 0;
@@ -129,7 +129,7 @@ window.updateTargetFromProfile = (profileId) => {
 };
 
 window.selectDochi = (type, skipAlert = false) => {
-    selectedStrategyId = type; // 상태 업데이트
+    selectedStrategyId = type;
     const cards = document.querySelectorAll('.strategy-card');
     const ringColors = { aggressive: 'ring-rose-500', balanced: 'ring-blue-500', defensive: 'ring-emerald-500' };
     
@@ -144,12 +144,10 @@ window.selectDochi = (type, skipAlert = false) => {
         selectedCard.classList.add('opacity-100', 'ring-4', ringColors[type], 'scale-105');
     }
     
-    // 비중 업데이트 로직 실행
-    updateTargetFromProfile(type);
-    
     if (!skipAlert) {
-        const strategy = STRATEGY_CONFIG[type];
-        // alert(`[${strategy.name}] 전략이 적용되었습니다.\n${strategy.description}`);
+        if (confirm(`[${STRATEGY_CONFIG[type].name}] 전략의 목표 비중을 자산에 적용하시겠습니까?\n기존에 설정한 개별 종목 비중이 초기화될 수 있습니다.`)) {
+            updateTargetFromProfile(type);
+        }
     }
 };
 
@@ -175,23 +173,37 @@ function migrateData(data) {
 // 3. UI Actions
 // ==========================================
 
-window.toggleLock = (index) => { holdings[index].locked = !holdings[index].locked; renderAssetList(); };
+window.toggleLock = (index) => { 
+    holdings[index].locked = !holdings[index].locked; 
+    renderAssetList(); 
+};
 
 window.normalizeWeights = () => {
     const locked = holdings.filter(h => h.locked);
     const unlocked = holdings.filter(h => !h.locked);
     if (unlocked.length === 0) return;
+
     const lockedSum = locked.reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0);
     const rem = Math.max(0, 100 - lockedSum);
     const curUnlockedSum = unlocked.reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0);
+
     if (curUnlockedSum === 0) {
         const share = parseFloat((rem / unlocked.length).toFixed(2));
-        unlocked.forEach((h, i) => h.targetPercent = (i === unlocked.length - 1) ? parseFloat((rem - share * (unlocked.length - 1)).toFixed(2)) : share);
+        unlocked.forEach((h, i) => {
+            h.targetPercent = (i === unlocked.length - 1) 
+                ? parseFloat((rem - (share * (unlocked.length - 1))).toFixed(2)) 
+                : share;
+        });
     } else {
         let dist = 0;
         unlocked.forEach((h, i) => {
-            if (i === unlocked.length - 1) h.targetPercent = parseFloat((rem - dist).toFixed(2));
-            else { const s = parseFloat(((h.targetPercent / curUnlockedSum) * rem).toFixed(2)); h.targetPercent = s; dist += s; }
+            if (i === unlocked.length - 1) {
+                h.targetPercent = parseFloat((rem - dist).toFixed(2));
+            } else {
+                const s = parseFloat(((h.targetPercent / curUnlockedSum) * rem).toFixed(2));
+                h.targetPercent = s;
+                dist += s;
+            }
         });
     }
     renderAssetList();
@@ -202,11 +214,19 @@ window.distributeSector = (sectorName) => {
     if (ts.length === 0) return;
     const goal = sectorTargets[sectorName] || 0;
     const share = parseFloat((goal / ts.length).toFixed(2));
-    ts.forEach((h, idx) => h.targetPercent = (idx === ts.length - 1) ? parseFloat((goal - share * (ts.length - 1)).toFixed(2)) : share);
+    ts.forEach((h, idx) => {
+        h.targetPercent = (idx === ts.length - 1) 
+            ? parseFloat((goal - (share * (ts.length - 1))).toFixed(2)) 
+            : share;
+    });
     renderAssetList();
 };
 
-window.updateSectorTarget = (sector, val) => { sectorTargets[sector] = parseFloat(val) || 0; updateSectorUI(); updateCalculation(); };
+window.updateSectorTarget = (sector, val) => { 
+    sectorTargets[sector] = parseFloat(val) || 0; 
+    updateSectorUI(); 
+    updateCalculation(); 
+};
 
 async function refreshAllPrices() {
     const valid = holdings.filter(h => h.ticker && h.ticker.trim() !== '' && !['CASH', 'USD', 'KRW', '현금'].includes(h.ticker.toUpperCase()));
@@ -226,7 +246,7 @@ async function refreshAllPrices() {
                 if (!item.name || item.name === "") item.name = meta.shortName || meta.symbol;
             }
         } catch (e) { console.error(`Refresh error for ${item.ticker}:`, e); }
-        await new Promise(r => setTimeout(r, 100)); // Rate limiting
+        await new Promise(r => setTimeout(r, 100));
     }
 
     if (refreshPricesBtn) {
@@ -234,6 +254,42 @@ async function refreshAllPrices() {
         refreshPricesBtn.innerText = "🔄 시세 새로고침";
     }
     renderAssetList();
+}
+
+async function performSearch(query) {
+    const container = document.getElementById('searchResultsContainer');
+    const list = document.getElementById('searchResults');
+    if (!container || !list) return;
+    
+    container.classList.remove('hidden');
+    list.innerHTML = '<li class="text-center py-4 text-slate-400 text-sm">검색 중...</li>';
+    
+    try {
+        const data = await fetchInternalAPI('search', { q: query });
+        const quotes = data.quotes || [];
+        list.innerHTML = quotes.length ? '' : '<li class="text-center py-4 text-slate-400 text-sm">결과 없음</li>';
+        
+        quotes.forEach(quote => {
+            if (!quote.symbol) return;
+            const li = document.createElement('li');
+            li.className = "p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-blue-200 dark:hover:border-blue-900 group";
+            li.innerHTML = `<div class="flex justify-between items-center"><div class="flex-1 min-w-0 pr-4"><div class="flex items-center gap-2"><span class="font-bold text-blue-600 dark:text-blue-400 truncate">${quote.symbol}</span></div><div class="text-sm text-slate-600 dark:text-slate-300 truncate">${quote.shortname || quote.symbol}</div></div><button class="shrink-0 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">추가</button></div>`;
+            li.onclick = () => {
+                const detectedSector = getMappedSector(quote.symbol, quote.quoteType, quote.sector);
+                holdings.push({ 
+                    ticker: quote.symbol, 
+                    name: quote.shortname || quote.symbol, 
+                    qty: 0, price: 0, targetPercent: 0, 
+                    sector: detectedSector, 
+                    locked: false 
+                });
+                document.getElementById('tickerSearchInput').value = ''; 
+                container.classList.add('hidden'); 
+                renderAssetList();
+            };
+            list.appendChild(li);
+        });
+    } catch (e) { list.innerHTML = `<li class="text-center py-4 text-red-400 text-sm">오류</li>`; }
 }
 
 // ==========================================
@@ -303,7 +359,9 @@ function renderAssetList() {
 }
 
 window.updateHolding = async (idx, field, val) => {
-    holdings[idx][field] = (['qty', 'price', 'targetPercent'].includes(field)) ? parseFloat(val) || 0 : val;
+    const numericFields = ['qty', 'price', 'targetPercent'];
+    holdings[idx][field] = numericFields.includes(field) ? (parseFloat(val) || 0) : val;
+    
     if (field === 'ticker' && val.length >= 1) {
         try {
             const data = await fetchInternalAPI('price', { ticker: val.toUpperCase() });
@@ -315,7 +373,10 @@ window.updateHolding = async (idx, field, val) => {
             }
         } catch (e) { holdings[idx].sector = getMappedSector(val); }
     }
-    if (!['targetPercent'].includes(field)) renderAssetList(); else updateCalculation();
+    
+    // 비중 입력 시 다른 필드와 달리 전체 리스트 리렌더링 없이 수치만 계산할 경우 상태 유지가 안 될 수 있음
+    // 항상 renderAssetList를 호출하여 내부 holdings 배열과 UI를 동기화함
+    renderAssetList();
 };
 
 window.removeAsset = (idx) => { if(confirm('삭제하시겠습니까?')) { holdings.splice(idx, 1); renderAssetList(); } };
@@ -332,7 +393,10 @@ function updateCalculation() {
 
     holdings.forEach(h => {
         const v = (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0);
-        if (stats[h.sector]) { stats[h.sector].current += v; stats[h.sector].assigned += (parseFloat(h.targetPercent) || 0); }
+        if (stats[h.sector]) { 
+            stats[h.sector].current += v; 
+            stats[h.sector].assigned += (parseFloat(h.targetPercent) || 0); 
+        }
     });
 
     if (totalValueDisplay) totalValueDisplay.innerText = `$${currentTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
@@ -440,7 +504,6 @@ onAuthStateChanged(auth, async (user) => {
         if (loginAlert) loginAlert.classList.add('hidden');
         if (appContent) { appContent.classList.remove('hidden'); appContent.classList.add('grid'); }
         
-        // Handle Mobile Auth UI
         if (authContainerMobile) {
             authContainerMobile.innerHTML = `
                 <div class="flex items-center justify-between">
@@ -463,7 +526,6 @@ onAuthStateChanged(auth, async (user) => {
                 if (data.targetCapital && targetCapitalInput) { targetCapital = parseFloat(data.targetCapital) || 0; targetCapitalInput.value = targetCapital; }
                 if (data.selectedStrategyId) { 
                     selectedStrategyId = data.selectedStrategyId; 
-                    // 로드 완료 후 카드 UI 복구 (비중 업데이트는 제외하고 UI만)
                     setTimeout(() => selectDochi(selectedStrategyId, true), 100); 
                 }
             }
@@ -494,12 +556,13 @@ document.getElementById('saveBtn')?.addEventListener('click', async () => {
     if (!currentUser) return;
     try {
         const batch = writeBatch(db);
+        // 저장 직전 UI와 상태를 다시 동기화하여 정확한 데이터 확보
         batch.set(doc(db, "users", currentUser.uid), { 
             uid: currentUser.uid, 
             holdings, 
             sectorTargets, 
             targetCapital, 
-            selectedStrategyId, // 현재 전략 ID 추가 저장
+            selectedStrategyId,
             lastUpdated: new Date() 
         }, { merge: true });
         await batch.commit(); alert("저장 성공! 💾");
@@ -516,6 +579,35 @@ if (document.getElementById('tickerSearchInput')) {
         if (timer) clearTimeout(timer);
         if (q.length < 2) { document.getElementById('searchResultsContainer')?.classList.add('hidden'); return; }
         timer = setTimeout(() => performSearch(q), 500);
+    });
+}
+
+// CSV 파일 업로드 이벤트 핸들러 복구
+if (document.getElementById('csvFileInput')) {
+    document.getElementById('csvFileInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const rows = event.target.result.split('\n').slice(1);
+            rows.forEach(row => {
+                const [t, q] = row.split(',').map(s => s?.trim());
+                if (t && q) {
+                    holdings.push({ 
+                        ticker: t.toUpperCase(), 
+                        name: t, 
+                        qty: parseFloat(q) || 0, 
+                        price: 0, 
+                        targetPercent: 0, 
+                        sector: getMappedSector(t), 
+                        locked: false 
+                    });
+                }
+            });
+            renderAssetList(); 
+            alert("CSV 로드 완료! '시세 새로고침'을 눌러 현재가를 업데이트하세요.");
+        };
+        reader.readAsText(file);
     });
 }
 
