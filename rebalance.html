@@ -119,10 +119,9 @@
             <button onclick="document.getElementById('loginBtn').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1">지금 시작하기</button>
         </div>
 
-        <!-- Main Layout: 2 Independent Columns for PC, Interleaved Flow for Mobile -->
         <div id="appContent" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
-            <!-- LEFT COLUMN (Search, Strategy, Sector, Asset List) -->
+            <!-- LEFT COLUMN -->
             <div id="col-left" class="contents-mobile lg:col-span-7 flex flex-col gap-6">
                 
                 <!-- 2. 종목 검색 (Order 2) -->
@@ -144,19 +143,19 @@
                     </h3>
                     <div id="strategyContainer" class="flex lg:grid lg:grid-cols-3 gap-4 overflow-x-auto lg:overflow-x-visible no-scrollbar pb-4 lg:pb-0 snap-x snap-mandatory px-2 lg:px-0">
                         <div id="card-aggressive" onclick="selectDochi('aggressive')" class="strategy-card group flex-shrink-0 w-[280px] lg:w-full snap-center cursor-pointer p-6 rounded-2xl bg-white dark:bg-[#252a3d] border border-slate-200 dark:border-rose-500/30 hover:border-rose-500 transition-all duration-500 text-center">
-                            <div class="w-14 h-14 mx-auto mb-4 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-2xl flex items-center justify-center text-3xl shadow-xl">🔥</div>
+                            <div class="w-14 h-14 mx-auto mb-4 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-2xl flex items-center justify-center text-3xl shadow-xl">🦔🔥</div>
                             <h4 class="text-xl font-black mb-1 text-rose-500">공격도치</h4>
                             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">High Risk</p>
                             <p class="text-xs text-slate-500 dark:text-slate-300 leading-relaxed font-medium">베타 가속 및 수익 극대화</p>
                         </div>
                         <div id="card-balanced" onclick="selectDochi('balanced')" class="strategy-card group flex-shrink-0 w-[280px] lg:w-full snap-center cursor-pointer p-6 rounded-2xl bg-white dark:bg-[#252a3d] border border-slate-200 dark:border-blue-500/30 hover:border-blue-500 transition-all duration-500 text-center">
-                            <div class="w-14 h-14 mx-auto mb-4 bg-gradient-to-tr from-blue-500 to-indigo-400 rounded-2xl flex items-center justify-center text-3xl shadow-xl">⚖️</div>
+                            <div class="w-14 h-14 mx-auto mb-4 bg-gradient-to-tr from-blue-500 to-indigo-400 rounded-2xl flex items-center justify-center text-3xl shadow-xl">🦔⚖️</div>
                             <h4 class="text-xl font-black mb-1 text-blue-500">중도도치</h4>
                             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Balanced</p>
                             <p class="text-xs text-slate-500 dark:text-slate-300 leading-relaxed font-medium">위험 대비 수익의 균형</p>
                         </div>
                         <div id="card-defensive" onclick="selectDochi('defensive')" class="strategy-card group flex-shrink-0 w-[280px] lg:w-full snap-center cursor-pointer p-6 rounded-2xl bg-white dark:bg-[#252a3d] border border-slate-200 dark:border-emerald-500/30 hover:border-emerald-500 transition-all duration-500 text-center">
-                            <div class="w-14 h-14 mx-auto mb-4 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-3xl shadow-xl">🛡️</div>
+                            <div class="w-14 h-14 mx-auto mb-4 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-3xl shadow-xl">🦔🛡️</div>
                             <h4 class="text-xl font-black mb-1 text-emerald-500">수비도치</h4>
                             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Preservation</p>
                             <p class="text-xs text-slate-500 dark:text-slate-300 leading-relaxed font-medium">원금 보호와 자산 방어 우선</p>
@@ -165,7 +164,7 @@
                 </div>
 
                 <!-- 5. 섹터별 비중 현황 (Order 5) -->
-                <div id="section-sector" class="order-5 p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700">
+                <div id="section-sector" class="order-5 p-5 md:p-8 rounded-2xl md:rounded-3xl shadow-xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg md:text-xl font-bold flex items-center gap-2"><span>📊</span> 섹터별 비중 현황</h3>
                         <div id="sectorTotalStatus" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Total: 100%</div>
@@ -238,7 +237,7 @@
                                 <tr class="text-[10px] font-bold border-b uppercase tracking-wider text-slate-400">
                                     <th class="py-3 px-2 w-10 text-center">🔐</th>
                                     <th class="py-3 px-2 text-left min-w-[140px]">종목/섹터</th>
-                                    <th class="py-3 px-2 text-right w-20">수량</th>
+                                    <th class="py-3 px-2 text-right w-20">보유수량</th>
                                     <th class="py-3 px-2 text-right w-20">현재가($)</th>
                                     <th class="py-3 px-2 text-right w-20 text-indigo-500">Actual%</th>
                                     <th class="py-3 px-2 text-right w-20 text-blue-500">Target%</th>
@@ -252,7 +251,7 @@
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN (Summary, Guide, Charts, Simulation) -->
+            <!-- RIGHT COLUMN -->
             <div id="col-right" class="contents-mobile lg:col-span-5 flex flex-col gap-6">
                 
                 <!-- 1. 요약 대시보드 (Order 1) -->
@@ -288,14 +287,31 @@
                 </div>
             </div>
 
-            <!-- 9. 핵심 가이드 (Order 9) -->
+            <!-- 9. 스마트한 리밸런싱 가이드 (Order 9) -->
             <div id="section-bottom-info" class="lg:col-span-12 order-9 mt-4">
-                <div class="p-6 md:p-8 rounded-2xl border bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm leading-relaxed">
-                        <div><h4 class="font-bold text-slate-800 dark:text-white mb-1">정의</h4><p class="text-slate-500">깨진 비중을 팔고 사서 목표 비율을 복구하는 과정입니다.</p></div>
-                        <div><h4 class="font-bold text-slate-800 dark:text-white mb-1">효과</h4><p class="text-slate-500">'고점 매도, 저점 매수'를 강제하여 복리 효과를 극대화합니다.</p></div>
-                        <div><h4 class="font-bold text-slate-800 dark:text-white mb-1">주기</h4><p class="text-slate-500">6개월~1년 단위 혹은 비중이 5% 이상 벗어났을 때를 권장합니다.</p></div>
-                        <div><h4 class="font-bold text-slate-800 dark:text-white mb-1">APS 전략</h4><p class="text-slate-500">투자 성향에 맞춘 최적의 자산 배분 비중을 제안합니다.</p></div>
+                <div class="p-6 md:p-12 rounded-2xl md:rounded-3xl shadow-xl border bg-slate-50 dark:bg-slate-800/50 transition-all border-slate-200 dark:border-slate-700">
+                    <h3 class="text-xl md:text-2xl font-bold mb-6 md:mb-8 flex items-center gap-3"><span class="bg-blue-600 text-white p-2 rounded-xl shadow-lg">🎓</span> 스마트한 리밸런싱 핵심 가이드</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 text-sm leading-relaxed">
+                        <div class="space-y-4">
+                            <div class="text-blue-600 dark:text-blue-400 font-black text-lg">01</div>
+                            <h4 class="font-bold text-slate-800 dark:text-white text-base">리밸런싱의 정의</h4>
+                            <p class="text-slate-600 dark:text-slate-300 text-xs md:text-sm">시간이 지남에 따라 각 자산의 가격 변동으로 인해 초기 설정한 비중이 깨지게 됩니다. 리밸런싱은 비중이 늘어난 자산을 팔고, 줄어든 자산을 사서 목표 비율을 복구하는 과학적 과정입니다.</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="text-blue-600 dark:text-blue-400 font-black text-lg">02</div>
+                            <h4 class="font-bold text-slate-800 dark:text-white text-base">왜 수익이 개선되나요?</h4>
+                            <p class="text-slate-600 dark:text-slate-300 text-xs md:text-sm">리밸런싱은 자연스럽게 '고점 매도, 저점 매수'를 강제합니다. 승리한 자산의 이익을 실현하고 저평가된 자산을 채워 넣음으로써 장기적인 복리 효과와 위험 대비 수익률을 극대화합니다.</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="text-blue-600 dark:text-blue-400 font-black text-lg">03</div>
+                            <h4 class="font-bold text-slate-800 dark:text-white text-base">권장 시행 주기</h4>
+                            <p class="text-slate-600 dark:text-slate-300 text-xs md:text-sm">너무 잦은 매매는 수수료와 세금 부담을 줄 수 있습니다. 일반적으로 6개월~1년 단위로 정기 시행하거나, 특정 자산의 비중이 목표치에서 5% 이상 벗어났을 때 시행하는 것이 효율적입니다.</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="text-blue-600 dark:text-blue-400 font-black text-lg">04</div>
+                            <h4 class="font-bold text-slate-800 dark:text-white text-base">전략적 자산 배분 (APS)</h4>
+                            <p class="text-slate-600 dark:text-slate-300 text-xs md:text-sm">공격, 중도, 수비도치 전략은 자산 간의 상관관계를 분석하여 설계되었습니다. 본인의 투자 성향에 맞춘 최적의 비중을 설정하고, 시장의 파도 속에서도 중심을 잃지 않는 투자를 지속하세요.</p>
+                        </div>
                     </div>
                 </div>
             </div>
