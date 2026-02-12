@@ -288,6 +288,16 @@
                             <input type="checkbox" id="integerModeToggle" class="w-4 h-4">
                         </div>
                     </div>
+                    <div id="totalFrictionCostDisplay" class="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 hidden">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-500">총 예상 거래 비용(수수료+세금)</span>
+                            <span id="frictionCostValue" class="text-sm font-black text-rose-500">$0.00</span>
+                        </div>
+                        <div id="frictionCostWarning" class="mt-2 text-[10px] font-bold text-amber-600 dark:text-amber-400 flex items-start gap-1.5 hidden">
+                            <span class="text-base leading-none">🦔🛡️</span>
+                            <p class="word-break: keep-all;">거래 비용이 높습니다. 리밸런싱 주기를 조절하거나 비중 변화가 큰 종목 위주로 실행하세요.</p>
+                        </div>
+                    </div>
                     <div id="actionPlanList" class="space-y-3"><p class="text-sm text-slate-500 py-4 text-center">데이터를 입력하면 가이드가 생성됩니다.</p></div>
                 </div>
 

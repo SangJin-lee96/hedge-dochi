@@ -25,6 +25,12 @@ try {
 // ==========================================
 // 1. STRATEGY CONFIGuration (Financial APS)
 // ==========================================
+const EXCHANGE_PRESETS = {
+    KR: { name: "한국", fee: 0.00015, tax: 0.0015 }, // 총 0.165% (매도 시)
+    US: { name: "미국", fee: 0.001, tax: 0.0000229 }, // 총 0.102% (매도 시)
+    CRYPTO: { name: "가상자산", fee: 0.0005, tax: 0.22 } // 총 22.05% (매도 시 세금 22% 가정)
+};
+
 const STRATEGY_CONFIG = {
     aggressive: {
         name: "공격도치",
@@ -70,6 +76,7 @@ let selectedStrategyId = null;
 const PRIMARY_SECTORS = ["주식 (Equity)", "채권 (Fixed Income)", "귀금속 (Precious Metals)", "원자재 (Commodity)", "가상자산 (Digital Asset)", "현금 (Liquidity)"];
 let sectorTargets = { ...STRATEGY_CONFIG.balanced.weights };
 let targetCapital = 0;
+let totalFrictionCost = 0;
 let chartInstance = null, tickerChartInstance = null, simulationChartInstance = null;
 
 // DOM
@@ -164,6 +171,7 @@ function migrateData(data) {
             if (h.price === undefined) h.price = 0;
             if (h.qty === undefined) h.qty = 0;
             if (h.targetPercent === undefined) h.targetPercent = 0;
+            if (h.exchange === undefined) h.exchange = 'US';
         });
     }
     return data;
@@ -345,12 +353,15 @@ function renderAssetList() {
                 <div class="flex flex-col min-w-0">
                     <span class="font-bold text-slate-800 dark:text-white truncate text-sm" title="${item.name || item.ticker}">${item.name || item.ticker}</span>
                     <div class="flex items-center gap-1.5 mt-0.5">
-                        <input type="text" value="${item.ticker}" class="text-[10px] bg-transparent text-slate-400 font-semibold uppercase focus:outline-none w-14 hover:text-blue-500 transition-colors" onchange="updateHolding(${index}, 'ticker', this.value)">
+                        <select class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold outline-none border-none px-1 rounded cursor-pointer" onchange="updateHolding(${index}, 'exchange', this.value)">
+                            ${Object.keys(EXCHANGE_PRESETS).map(ex => `<option value="${ex}" ${item.exchange === ex ? 'selected' : ''}>${ex}</option>`).join('')}
+                        </select>
                         <span class="text-[10px] text-slate-300">|</span>
                         <select class="text-[10px] bg-transparent text-indigo-500 font-bold outline-none border-none p-0 cursor-pointer" onchange="updateHolding(${index}, 'sector', this.value)">
                             ${PRIMARY_SECTORS.map(s => `<option value="${s}" ${item.sector === s ? 'selected' : ''}>${s}</option>`).join('')}
                         </select>
                     </div>
+                    <input type="text" value="${item.ticker}" class="mt-1 text-[10px] bg-transparent text-slate-400 font-semibold uppercase focus:outline-none w-full hover:text-blue-500 transition-colors" onchange="updateHolding(${index}, 'ticker', this.value)">
                 </div>
             </td>
             <td class="py-3 px-2"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right focus:outline-none font-medium" onchange="updateHolding(${index}, 'qty', this.value)"></td>
@@ -421,6 +432,8 @@ function updateCalculation() {
     });
 
     const base = targetCapital > 0 ? targetCapital : currentTotal;
+    totalFrictionCost = 0;
+
     if (actionPlanList) {
         actionPlanList.innerHTML = '';
         let bal = true;
@@ -428,6 +441,15 @@ function updateCalculation() {
             const targetVal = base * ((parseFloat(h.targetPercent) || 0) / 100);
             const currentVal = (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0);
             const diff = targetVal - currentVal;
+            
+            // 거래 비용 계산
+            const ex = EXCHANGE_PRESETS[h.exchange || 'US'];
+            if (diff < 0) { // 매도
+                totalFrictionCost += Math.abs(diff) * (ex.fee + ex.tax);
+            } else if (diff > 0) { // 매수
+                totalFrictionCost += diff * ex.fee;
+            }
+
             if (Math.abs(diff) > Math.max(10, base * 0.01)) {
                 bal = false;
                 const isBuy = diff > 0;
@@ -454,6 +476,25 @@ function updateCalculation() {
                 actionPlanList.appendChild(d);
             }
         });
+
+        // 비용 UI 업데이트
+        const costDisplay = document.getElementById('totalFrictionCostDisplay');
+        const costValue = document.getElementById('frictionCostValue');
+        const costWarning = document.getElementById('frictionCostWarning');
+        if (costDisplay && costValue) {
+            if (totalFrictionCost > 0) {
+                costDisplay.classList.remove('hidden');
+                costValue.innerText = `$${totalFrictionCost.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                if (currentTotal > 0 && (totalFrictionCost / currentTotal) > 0.005) {
+                    costWarning?.classList.remove('hidden');
+                } else {
+                    costWarning?.classList.add('hidden');
+                }
+            } else {
+                costDisplay.classList.add('hidden');
+            }
+        }
+
         if (bal) actionPlanList.innerHTML = '<div class="text-center py-12 bg-emerald-50 dark:bg-emerald-900/10 rounded-3xl border border-emerald-100 dark:border-emerald-800/30"><span class="text-4xl mb-4 block">🏆</span><p class="text-emerald-700 dark:text-emerald-400 font-bold">포트폴리오가 완벽하게 정렬되었습니다!</p></div>';
     }
     updateCharts(stats, currentTotal);
@@ -574,7 +615,7 @@ document.getElementById('saveBtn')?.addEventListener('click', async () => {
     } catch (e) { alert("저장 실패"); }
 });
 
-document.getElementById('addAssetBtn')?.addEventListener('click', () => { holdings.push({ ticker: "NEW", name: "", qty: 0, price: 0, targetPercent: 0, sector: "주식 (Equity)", locked: false }); renderAssetList(); });
+document.getElementById('addAssetBtn')?.addEventListener('click', () => { holdings.push({ ticker: "NEW", name: "", qty: 0, price: 0, targetPercent: 0, sector: "주식 (Equity)", locked: false, exchange: 'US' }); renderAssetList(); });
 if (refreshPricesBtn) refreshPricesBtn.addEventListener('click', refreshAllPrices);
 if (targetCapitalInput) targetCapitalInput.addEventListener('input', (e) => { targetCapital = parseFloat(e.target.value) || 0; updateCalculation(); });
 if (document.getElementById('tickerSearchInput')) {
