@@ -359,6 +359,12 @@ function renderAssetList() {
 
     // 2. 공백 섹터 가이드 (Ghost Rows)
     ghostRows.forEach(ghost => {
+        let keyword = "";
+        if (ghost.sector.includes("Equity")) keyword = "S&P500";
+        else if (ghost.sector.includes("Fixed Income")) keyword = "미국채";
+        else if (ghost.sector.includes("Precious Metals")) keyword = "금";
+        else if (ghost.sector.includes("Digital Asset")) keyword = "비트코인";
+
         const tr = document.createElement('tr');
         tr.className = `bg-slate-50/50 dark:bg-slate-800/30 italic border-b border-dashed border-slate-200 dark:border-slate-700 opacity-80`;
         tr.innerHTML = `
@@ -368,11 +374,28 @@ function renderAssetList() {
             <td class="py-3 px-2 text-center font-bold text-slate-400">-</td>
             <td class="py-3 px-2 text-right"><div class="inline-block px-2 py-1 rounded-lg font-black bg-slate-100 dark:bg-slate-700 text-slate-400">0.0%</div></td>
             <td class="py-3 px-2 text-right font-black text-blue-400/70 pr-4">${ghost.targetPercent.toFixed(1)}%</td>
-            <td class="py-3 px-2 text-center"><button onclick="document.getElementById('tickerSearchInput').focus()" class="text-blue-500 hover:text-blue-600 font-black text-[10px] whitespace-nowrap">🔍 검색</button></td>`;
+            <td class="py-3 px-2 text-center"><button onclick="triggerGuideSearch('${keyword}')" class="text-blue-500 hover:text-blue-600 font-black text-[10px] whitespace-nowrap">🔍 검색</button></td>`;
         assetListBody.appendChild(tr);
     });
     updateCalculation();
 }
+
+window.triggerGuideSearch = (keyword) => {
+    const input = document.getElementById('tickerSearchInput');
+    if (!input) return;
+    input.value = keyword;
+    input.focus();
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    const searchSection = document.getElementById('section-search');
+    if (searchSection) {
+        const rect = searchSection.getBoundingClientRect();
+        const isInViewport = (rect.top >= 0 && rect.bottom <= window.innerHeight);
+        if (!isInViewport) {
+            searchSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+};
 
 window.updateHolding = async (idx, field, val) => {
     const numericFields = ['qty', 'price', 'targetPercent'];
