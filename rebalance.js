@@ -22,9 +22,6 @@ try {
     analytics = getAnalytics(app);
 } catch (e) { console.error("Firebase init error:", e); }
 
-// ==========================================
-// 1. GLOBAL CONFIGuration
-// ==========================================
 const EXCHANGE_PRESETS = {
     KR: { name: "한국", fee: 0.00015, tax: 0.0015 },
     US: { name: "미국", fee: 0.001, tax: 0.0000229 },
@@ -44,38 +41,17 @@ const STRATEGY_CONFIG = {
     aggressive: {
         name: "공격도치",
         description: "베타(β) 가속 및 수익률 극대화형",
-        weights: {
-            "주식 (Equity)": 75,
-            "가상자산 (Digital Asset)": 15,
-            "원자재 (Commodity)": 5,
-            "현금 (Liquidity)": 5,
-            "채권 (Fixed Income)": 0,
-            "귀금속 (Precious Metals)": 0
-        }
+        weights: { "주식 (Equity)": 75, "가상자산 (Digital Asset)": 15, "원자재 (Commodity)": 5, "현금 (Liquidity)": 5, "채권 (Fixed Income)": 0, "귀금속 (Precious Metals)": 0 }
     },
     balanced: {
         name: "중도도치",
         description: "샤프 지수 최적화 및 위험 분산형",
-        weights: {
-            "주식 (Equity)": 50,
-            "채권 (Fixed Income)": 30,
-            "귀금속 (Precious Metals)": 10,
-            "원자재 (Commodity)": 5,
-            "현금 (Liquidity)": 5,
-            "가상자산 (Digital Asset)": 0
-        }
+        weights: { "주식 (Equity)": 50, "채권 (Fixed Income)": 30, "귀금속 (Precious Metals)": 10, "원자재 (Commodity)": 5, "현금 (Liquidity)": 5, "가상자산 (Digital Asset)": 0 }
     },
     defensive: {
         name: "수비도치",
         description: "변동성(σ) 제어 및 자산 방어형",
-        weights: {
-            "채권 (Fixed Income)": 60,
-            "현금 (Liquidity)": 20,
-            "귀금속 (Precious Metals)": 15,
-            "주식 (Equity)": 5,
-            "원자재 (Commodity)": 0,
-            "가상자산 (Digital Asset)": 0
-        }
+        weights: { "채권 (Fixed Income)": 60, "현금 (Liquidity)": 20, "귀금속 (Precious Metals)": 15, "주식 (Equity)": 5, "원자재 (Commodity)": 0, "가상자산 (Digital Asset)": 0 }
     }
 };
 
@@ -100,10 +76,6 @@ const userProfile = document.getElementById('userProfile');
 const loginAlert = document.getElementById('loginAlert');
 const appContent = document.getElementById('appContent');
 const refreshPricesBtn = document.getElementById('refreshPricesBtn');
-
-// ==========================================
-// 2. Logic & Precision Engine
-// ==========================================
 
 function getMappedSector(ticker, quoteType = "", yahooSector = "") {
     const t = ticker.toUpperCase();
@@ -182,10 +154,6 @@ function migrateData(data) {
     }
     return data;
 }
-
-// ==========================================
-// 3. UI Actions
-// ==========================================
 
 window.toggleLock = (index) => { 
     holdings[index].locked = !holdings[index].locked; 
@@ -280,11 +248,7 @@ async function performSearch(query) {
             li.innerHTML = `<div class="flex justify-between items-center"><div class="flex-1 min-w-0 pr-4"><div class="flex items-center gap-2"><span class="font-bold text-blue-600 dark:text-blue-400 truncate">${quote.symbol}</span></div><div class="text-sm text-slate-600 dark:text-slate-300 truncate">${quote.shortname || quote.symbol}</div></div><button class="shrink-0 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">추가</button></div>`;
             li.onclick = () => {
                 const detectedSector = getMappedSector(quote.symbol, quote.quoteType, quote.sector);
-                holdings.push({ 
-                    ticker: quote.symbol, name: quote.shortname || quote.symbol, 
-                    qty: 0, price: 0, targetPercent: 0, sector: detectedSector, 
-                    locked: false, exchange: 'US'
-                });
+                holdings.push({ ticker: quote.symbol, name: quote.shortname || quote.symbol, qty: 0, price: 0, targetPercent: 0, sector: detectedSector, locked: false, exchange: 'US' });
                 document.getElementById('tickerSearchInput').value = ''; 
                 container.classList.add('hidden'); 
                 renderAssetList();
@@ -293,10 +257,6 @@ async function performSearch(query) {
         });
     } catch (e) { list.innerHTML = `<li class="text-center py-4 text-red-400 text-sm">오류</li>`; }
 }
-
-// ==========================================
-// 4. Main Rendering & Calculation
-// ==========================================
 
 function updateSectorUI() {
     const idMap = { "주식 (Equity)": "target_equity", "채권 (Fixed Income)": "target_bonds", "귀금속 (Precious Metals)": "target_gold", "원자재 (Commodity)": "target_commodity", "가상자산 (Digital Asset)": "target_crypto", "현금 (Liquidity)": "target_cash" };
@@ -319,16 +279,14 @@ function renderAssetList() {
     const totalActualValue = holdings.reduce((sum, h) => sum + (parseFloat(h.qty || 0) * parseFloat(h.price || 0)), 0);
     assetListBody.innerHTML = '';
     
-    // 1. 실제 보유 자산
     holdings.forEach((item, index) => {
         const actualVal = (parseFloat(item.qty || 0) * parseFloat(item.price || 0));
         const actualPct = totalActualValue > 0 ? (actualVal / totalActualValue * 100) : 0;
         const targetPct = parseFloat(item.targetPercent) || 0;
         const diff = actualPct - targetPct;
-        const threshold = 1.0;
         let colorClass = 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20';
-        if (diff > threshold) colorClass = 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20';
-        else if (diff < -threshold) colorClass = 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20';
+        if (diff > 1.0) colorClass = 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20';
+        else if (diff < -1.0) colorClass = 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20';
 
         const tr = document.createElement('tr');
         tr.className = `border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${item.locked ? 'bg-indigo-50/10' : ''}`;
@@ -336,7 +294,6 @@ function renderAssetList() {
         tr.innerHTML = `
             <td class="py-3 px-2 text-center align-middle" data-label="종목/섹터">
                 <div class="flex flex-col min-w-0 w-full">
-                    <!-- Row 1: Name + Lock/Remove -->
                     <div class="flex justify-between items-center w-full">
                         <span class="font-bold text-slate-800 dark:text-white truncate text-sm md:text-base" title="${item.name || item.ticker}">${item.name || item.ticker}</span>
                         <div class="flex items-center gap-1">
@@ -344,16 +301,14 @@ function renderAssetList() {
                              <button onclick="removeAsset(${index})" class="text-slate-300 active:text-red-500 p-2 text-lg">✕</button>
                         </div>
                     </div>
-                    <!-- Row 2: Badges -->
                     <div class="flex flex-wrap items-center gap-1.5 mt-1">
                         <span class="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-bold uppercase">${item.exchange}</span>
                         <span class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded font-bold">${item.sector}</span>
-                        <span class="text-[10px] text-slate-400 font-mono font-bold ml-auto">${item.ticker}</span>
+                        <span class="text-[10px] text-slate-400 font-mono font-bold ml-2">$${parseFloat(item.price).toLocaleString()}</span>
                     </div>
-                    <!-- Row 3: Grid Data (Mobile only) -->
-                    <div class="md:hidden grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                        <div class="flex flex-col"><span class="text-[11px] text-slate-400 font-bold uppercase">Actual %</span><div class="font-mono font-black ${colorClass} text-sm mt-1">${actualPct.toFixed(1)}%</div></div>
-                        <div class="flex flex-col"><span class="text-[11px] text-slate-400 font-bold uppercase">Target %</span><input type="number" value="${item.targetPercent}" class="bg-transparent font-mono font-bold text-blue-600 border-b border-blue-500 outline-none h-8 text-sm" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></div>
+                    <div class="md:hidden grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <div class="flex flex-col"><span class="text-[10px] text-slate-400 font-bold uppercase">Actual %</span><div class="font-mono font-black ${colorClass} text-xs mt-1">${actualPct.toFixed(1)}%</div></div>
+                        <div class="flex flex-col"><span class="text-[10px] text-slate-400 font-bold uppercase">Target %</span><input type="number" value="${item.targetPercent}" class="bg-transparent font-mono font-bold text-blue-600 border-b border-blue-500 outline-none h-7 text-xs" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></div>
                     </div>
                 </div>
             </td>
@@ -366,7 +321,6 @@ function renderAssetList() {
         assetListBody.appendChild(tr);
     });
 
-    // 2. 공백 섹터 가이드 (Ghost Rows)
     ghostRows.forEach(ghost => {
         const preset = SECTOR_GUIDE_PRESETS[ghost.sector];
         const tr = document.createElement('tr');
@@ -375,13 +329,9 @@ function renderAssetList() {
         let actionHTML = '';
         if (preset) {
             actionHTML = `
-                <div class="grid grid-cols-2 gap-2 w-full mt-3">
-                    <button onclick="triggerGuideSearch('${preset.us}')" class="h-10 rounded-xl border-2 border-blue-500 text-blue-500 active:bg-blue-500 active:text-white transition-all font-bold text-[10px] uppercase">
-                        미국 (US)
-                    </button>
-                    <button onclick="triggerGuideSearch('${preset.kr}')" class="h-10 rounded-xl border-2 border-indigo-500 text-indigo-500 active:bg-indigo-500 active:text-white transition-all font-bold text-[10px] uppercase">
-                        한국 (KR)
-                    </button>
+                <div class="flex gap-2 w-full mt-3">
+                    <button onclick="triggerGuideSearch('${preset.us}')" class="flex-1 h-10 rounded-xl border-2 border-blue-500 text-blue-500 active:bg-blue-500 active:text-white transition-all font-bold text-[10px] uppercase">미국 (US)</button>
+                    <button onclick="triggerGuideSearch('${preset.kr}')" class="flex-1 h-10 rounded-xl border-2 border-indigo-500 text-indigo-500 active:bg-indigo-500 active:text-white transition-all font-bold text-[10px] uppercase">한국 (KR)</button>
                 </div>`;
         } else {
             actionHTML = `<button onclick="triggerGuideSearch('ETF')" class="w-full h-10 mt-3 rounded-xl border-2 border-blue-500 text-blue-500 active:bg-blue-500 active:text-white font-black text-[10px] transition-all uppercase">🔍 검색</button>`;
@@ -398,8 +348,8 @@ function renderAssetList() {
                     </div>
                     <span class="text-[10px] text-indigo-400 font-mono font-bold whitespace-nowrap mt-0.5 uppercase">${ghost.sector}</span>
                     <div class="md:hidden grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                        <div class="flex flex-col"><span class="text-[11px] text-slate-400 font-bold uppercase">Actual %</span><div class="font-mono font-black text-slate-400 text-sm mt-1">0.0%</div></div>
-                        <div class="flex flex-col"><span class="text-[11px] text-slate-400 font-bold uppercase">Target %</span><div class="font-mono font-bold text-blue-400/70 h-8 flex items-center text-sm">${ghost.targetPercent.toFixed(1)}%</div></div>
+                        <div class="flex flex-col"><span class="text-[10px] text-slate-400 font-bold uppercase">Actual %</span><div class="font-mono font-black text-slate-400 text-xs mt-1">0.0%</div></div>
+                        <div class="flex flex-col"><span class="text-[10px] text-slate-400 font-bold uppercase">Target %</span><div class="font-mono font-bold text-blue-400/70 h-7 flex items-center text-xs">${ghost.targetPercent.toFixed(1)}%</div></div>
                     </div>
                     <div class="md:hidden">${actionHTML}</div>
                 </div>
@@ -421,22 +371,12 @@ window.triggerGuideSearch = (keyword) => {
     input.value = cleanKeyword;
     input.focus();
     input.dispatchEvent(new Event('input', { bubbles: true }));
-
     setTimeout(() => {
         const list = document.getElementById('searchResults');
-        if (list && (list.innerHTML === '' || list.innerText.includes('결과 없음'))) {
-            alert(`해당 키워드(${cleanKeyword})의 결과가 없습니다. 다른 관련 티커로 검색해 보세요.`);
-        }
+        if (list && (list.innerHTML === '' || list.innerText.includes('결과 없음'))) alert(`해당 키워드(${cleanKeyword})의 결과가 없습니다.`);
     }, 2000);
-
     const searchSection = document.getElementById('section-search');
-    if (searchSection) {
-        const rect = searchSection.getBoundingClientRect();
-        const isInViewport = (rect.top >= 0 && rect.bottom <= window.innerHeight);
-        if (!isInViewport) {
-            searchSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }
+    if (searchSection) searchSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
 
 window.updateHolding = async (idx, field, val) => {
@@ -461,44 +401,28 @@ window.removeAsset = (idx) => { if(confirm('삭제하시겠습니까?')) { holdi
 function updateCalculation() {
     let currentTotal = 0;
     holdings.forEach(h => { currentTotal += (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0); });
-
     ghostRows = [];
     PRIMARY_SECTORS.forEach(sector => {
         const targetWeight = sectorTargets[sector] || 0;
         if (targetWeight > 0 && !holdings.some(h => h.sector === sector)) {
             const preset = SECTOR_GUIDE_PRESETS[sector];
-            ghostRows.push({ 
-                name: preset ? preset.label : sector, 
-                sector: sector, 
-                isGhost: true, 
-                actualPercent: 0, 
-                targetPercent: targetWeight,
-                price: 100 
-            });
+            ghostRows.push({ name: preset ? preset.label : sector, sector: sector, isGhost: true, actualPercent: 0, targetPercent: targetWeight, price: 100 });
         }
     });
-
     const statusTitle = document.getElementById('statusTitle');
-    if (statusTitle) {
-        statusTitle.innerText = ghostRows.length > 0 ? "💡 공백 섹터 가이드가 추가되었습니다." : "계산기 준비 완료";
-        statusTitle.style.wordBreak = "keep-all";
-    }
-
+    if (statusTitle) { statusTitle.innerText = ghostRows.length > 0 ? "💡 공백 섹터 가이드가 추가되었습니다." : "계산기 준비 완료"; statusTitle.style.wordBreak = "keep-all"; }
     const stats = PRIMARY_SECTORS.reduce((acc, s) => {
         const idMap = { "주식 (Equity)": "equity", "채권 (Fixed Income)": "bonds", "귀금속 (Precious Metals)": "gold", "원자재 (Commodity)": "commodity", "가상자산 (Digital Asset)": "crypto", "현금 (Liquidity)": "cash" };
         acc[s] = { current: 0, assigned: 0, goal: sectorTargets[s] || 0, key: idMap[s] };
         return acc;
     }, {});
-
     holdings.forEach(h => {
         const v = (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0);
         if (stats[h.sector]) { stats[h.sector].current += v; stats[h.sector].assigned += (parseFloat(h.targetPercent) || 0); }
     });
-
     if (totalValueDisplay) totalValueDisplay.innerText = `$${currentTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
     const totTarg = holdings.reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0) + ghostRows.reduce((s, g) => s + g.targetPercent, 0);
     if (totalPercentDisplay) totalPercentDisplay.innerHTML = `<span class="${Math.abs(totTarg - 100) < 0.1 ? 'text-emerald-500' : 'text-blue-500'} font-mono font-bold">목표 비중 합계: ${totTarg.toFixed(2)}%</span>`;
-
     Object.keys(stats).forEach(n => {
         const s = stats[n]; const curP = currentTotal > 0 ? (s.current / currentTotal) * 100 : 0;
         const cp = document.getElementById(`current_${s.key}_pct`); if(cp) cp.innerText = `${curP.toFixed(1)}%`;
@@ -510,7 +434,6 @@ function updateCalculation() {
         }
         const gp = document.getElementById(`progress_${s.key}_gap`); if(gp) gp.style.width = `${Math.max(0, s.goal - curP)}%`;
     });
-
     const base = targetCapital > 0 ? targetCapital : currentTotal;
     totalFrictionCost = 0;
     if (actionPlanList) {
@@ -521,8 +444,7 @@ function updateCalculation() {
             const currentVal = (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0);
             const diff = targetVal - currentVal;
             const ex = EXCHANGE_PRESETS[h.exchange || 'US'];
-            if (diff < 0) totalFrictionCost += Math.abs(diff) * (ex.fee + ex.tax);
-            else if (diff > 0) totalFrictionCost += diff * ex.fee;
+            if (diff < 0) totalFrictionCost += Math.abs(diff) * (ex.fee + ex.tax); else if (diff > 0) totalFrictionCost += diff * ex.fee;
             if (Math.abs(diff) > Math.max(10, base * 0.01)) {
                 bal = false;
                 const isBuy = diff > 0;
@@ -545,12 +467,7 @@ function updateCalculation() {
         });
         const costDisplay = document.getElementById('totalFrictionCostDisplay'), costValue = document.getElementById('frictionCostValue'), costWarning = document.getElementById('frictionCostWarning');
         if (costDisplay && costValue) {
-            if (totalFrictionCost > 0) {
-                costDisplay.classList.remove('hidden');
-                costValue.innerText = `$${totalFrictionCost.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-                if (currentTotal > 0 && (totalFrictionCost / currentTotal) > 0.005) costWarning?.classList.remove('hidden');
-                else costWarning?.classList.add('hidden');
-            } else costDisplay.classList.add('hidden');
+            if (totalFrictionCost > 0) { costDisplay.classList.remove('hidden'); costValue.innerText = `$${totalFrictionCost.toLocaleString(undefined, {minimumFractionDigits: 2})}`; if (currentTotal > 0 && (totalFrictionCost / currentTotal) > 0.005) costWarning?.classList.remove('hidden'); else costWarning?.classList.add('hidden'); } else costDisplay.classList.add('hidden');
         }
         if (bal) actionPlanList.innerHTML = '<div class="text-center py-12 bg-emerald-50 dark:bg-emerald-900/10 rounded-3xl border border-emerald-100 dark:border-emerald-800/30"><span class="text-4xl mb-4 block">🏆</span><p class="text-emerald-700 dark:text-emerald-400 font-bold" style="word-break: keep-all;">포트폴리오가 완벽하게 정렬되었습니다!</p></div>';
     }
