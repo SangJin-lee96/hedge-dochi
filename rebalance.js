@@ -361,31 +361,31 @@ function renderAssetList() {
     ghostRows.forEach(ghost => {
         const preset = SECTOR_GUIDE_PRESETS[ghost.sector];
         const tr = document.createElement('tr');
-        tr.className = `bg-slate-50/50 dark:bg-slate-800/30 italic border-b border-dashed border-slate-200 dark:border-slate-700 opacity-80`;
+        tr.className = `bg-slate-50/50 dark:bg-slate-800/20 italic border-b border-dashed border-slate-200 dark:border-slate-700 opacity-70`;
         
         let actionHTML = '';
         if (preset) {
             actionHTML = `
-                <div class="flex flex-col sm:flex-row justify-center items-center gap-1">
-                    <button onclick="triggerGuideSearch('${preset.us}')" class="flex items-center gap-1 border border-blue-400 text-blue-500 hover:bg-blue-50 px-2 py-1 rounded text-[9px] font-black whitespace-nowrap transition-colors">
-                        <span class="bg-blue-500 text-white px-1 rounded-[3px] text-[8px]">US</span> ${preset.us}
+                <div class="flex gap-1.5 justify-center">
+                    <button onclick="triggerGuideSearch('${preset.us}')" title="미국 ${preset.us} 검색" class="px-2 py-1 rounded text-[10px] border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-all font-bold">
+                        US
                     </button>
-                    <button onclick="triggerGuideSearch('${preset.kr}')" class="flex items-center gap-1 border border-indigo-400 text-indigo-500 hover:bg-indigo-50 px-2 py-1 rounded text-[9px] font-black whitespace-nowrap transition-colors">
-                        <span class="bg-indigo-500 text-white px-1 rounded-[3px] text-[8px]">KR</span> ${preset.kr}
+                    <button onclick="triggerGuideSearch('${preset.kr}')" title="한국 ${preset.kr} 검색" class="px-2 py-1 rounded text-[10px] border border-indigo-500 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all font-bold">
+                        KR
                     </button>
                 </div>`;
         } else {
-            actionHTML = `<button onclick="triggerGuideSearch('ETF')" class="text-blue-500 hover:text-blue-600 font-black text-[10px] whitespace-nowrap">🔍 ETF 검색</button>`;
+            actionHTML = `<button onclick="triggerGuideSearch('ETF')" class="text-blue-500 hover:text-blue-600 font-black text-[10px] whitespace-nowrap">🔍 검색</button>`;
         }
 
         tr.innerHTML = `
-            <td class="py-3 px-2 text-center align-middle">👻</td>
-            <td class="py-3 px-2"><div class="flex flex-col min-w-0"><span class="font-bold text-slate-500 dark:text-slate-400 truncate text-sm" style="word-break: keep-all;">[가이드] ${ghost.name}</span><span class="text-[10px] text-indigo-400 font-bold">${ghost.sector}</span></div></td>
+            <td class="py-3 px-2 text-center align-middle text-xs">👻</td>
+            <td class="py-3 px-2"><div class="flex flex-col min-w-0"><span class="font-bold text-slate-500 dark:text-slate-400 truncate text-sm" style="word-break: keep-all;">${ghost.name}</span><span class="text-[10px] text-indigo-400 font-bold whitespace-nowrap">${ghost.sector}</span></div></td>
             <td class="py-3 px-2 text-center font-bold text-slate-400">-</td>
             <td class="py-3 px-2 text-center font-bold text-slate-400">-</td>
             <td class="py-3 px-2 text-right"><div class="inline-block px-2 py-1 rounded-lg font-black bg-slate-100 dark:bg-slate-700 text-slate-400">0.0%</div></td>
             <td class="py-3 px-2 text-right font-black text-blue-400/70 pr-4">${ghost.targetPercent.toFixed(1)}%</td>
-            <td class="py-3 px-2 text-center">${actionHTML}</td>`;
+            <td class="py-3 px-2 text-center w-[80px] sm:w-[100px]">${actionHTML}</td>`;
         assetListBody.appendChild(tr);
     });
     updateCalculation();
@@ -445,8 +445,9 @@ function updateCalculation() {
     PRIMARY_SECTORS.forEach(sector => {
         const targetWeight = sectorTargets[sector] || 0;
         if (targetWeight > 0 && !holdings.some(h => h.sector === sector)) {
+            const preset = SECTOR_GUIDE_PRESETS[sector];
             ghostRows.push({ 
-                name: SECTOR_GUIDE_PRESETS[sector], 
+                name: preset ? `[가이드] ${preset.label}` : `[가이드] ${sector}`, 
                 sector: sector, 
                 isGhost: true, 
                 actualPercent: 0, 
