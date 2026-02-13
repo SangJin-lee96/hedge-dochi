@@ -149,13 +149,13 @@ window.selectDochi = (type, skipAlert = false) => {
     const cards = document.querySelectorAll('.strategy-card');
     const ringColors = { aggressive: 'ring-rose-500', balanced: 'ring-blue-500', defensive: 'ring-emerald-500' };
     cards.forEach(card => {
-        card.classList.remove('ring-4', 'ring-rose-500', 'ring-blue-500', 'ring-emerald-500', 'opacity-100', 'scale-105');
+        card.classList.remove('ring-4', 'ring-offset-2', 'ring-rose-500', 'ring-blue-500', 'ring-emerald-500', 'opacity-100', 'scale-105');
         card.classList.add('opacity-60', 'scale-100');
     });
     const selectedCard = document.getElementById(`card-${type}`);
     if (selectedCard) {
         selectedCard.classList.remove('opacity-60', 'scale-100');
-        selectedCard.classList.add('opacity-100', 'ring-4', ringColors[type], 'scale-105');
+        selectedCard.classList.add('opacity-100', 'ring-4', 'ring-offset-2', ringColors[type], 'scale-105', 'dark:ring-offset-slate-900');
     }
     if (!skipAlert) {
         if (confirm(`[${STRATEGY_CONFIG[type].name}] 전략의 목표 비중을 자산에 적용하시겠습니까?\n기존에 설정한 개별 종목 비중이 초기화될 수 있습니다.`)) {
@@ -333,36 +333,36 @@ function renderAssetList() {
         const tr = document.createElement('tr');
         tr.className = `border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${item.locked ? 'bg-indigo-50/10' : ''}`;
         
-        // Desktop markup remains mostly same but with data-labels, Mobile will use the data-labels and CSS rules
         tr.innerHTML = `
-            <td class="py-3 px-2 text-center align-middle" data-label="잠금">
-                <button onclick="toggleLock(${index})" class="text-lg w-11 h-11 flex items-center justify-center mx-auto transition-transform active:scale-90">${item.locked ? '🔒' : '🔓'}</button>
-            </td>
-            <td class="py-3 px-2" data-label="종목/섹터">
+            <td class="py-3 px-2 text-center align-middle" data-label="종목/섹터">
                 <div class="flex flex-col min-w-0 w-full">
-                    <div class="flex justify-between items-start md:block">
+                    <!-- Row 1: Name + Lock/Remove -->
+                    <div class="flex justify-between items-center w-full">
                         <span class="font-bold text-slate-800 dark:text-white truncate text-sm md:text-base" title="${item.name || item.ticker}">${item.name || item.ticker}</span>
-                        <div class="md:hidden flex items-center gap-2">
-                             <button onclick="removeAsset(${index})" class="text-slate-300 active:text-red-500 p-1">✕</button>
+                        <div class="flex items-center gap-1">
+                             <button onclick="toggleLock(${index})" class="text-lg p-2 active:scale-90">${item.locked ? '🔒' : '🔓'}</button>
+                             <button onclick="removeAsset(${index})" class="text-slate-300 active:text-red-500 p-2 text-lg">✕</button>
                         </div>
                     </div>
+                    <!-- Row 2: Badges -->
                     <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                        <select class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold outline-none border-none px-2 py-1 rounded-lg cursor-pointer" onchange="updateHolding(${index}, 'exchange', this.value)">
-                            ${Object.keys(EXCHANGE_PRESETS).map(ex => `<option value="${ex}" ${item.exchange === ex ? 'selected' : ''}>${ex}</option>`).join('')}
-                        </select>
-                        <span class="text-[10px] text-slate-300">|</span>
-                        <select class="text-[10px] bg-transparent text-indigo-500 font-bold outline-none border-none p-0 cursor-pointer" onchange="updateHolding(${index}, 'sector', this.value)">
-                            ${PRIMARY_SECTORS.map(s => `<option value="${s}" ${item.sector === s ? 'selected' : ''}>${s}</option>`).join('')}
-                        </select>
+                        <span class="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-bold uppercase">${item.exchange}</span>
+                        <span class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded font-bold">${item.sector}</span>
+                        <span class="text-[10px] text-slate-400 font-mono font-bold ml-auto">${item.ticker}</span>
                     </div>
-                    <input type="text" value="${item.ticker}" class="mt-1.5 text-[10px] bg-slate-50 dark:bg-slate-800/50 rounded-lg px-2 py-1.5 text-slate-400 font-semibold uppercase focus:outline-none w-full hover:text-blue-500 transition-colors" onchange="updateHolding(${index}, 'ticker', this.value)">
+                    <!-- Row 3: Grid Data (Mobile only) -->
+                    <div class="md:hidden grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <div class="flex flex-col"><span class="text-[11px] text-slate-400 font-bold uppercase">Actual %</span><div class="font-mono font-black ${colorClass} text-sm mt-1">${actualPct.toFixed(1)}%</div></div>
+                        <div class="flex flex-col"><span class="text-[11px] text-slate-400 font-bold uppercase">Target %</span><input type="number" value="${item.targetPercent}" class="bg-transparent font-mono font-bold text-blue-600 border-b border-blue-500 outline-none h-8 text-sm" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></div>
+                    </div>
                 </div>
             </td>
-            <td class="py-3 px-2" data-label="보유수량"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right focus:outline-none font-medium p-2 border-b border-transparent focus:border-blue-500" onchange="updateHolding(${index}, 'qty', this.value)"></td>
-            <td class="py-3 px-2" data-label="현재가($)"><input type="number" value="${item.price}" class="w-full bg-transparent text-right focus:outline-none font-medium p-2 border-b border-transparent focus:border-blue-500" onchange="updateHolding(${index}, 'price', this.value)"></td>
-            <td class="py-3 px-2 text-right" data-label="Actual%"><div class="inline-block px-2 py-1 rounded-lg font-black ${colorClass}">${actualPct.toFixed(1)}%</div></td>
-            <td class="py-3 px-2" data-label="Target%"><input type="number" value="${item.targetPercent}" class="w-full bg-transparent text-right focus:outline-none font-bold text-blue-600 p-2 border-b border-transparent focus:border-blue-500" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></td>
-            <td class="py-3 px-2 text-center md:table-cell hidden" data-label="삭제"><button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500 w-11 h-11 flex items-center justify-center mx-auto text-xl">✕</button></td>`;
+            <td class="py-3 px-2 md:table-cell hidden" data-label="잠금">-</td>
+            <td class="py-3 px-2 md:table-cell hidden" data-label="보유수량"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right font-mono focus:outline-none font-medium p-2 border-b border-transparent focus:border-blue-500" onchange="updateHolding(${index}, 'qty', this.value)"></td>
+            <td class="py-3 px-2 md:table-cell hidden" data-label="현재가($)"><input type="number" value="${item.price}" class="w-full bg-transparent text-right font-mono focus:outline-none font-medium p-2 border-b border-transparent focus:border-blue-500" onchange="updateHolding(${index}, 'price', this.value)"></td>
+            <td class="py-3 px-2 md:table-cell hidden text-right" data-label="Actual%"><div class="inline-block px-2 py-1 rounded-lg font-mono font-black ${colorClass}">${actualPct.toFixed(1)}%</div></td>
+            <td class="py-3 px-2 md:table-cell hidden" data-label="Target%"><input type="number" value="${item.targetPercent}" class="w-full bg-transparent text-right font-mono font-bold text-blue-600 p-2 border-b border-transparent focus:border-blue-500" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></td>
+            <td class="py-3 px-2 text-center md:table-cell hidden" data-label="삭제">-</td>`;
         assetListBody.appendChild(tr);
     });
 
@@ -375,31 +375,40 @@ function renderAssetList() {
         let actionHTML = '';
         if (preset) {
             actionHTML = `
-                <div class="flex gap-2 w-full">
-                    <button onclick="triggerGuideSearch('${preset.us}')" title="미국 ${preset.us} 검색" class="flex-1 h-11 px-3 rounded-xl border-2 border-blue-500 text-blue-500 active:bg-blue-500 active:text-white md:hover:bg-blue-500 md:hover:text-white transition-all font-bold text-xs whitespace-nowrap">
-                        미국(US)
+                <div class="grid grid-cols-2 gap-2 w-full mt-3">
+                    <button onclick="triggerGuideSearch('${preset.us}')" class="h-10 rounded-xl border-2 border-blue-500 text-blue-500 active:bg-blue-500 active:text-white transition-all font-bold text-[10px] uppercase">
+                        미국 (US)
                     </button>
-                    <button onclick="triggerGuideSearch('${preset.kr}')" title="한국 ${preset.kr} 검색" class="flex-1 h-11 px-3 rounded-xl border-2 border-indigo-500 text-indigo-500 active:bg-indigo-500 active:text-white md:hover:bg-indigo-500 md:hover:text-white transition-all font-bold text-xs whitespace-nowrap">
-                        한국(KR)
+                    <button onclick="triggerGuideSearch('${preset.kr}')" class="h-10 rounded-xl border-2 border-indigo-500 text-indigo-500 active:bg-indigo-500 active:text-white transition-all font-bold text-[10px] uppercase">
+                        한국 (KR)
                     </button>
                 </div>`;
         } else {
-            actionHTML = `<button onclick="triggerGuideSearch('ETF')" class="w-full h-11 rounded-xl border-2 border-blue-500 text-blue-500 md:hover:bg-blue-50 md:hover:text-blue-600 font-black text-xs transition-all">🔍 종목 검색</button>`;
+            actionHTML = `<button onclick="triggerGuideSearch('ETF')" class="w-full h-10 mt-3 rounded-xl border-2 border-blue-500 text-blue-500 active:bg-blue-500 active:text-white font-black text-[10px] transition-all uppercase">🔍 검색</button>`;
         }
 
+        const ghostLabel = preset ? `[가이드] ${preset.label}` : `[가이드] ${ghost.sector}`;
+
         tr.innerHTML = `
-            <td class="py-3 px-2 text-center align-middle text-xs" data-label="잠금">👻</td>
-            <td class="py-3 px-2" data-label="종목/섹터">
-                <div class="flex flex-col min-w-0 w-full">
-                    <span class="font-bold text-slate-500 dark:text-slate-400 truncate text-sm md:text-base" style="word-break: keep-all;">${ghost.name}</span>
-                    <span class="text-[10px] text-indigo-400 font-bold whitespace-nowrap mt-0.5">${ghost.sector}</span>
+            <td class="py-3 px-2 text-center align-middle" data-label="종목/섹터">
+                <div class="flex flex-col min-w-0 w-full text-left">
+                    <div class="flex justify-between items-center w-full">
+                        <span class="font-bold text-slate-500 dark:text-slate-400 truncate text-sm md:text-base" style="word-break: keep-all;">${ghostLabel}</span>
+                        <span class="text-lg p-2">👻</span>
+                    </div>
+                    <span class="text-[10px] text-indigo-400 font-mono font-bold whitespace-nowrap mt-0.5 uppercase">${ghost.sector}</span>
+                    <div class="md:hidden grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <div class="flex flex-col"><span class="text-[11px] text-slate-400 font-bold uppercase">Actual %</span><div class="font-mono font-black text-slate-400 text-sm mt-1">0.0%</div></div>
+                        <div class="flex flex-col"><span class="text-[11px] text-slate-400 font-bold uppercase">Target %</span><div class="font-mono font-bold text-blue-400/70 h-8 flex items-center text-sm">${ghost.targetPercent.toFixed(1)}%</div></div>
+                    </div>
+                    <div class="md:hidden">${actionHTML}</div>
                 </div>
             </td>
-            <td class="py-3 px-2 text-center font-bold text-slate-400" data-label="보유수량">-</td>
-            <td class="py-3 px-2 text-center font-bold text-slate-400" data-label="현재가($)">-</td>
-            <td class="py-3 px-2 text-right" data-label="Actual%"><div class="inline-block px-2 py-1 rounded-lg font-black bg-slate-100 dark:bg-slate-700 text-slate-400">0.0%</div></td>
-            <td class="py-3 px-2 text-right font-black text-blue-400/70 md:pr-4" data-label="Target%">${ghost.targetPercent.toFixed(1)}%</td>
-            <td class="py-3 px-2 text-center" data-label="액션">${actionHTML}</td>`;
+            <td class="py-3 px-2 md:table-cell hidden" data-label="보유수량">-</td>
+            <td class="py-3 px-2 md:table-cell hidden" data-label="현재가($)">-</td>
+            <td class="py-3 px-2 md:table-cell hidden text-right" data-label="Actual%"><div class="inline-block px-2 py-1 rounded-lg font-mono font-black bg-slate-100 dark:bg-slate-700 text-slate-400">0.0%</div></td>
+            <td class="py-3 px-2 md:table-cell hidden text-right font-mono font-black text-blue-400/70 md:pr-4" data-label="Target%">${ghost.targetPercent.toFixed(1)}%</td>
+            <td class="py-3 px-2 text-center md:table-cell hidden" data-label="액션">${actionHTML}</td>`;
         assetListBody.appendChild(tr);
     });
     updateCalculation();
@@ -413,7 +422,6 @@ window.triggerGuideSearch = (keyword) => {
     input.focus();
     input.dispatchEvent(new Event('input', { bubbles: true }));
 
-    // Fallback alert if no results found after debounce and API call
     setTimeout(() => {
         const list = document.getElementById('searchResults');
         if (list && (list.innerHTML === '' || list.innerText.includes('결과 없음'))) {
@@ -454,25 +462,27 @@ function updateCalculation() {
     let currentTotal = 0;
     holdings.forEach(h => { currentTotal += (parseFloat(h.qty) || 0) * (parseFloat(h.price) || 0); });
 
-    // Gap Detection
     ghostRows = [];
     PRIMARY_SECTORS.forEach(sector => {
         const targetWeight = sectorTargets[sector] || 0;
         if (targetWeight > 0 && !holdings.some(h => h.sector === sector)) {
             const preset = SECTOR_GUIDE_PRESETS[sector];
             ghostRows.push({ 
-                name: preset ? `[가이드] ${preset.label}` : `[가이드] ${sector}`, 
+                name: preset ? preset.label : sector, 
                 sector: sector, 
                 isGhost: true, 
                 actualPercent: 0, 
                 targetPercent: targetWeight,
-                price: 100 // Dummy price for calculation stability
+                price: 100 
             });
         }
     });
 
     const statusTitle = document.getElementById('statusTitle');
-    if (statusTitle) statusTitle.innerText = ghostRows.length > 0 ? "💡 공백 섹터 가이드가 추가되었습니다." : "계산기 준비 완료";
+    if (statusTitle) {
+        statusTitle.innerText = ghostRows.length > 0 ? "💡 공백 섹터 가이드가 추가되었습니다." : "계산기 준비 완료";
+        statusTitle.style.wordBreak = "keep-all";
+    }
 
     const stats = PRIMARY_SECTORS.reduce((acc, s) => {
         const idMap = { "주식 (Equity)": "equity", "채권 (Fixed Income)": "bonds", "귀금속 (Precious Metals)": "gold", "원자재 (Commodity)": "commodity", "가상자산 (Digital Asset)": "crypto", "현금 (Liquidity)": "cash" };
@@ -487,7 +497,7 @@ function updateCalculation() {
 
     if (totalValueDisplay) totalValueDisplay.innerText = `$${currentTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
     const totTarg = holdings.reduce((s, h) => s + (parseFloat(h.targetPercent) || 0), 0) + ghostRows.reduce((s, g) => s + g.targetPercent, 0);
-    if (totalPercentDisplay) totalPercentDisplay.innerHTML = `<span class="${Math.abs(totTarg - 100) < 0.1 ? 'text-emerald-500' : 'text-blue-500'} font-bold">목표 비중 합계: ${totTarg.toFixed(2)}%</span>`;
+    if (totalPercentDisplay) totalPercentDisplay.innerHTML = `<span class="${Math.abs(totTarg - 100) < 0.1 ? 'text-emerald-500' : 'text-blue-500'} font-mono font-bold">목표 비중 합계: ${totTarg.toFixed(2)}%</span>`;
 
     Object.keys(stats).forEach(n => {
         const s = stats[n]; const curP = currentTotal > 0 ? (s.current / currentTotal) * 100 : 0;
@@ -520,7 +530,7 @@ function updateCalculation() {
                 const d = document.createElement('div');
                 d.className = `p-4 rounded-2xl border ${isBuy ? 'bg-rose-50 dark:bg-rose-900/10 border-rose-100 dark:border-rose-800' : 'bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800'} flex justify-between items-center gap-2 transition-all hover:scale-[1.02] shadow-sm`;
                 const shares = h.price > 0 ? Math.floor(Math.abs(diff) / h.price) : 0;
-                d.innerHTML = `<div class="flex items-center gap-3 min-w-0"><div class="${isBuy ? 'bg-rose-600' : 'bg-blue-600'} text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md flex-shrink-0">${isBuy ? '매수' : '매도'}</div><div class="flex flex-col min-w-0"><span class="font-bold text-slate-800 dark:text-white text-sm md:text-base truncate" title="${h.name || h.ticker}">${h.name || h.ticker}</span><span class="text-[10px] md:text-xs font-bold opacity-70 ${textColor} truncate">${shares > 0 ? '약 ' + shares + '주 ' + (isBuy ? '매수' : '매도') : (isBuy ? '매수' : '매도') + ' 필요'}</span></div></div><div class="text-right flex-shrink-0"><p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase mb-0.5">필요 금액</p><span class="${textColor} font-black text-lg md:text-xl">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
+                d.innerHTML = `<div class="flex items-center gap-3 min-w-0"><div class="${isBuy ? 'bg-rose-600' : 'bg-blue-600'} text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md flex-shrink-0">${isBuy ? '매수' : '매도'}</div><div class="flex flex-col min-w-0"><span class="font-bold text-slate-800 dark:text-white text-sm md:text-base truncate" title="${h.name || h.ticker}">${h.name || h.ticker}</span><span class="text-[10px] md:text-xs font-bold opacity-70 ${textColor} truncate" style="word-break: keep-all;">${shares > 0 ? '약 ' + shares + '주 ' + (isBuy ? '매수' : '매도') : (isBuy ? '매수' : '매도') + ' 필요'}</span></div></div><div class="text-right flex-shrink-0"><p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase mb-0.5">필요 금액</p><span class="${textColor} font-mono font-black text-lg md:text-xl">$${Math.abs(diff).toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
                 actionPlanList.appendChild(d);
             }
         });
@@ -530,7 +540,7 @@ function updateCalculation() {
             const shares = ghost.price > 0 ? Math.floor(targetVal / ghost.price) : 0;
             const d = document.createElement('div');
             d.className = `p-4 rounded-2xl border border-dashed border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-900/10 flex justify-between items-center gap-2 transition-all hover:scale-[1.02] shadow-sm`;
-            d.innerHTML = `<div class="flex items-center gap-3 min-w-0"><div class="bg-indigo-600 text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md flex-shrink-0">신규</div><div class="flex flex-col min-w-0"><span class="font-bold text-slate-500 dark:text-slate-400 text-sm md:text-base truncate" title="${ghost.name}">${ghost.name}</span><span class="text-[10px] md:text-xs font-bold text-indigo-500 truncate" style="word-break: keep-all;">${shares > 0 ? '약 ' + shares + '주 ' : ''}${ghost.sector} 확보 필요</span></div></div><div class="text-right flex-shrink-0"><p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase mb-0.5">권장 금액</p><span class="text-indigo-600 font-black text-lg md:text-xl">$${targetVal.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
+            d.innerHTML = `<div class="flex items-center gap-3 min-w-0"><div class="bg-indigo-600 text-white text-[10px] font-black px-2 py-1 rounded-md shadow-md flex-shrink-0">신규</div><div class="flex flex-col min-w-0"><span class="font-bold text-slate-500 dark:text-slate-400 text-sm md:text-base truncate" title="${ghost.name}">${ghost.name}</span><span class="text-[10px] md:text-xs font-bold text-indigo-500 truncate" style="word-break: keep-all;">${shares > 0 ? '약 ' + shares + '주 ' : ''}${ghost.sector} 확보 필요</span></div></div><div class="text-right flex-shrink-0"><p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase mb-0.5">권장 금액</p><span class="text-indigo-600 font-mono font-black text-lg md:text-xl">$${targetVal.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
             actionPlanList.appendChild(d);
         });
         const costDisplay = document.getElementById('totalFrictionCostDisplay'), costValue = document.getElementById('frictionCostValue'), costWarning = document.getElementById('frictionCostWarning');
@@ -542,7 +552,7 @@ function updateCalculation() {
                 else costWarning?.classList.add('hidden');
             } else costDisplay.classList.add('hidden');
         }
-        if (bal) actionPlanList.innerHTML = '<div class="text-center py-12 bg-emerald-50 dark:bg-emerald-900/10 rounded-3xl border border-emerald-100 dark:border-emerald-800/30"><span class="text-4xl mb-4 block">🏆</span><p class="text-emerald-700 dark:text-emerald-400 font-bold">포트폴리오가 완벽하게 정렬되었습니다!</p></div>';
+        if (bal) actionPlanList.innerHTML = '<div class="text-center py-12 bg-emerald-50 dark:bg-emerald-900/10 rounded-3xl border border-emerald-100 dark:border-emerald-800/30"><span class="text-4xl mb-4 block">🏆</span><p class="text-emerald-700 dark:text-emerald-400 font-bold" style="word-break: keep-all;">포트폴리오가 완벽하게 정렬되었습니다!</p></div>';
     }
     updateCharts(stats, currentTotal);
 }
@@ -577,7 +587,8 @@ onAuthStateChanged(auth, async (user) => {
         try {
             const docSnap = await getDoc(doc(db, "users", user.uid));
             if (docSnap.exists()) {
-                const data = migrateData(docSnap.data());
+                const snapData = docSnap.data();
+                const data = migrateData(snapData);
                 if (data.holdings) holdings = data.holdings; if (data.sectorTargets) sectorTargets = data.sectorTargets;
                 if (data.targetCapital && targetCapitalInput) { targetCapital = parseFloat(data.targetCapital) || 0; targetCapitalInput.value = targetCapital; }
                 if (data.selectedStrategyId) { selectedStrategyId = data.selectedStrategyId; setTimeout(() => selectDochi(selectedStrategyId, true), 100); }
