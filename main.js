@@ -6,9 +6,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileMenu = document.getElementById('mobileMenu');
 
     if (mobileMenuBtn && mobileMenu) {
-        mobileMenuBtn.addEventListener('click', () => {
+        const toggleMenu = () => {
             mobileMenu.classList.toggle('hidden');
-        });
+            if (!mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('animate-slide-down');
+            }
+        };
+
+        mobileMenuBtn.addEventListener('click', toggleMenu);
+        mobileMenuBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            toggleMenu();
+        }, { passive: false });
 
         mobileMenu.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {

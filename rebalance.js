@@ -333,12 +333,12 @@ function renderAssetList() {
         const tr = document.createElement('tr');
         tr.className = `border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${item.locked ? 'bg-indigo-50/10' : ''}`;
         tr.innerHTML = `
-            <td class="py-3 px-2 text-center align-middle"><button onclick="toggleLock(${index})" class="text-lg">${item.locked ? '🔒' : '🔓'}</button></td>
-            <td class="py-3 px-2">
-                <div class="flex flex-col min-w-0">
+            <td class="py-3 px-2 text-center align-middle" data-label="잠금"><button onclick="toggleLock(${index})" class="text-lg w-11 h-11 flex items-center justify-center mx-auto">${item.locked ? '🔒' : '🔓'}</button></td>
+            <td class="py-3 px-2" data-label="종목/섹터">
+                <div class="flex flex-col min-w-0 w-full">
                     <span class="font-bold text-slate-800 dark:text-white truncate text-sm" title="${item.name || item.ticker}">${item.name || item.ticker}</span>
-                    <div class="flex items-center gap-1.5 mt-0.5">
-                        <select class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold outline-none border-none px-1 rounded cursor-pointer" onchange="updateHolding(${index}, 'exchange', this.value)">
+                    <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                        <select class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold outline-none border-none px-2 py-1 rounded cursor-pointer" onchange="updateHolding(${index}, 'exchange', this.value)">
                             ${Object.keys(EXCHANGE_PRESETS).map(ex => `<option value="${ex}" ${item.exchange === ex ? 'selected' : ''}>${ex}</option>`).join('')}
                         </select>
                         <span class="text-[10px] text-slate-300">|</span>
@@ -346,14 +346,14 @@ function renderAssetList() {
                             ${PRIMARY_SECTORS.map(s => `<option value="${s}" ${item.sector === s ? 'selected' : ''}>${s}</option>`).join('')}
                         </select>
                     </div>
-                    <input type="text" value="${item.ticker}" class="mt-1 text-[10px] bg-transparent text-slate-400 font-semibold uppercase focus:outline-none w-full hover:text-blue-500 transition-colors" onchange="updateHolding(${index}, 'ticker', this.value)">
+                    <input type="text" value="${item.ticker}" class="mt-1.5 text-[10px] bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 text-slate-400 font-semibold uppercase focus:outline-none w-full hover:text-blue-500 transition-colors" onchange="updateHolding(${index}, 'ticker', this.value)">
                 </div>
             </td>
-            <td class="py-3 px-2"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right focus:outline-none font-medium" onchange="updateHolding(${index}, 'qty', this.value)"></td>
-            <td class="py-3 px-2"><input type="number" value="${item.price}" class="w-full bg-transparent text-right focus:outline-none font-medium" onchange="updateHolding(${index}, 'price', this.value)"></td>
-            <td class="py-3 px-2 text-right"><div class="inline-block px-2 py-1 rounded-lg font-black ${colorClass}">${actualPct.toFixed(1)}%</div></td>
-            <td class="py-3 px-2"><input type="number" value="${item.targetPercent}" class="w-full bg-transparent text-right focus:outline-none font-bold text-blue-600" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></td>
-            <td class="py-3 px-2 text-center"><button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500">✕</button></td>`;
+            <td class="py-3 px-2" data-label="보유수량"><input type="number" value="${item.qty}" class="w-full bg-transparent text-right focus:outline-none font-medium p-2 border-b border-transparent focus:border-blue-500" onchange="updateHolding(${index}, 'qty', this.value)"></td>
+            <td class="py-3 px-2" data-label="현재가($)"><input type="number" value="${item.price}" class="w-full bg-transparent text-right focus:outline-none font-medium p-2 border-b border-transparent focus:border-blue-500" onchange="updateHolding(${index}, 'price', this.value)"></td>
+            <td class="py-3 px-2 text-right" data-label="Actual%"><div class="inline-block px-2 py-1 rounded-lg font-black ${colorClass}">${actualPct.toFixed(1)}%</div></td>
+            <td class="py-3 px-2" data-label="Target%"><input type="number" value="${item.targetPercent}" class="w-full bg-transparent text-right focus:outline-none font-bold text-blue-600 p-2 border-b border-transparent focus:border-blue-500" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></td>
+            <td class="py-3 px-2 text-center" data-label="삭제"><button onclick="removeAsset(${index})" class="text-slate-300 hover:text-red-500 w-11 h-11 flex items-center justify-center mx-auto text-xl">✕</button></td>`;
         assetListBody.appendChild(tr);
     });
 
@@ -366,26 +366,26 @@ function renderAssetList() {
         let actionHTML = '';
         if (preset) {
             actionHTML = `
-                <div class="flex gap-1.5 justify-center">
-                    <button onclick="triggerGuideSearch('${preset.us}')" title="미국 ${preset.us} 검색" class="px-2 py-1 rounded text-[10px] border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-all font-bold">
+                <div class="flex gap-2 justify-center flex-wrap">
+                    <button onclick="triggerGuideSearch('${preset.us}')" title="미국 ${preset.us} 검색" class="flex-1 min-w-[44px] h-11 px-3 rounded-xl border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-all font-bold text-xs">
                         US
                     </button>
-                    <button onclick="triggerGuideSearch('${preset.kr}')" title="한국 ${preset.kr} 검색" class="px-2 py-1 rounded text-[10px] border border-indigo-500 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all font-bold">
+                    <button onclick="triggerGuideSearch('${preset.kr}')" title="한국 ${preset.kr} 검색" class="flex-1 min-w-[44px] h-11 px-3 rounded-xl border-2 border-indigo-500 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all font-bold text-xs">
                         KR
                     </button>
                 </div>`;
         } else {
-            actionHTML = `<button onclick="triggerGuideSearch('ETF')" class="text-blue-500 hover:text-blue-600 font-black text-[10px] whitespace-nowrap">🔍 검색</button>`;
+            actionHTML = `<button onclick="triggerGuideSearch('ETF')" class="w-full h-11 rounded-xl border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-black text-xs transition-all">🔍 검색</button>`;
         }
 
         tr.innerHTML = `
-            <td class="py-3 px-2 text-center align-middle text-xs">👻</td>
-            <td class="py-3 px-2"><div class="flex flex-col min-w-0"><span class="font-bold text-slate-500 dark:text-slate-400 truncate text-sm" style="word-break: keep-all;">${ghost.name}</span><span class="text-[10px] text-indigo-400 font-bold whitespace-nowrap">${ghost.sector}</span></div></td>
-            <td class="py-3 px-2 text-center font-bold text-slate-400">-</td>
-            <td class="py-3 px-2 text-center font-bold text-slate-400">-</td>
-            <td class="py-3 px-2 text-right"><div class="inline-block px-2 py-1 rounded-lg font-black bg-slate-100 dark:bg-slate-700 text-slate-400">0.0%</div></td>
-            <td class="py-3 px-2 text-right font-black text-blue-400/70 pr-4">${ghost.targetPercent.toFixed(1)}%</td>
-            <td class="py-3 px-2 text-center w-[80px] sm:w-[100px]">${actionHTML}</td>`;
+            <td class="py-3 px-2 text-center align-middle text-xs" data-label="잠금">👻</td>
+            <td class="py-3 px-2" data-label="종목/섹터"><div class="flex flex-col min-w-0 w-full"><span class="font-bold text-slate-500 dark:text-slate-400 truncate text-sm" style="word-break: keep-all;">${ghost.name}</span><span class="text-[10px] text-indigo-400 font-bold whitespace-nowrap">${ghost.sector}</span></div></td>
+            <td class="py-3 px-2 text-center font-bold text-slate-400" data-label="보유수량">-</td>
+            <td class="py-3 px-2 text-center font-bold text-slate-400" data-label="현재가($)">-</td>
+            <td class="py-3 px-2 text-right" data-label="Actual%"><div class="inline-block px-2 py-1 rounded-lg font-black bg-slate-100 dark:bg-slate-700 text-slate-400">0.0%</div></td>
+            <td class="py-3 px-2 text-right font-black text-blue-400/70 md:pr-4" data-label="Target%">${ghost.targetPercent.toFixed(1)}%</td>
+            <td class="py-3 px-2 text-center w-[100px] sm:w-[120px]" data-label="액션">${actionHTML}</td>`;
         assetListBody.appendChild(tr);
     });
     updateCalculation();
