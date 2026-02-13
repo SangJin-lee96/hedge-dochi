@@ -77,21 +77,25 @@
         
         /* Mobile Card Table Styles */
         @media (max-width: 767px) {
+            #strategyContainer {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                overflow-y: visible !important;
+            }
             #assetListBody tr {
-                display: flex;
-                flex-direction: column;
+                display: block;
                 padding: 1rem;
                 margin-bottom: 1rem;
                 border: 1px solid var(--color-card-border);
-                border-radius: 1rem;
+                border-radius: 1.25rem;
                 background-color: var(--color-card-background);
-                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
             }
             #assetListBody td {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0.5rem 0;
+                padding: 0.4rem 0;
                 border: none;
                 width: 100% !important;
                 text-align: left !important;
@@ -99,21 +103,27 @@
             #assetListBody td::before {
                 content: attr(data-label);
                 font-weight: 700;
-                font-size: 0.75rem;
+                font-size: 0.7rem;
                 color: var(--color-secondary-text);
+                word-break: keep-all;
             }
-            /* Hide columns that don't need labels in card view or need custom layout */
+            /* Custom layout for specific columns */
             #assetListBody td[data-label="종목/섹터"]::before,
             #assetListBody td[data-label="잠금"]::before,
-            #assetListBody td[data-label="삭제"]::before {
+            #assetListBody td[data-label="삭제"]::before,
+            #assetListBody td[data-label="액션"]::before {
                 display: none;
             }
-            #assetListBody td[data-label="종목/섹터"] {
-                flex-direction: column;
-                align-items: flex-start;
-                padding-bottom: 1rem;
+            #assetListBody td[data-label="헤더"] {
+                padding-bottom: 0.75rem;
                 border-bottom: 1px solid var(--color-card-border);
                 margin-bottom: 0.5rem;
+            }
+            #assetListBody td[data-label="그리드"] {
+                display: grid;
+                grid-template-cols: 1fr 1本;
+                gap: 1rem;
+                padding: 0.5rem 0;
             }
         }
     </style>
