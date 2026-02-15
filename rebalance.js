@@ -306,9 +306,9 @@ function renderAssetList() {
                         <span class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded font-bold">${item.sector}</span>
                         <span class="text-[10px] text-slate-400 font-mono font-bold ml-2">$${parseFloat(item.price).toLocaleString()}</span>
                     </div>
-                    <div class="md:hidden grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                        <div class="flex flex-col"><span class="text-[10px] text-slate-400 font-bold uppercase">Actual %</span><div class="font-mono font-black ${colorClass} text-xs mt-1">${actualPct.toFixed(1)}%</div></div>
-                        <div class="flex flex-col"><span class="text-[10px] text-slate-400 font-bold uppercase">Target %</span><input type="number" value="${item.targetPercent}" class="bg-transparent font-mono font-bold text-blue-600 border-b border-blue-500 outline-none h-7 text-xs" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></div>
+                    <div class="md:hidden grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div class="flex flex-col"><span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Actual %</span><div class="font-mono font-black ${colorClass} text-xs mt-0.5">${actualPct.toFixed(1)}%</div></div>
+                        <div class="flex flex-col"><span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Target %</span><input type="number" value="${item.targetPercent}" class="bg-transparent font-mono font-bold text-blue-600 border-b border-blue-500 outline-none h-6 text-xs mt-0.5" onchange="updateHolding(${index}, 'targetPercent', this.value)" ${item.locked ? 'readonly' : ''}></div>
                     </div>
                 </div>
             </td>
