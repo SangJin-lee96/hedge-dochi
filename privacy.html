@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="scroll-pt-20">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,27 +29,31 @@
             <nav class="absolute top-0 right-0 flex items-center bg-white p-2 rounded-full shadow-lg border border-slate-100">
                 <a href="index.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">홈</a>
                 <span class="text-slate-300 mx-2">|</span>
-                <a href="about.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">사이트 소개</a>
+                <a href="rebalance.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">리밸런싱</a>
+                <span class="text-slate-300 mx-2">|</span>
+                <a href="guides.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">가이드</a>
+                <span class="text-slate-300 mx-2">|</span>
+                <a href="about.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">소개</a>
             </nav>
             <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">개인정보처리방침</h1>
             <p class="text-slate-500 mt-3 text-lg">Hedge Dochi는 사용자의 프라이버시를 최우선으로 합니다.</p>
         </header>
 
         <div class="content-card p-8 md:p-12 prose prose-slate max-w-none mb-12">
-            <p><strong>시행일: 2026년 2월 11일 (개정)</strong></p>
+            <p class="mb-6"><strong>시행일: 2026년 2월 11일 (개정)</strong></p>
 
-            <h2>1. 데이터 수집에 대한 원칙</h2>
-            <p>본 사이트("Hedge Dochi")는 사용자의 민감한 금융 자산 정보를 서버에 저장하지 않는 것을 원칙으로 합니다. 리밸런싱 계산 및 시뮬레이션에 사용되는 데이터는 오직 사용자의 브라우저 로컬 저장소 또는 Firebase 인증 시스템을 통한 본인 계정에만 귀속됩니다.</p>
+            <h2 class="text-xl font-bold mb-4">1. 데이터 수집에 대한 원칙</h2>
+            <p class="mb-6 leading-relaxed">본 사이트("Hedge Dochi")는 사용자의 민감한 금융 자산 정보를 서버에 저장하지 않는 것을 원칙으로 합니다. 리밸런싱 계산 및 시뮬레이션에 사용되는 데이터는 오직 사용자의 브라우저 로컬 저장소 또는 Firebase 인증 시스템을 통한 본인 계정에만 귀속됩니다.</p>
 
-            <h2>2. 쿠키 및 광고 관련 안내</h2>
-            <p>Hedge Dochi는 서비스 개선 및 Google AdSense 광고 게재를 위해 쿠키를 사용합니다.</p>
-            <ul>
+            <h2 class="text-xl font-bold mb-4">2. 쿠키 및 광고 관련 안내</h2>
+            <p class="mb-4 leading-relaxed">Hedge Dochi는 서비스 개선 및 Google AdSense 광고 게재를 위해 쿠키를 사용합니다.</p>
+            <ul class="list-disc pl-6 mb-6 space-y-2">
                 <li>Google을 포함한 제3자 제공업체는 사용자의 이전 방문 기록을 바탕으로 맞춤형 광고를 게재하기 위해 쿠키를 활용합니다.</li>
                 <li>사용자는 Google의 광고 설정 페이지에서 맞춤 광고를 해제할 수 있습니다.</li>
             </ul>
 
-            <h2>3. 보안 준수</h2>
-            <p>우리는 Firebase의 보안 규칙(Firestore Rules)을 엄격히 적용하여, 인증된 사용자 본인 외에는 어떠한 데이터도 열람하거나 수정할 수 없도록 설계하였습니다.</p>
+            <h2 class="text-xl font-bold mb-4">3. 보안 준수</h2>
+            <p class="mb-8 leading-relaxed">우리는 Firebase의 보안 규칙(Firestore Rules)을 엄격히 적용하여, 인증된 사용자 본인 외에는 어떠한 데이터도 열람하거나 수정할 수 없도록 설계하였습니다.</p>
             
             <div class="text-center mt-12">
                 <a href="index.html" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all">홈으로 돌아가기</a>
@@ -60,7 +64,7 @@
     <section class="max-w-6xl mx-auto px-4 mt-16 mb-12">
         <div class="p-8 md:p-12 rounded-3xl bg-slate-50 border border-slate-200">
             <h3 class="text-xl md:text-2xl font-bold mb-8 flex items-center gap-2"><span>📖</span> 투자 용어 사전 (Glossary)</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
                     <h4 class="font-bold text-blue-600 text-sm mb-2">MPT (현대 포트폴리오 이론)</h4>
                     <p class="text-xs text-slate-500 leading-relaxed">자산 간의 상관관계를 분석하여 동일한 기대 수익률에서 위험(변동성)을 최소화하거나, 동일한 위험 수준에서 수익을 극대화하는 자산 배분 방식입니다.</p>
@@ -85,13 +89,14 @@
         </div>
     </section>
 
-    <footer class="text-center py-8 border-t border-slate-200">
-        <div class="max-w-6xl mx-auto text-sm text-slate-500">
-            <div class="flex justify-center space-x-6 mb-4">
+    <footer class="text-center py-12 border-t border-slate-200">
+        <div class="max-w-6xl mx-auto text-sm text-slate-500 px-4">
+            <div class="flex justify-center space-x-6 mb-6">
                 <a href="about.html" class="hover:text-slate-800">사이트 소개</a>
                 <a href="privacy.html" class="hover:text-slate-800">개인정보처리방침</a>
                 <a href="contact-form.html" class="hover:text-slate-800">문의하기</a>
             </div>
+            <p class="mb-4 leading-relaxed max-w-2xl mx-auto">Hedge Dochi는 복잡한 금융 데이터를 직관적인 도구로 재해석하여, 모든 투자자가 데이터에 기반한 합리적인 자산 배분을 실천할 수 있도록 돕는 전문 금융 가이드 서비스입니다. 감정에 흔들리지 않는 투자의 표준을 제시합니다.</p>
             <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
         </div>
     </footer>

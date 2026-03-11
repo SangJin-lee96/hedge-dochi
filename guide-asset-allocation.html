@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-pt-20">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="왜 자산 배분이 투자 수익의 90%를 결정할까요? 분산 투자의 수학적 원리와 리스크 관리의 핵심을 배웁니다.">
+    <title>자산 배분의 기초: 왜 모든 달걀을 한 바구니에 담지 않는가? | Hedge Dochi</title>
+    <meta property="og:title" content="자산 배분의 기초: 왜 모든 달걀을 한 바구니에 담지 않는가? | Hedge Dochi">
+    <meta property="og:description" content="분산 투자의 수학적 원리와 리스크 관리의 핵심을 배웁니다.">
+    <meta property="og:image" content="https://hedge-dochi-live.pages.dev/og-image.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-GFMXESYQFR');
+    </script>
+    <style>
+        :root {
+            --color-primary-text: #1e293b;
+            --color-secondary-text: #64748b;
+            --color-background: #f8fafc;
+            --color-nav-bg: #ffffff;
+            --nav-bg-rgb: 255, 255, 255;
+            --color-nav-border: #f1f5f9;
+            --color-nav-link: #2563eb;
+        }
+        html.dark {
+            --color-primary-text: #f8fafc;
+            --color-secondary-text: #94a3b8;
+            --color-background: #0f172a;
+            --color-nav-bg: #1e293b;
+            --nav-bg-rgb: 30, 41, 59;
+            --color-nav-border: #334155;
+            --color-nav-link: #60a5fa;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; }
+        .article-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .article-header { margin-bottom: 60px; text-align: center; }
+        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3rem; margin-bottom: 1.5rem; color: #2563eb; }
+        .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; }
+        .article-content ul { margin-bottom: 1.5rem; padding-left: 1.5rem; list-style-type: disc; }
+        .article-content li { margin-bottom: 0.5rem; }
+        .quote-box { font-style: italic; border-left: 4px solid #e2e8f0; padding: 1rem 2rem; margin: 2rem 0; color: var(--color-secondary-text); }
+    </style>
+</head>
+<body class="transition-colors">
+    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
+                <span class="text-xl">💎</span>
+                <span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-4">
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">금융 가이드</a>
+                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">로또 추천</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="article-container">
+        <header class="article-header">
+            <div class="text-blue-600 font-bold mb-4">금융 가이드 #01</div>
+            <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">자산 배분의 기초: 분산 투자의 비밀</h1>
+            <p class="mt-6 text-slate-500 text-lg">리스크를 줄이면서 장기 수익을 지키는 유일한 방법</p>
+        </header>
+
+        <section class="article-content">
+            <div class="quote-box">
+                "자산 배분은 투자자가 유일하게 공짜로 얻을 수 있는 점심이다." - 해리 마코위츠 (노벨 경제학상 수상자)
+            </div>
+
+            <p>투자를 시작할 때 가장 많이 듣는 조언 중 하나가 바로 "달걀을 한 바구니에 담지 마라"는 말입니다. 하지만 단순히 여러 종목을 사는 것이 자산 배분의 전부는 아닙니다. 진정한 자산 배분은 **서로 다르게 움직이는 자산들**을 조합하여 위험 대비 수익률을 최적화하는 과정입니다.</p>
+
+            <h2>1. 왜 자산 배분이 중요한가?</h2>
+            <p>학술적 연구에 따르면, 포트폴리오 수익률 변동의 약 90% 이상은 종목 선정이나 매매 타이밍이 아닌 '자산 배분 정책'에 의해 결정됩니다. 어떤 주식을 언제 샀느냐보다, 내 자산 중 주식과 채권, 현금의 비중을 어떻게 가져갔느냐가 10년 후 결과를 좌우한다는 뜻입니다.</p>
+
+            <h2>2. 비상관 자산의 조합</h2>
+            <p>자산 배분의 핵심은 상관관계(Correlation)에 있습니다. 주식이 떨어질 때 같이 떨어지는 자산들로만 포트폴리오를 구성하면 분산 효과가 없습니다. 주식이 하락할 때 상승하거나 자리를 지켜주는 자산(예: 채권, 금, 달러 등)을 섞어야 하락장에서 내 자산을 보호할 수 있습니다.</p>
+
+            <h2>3. 리스크 관리와 변동성</h2>
+            <p>자산 배분의 목적은 단순히 수익률을 높이는 것이 아니라, **'견딜 수 있는 고통'**의 수준을 조절하는 데 있습니다. 아무리 높은 기대 수익률을 가진 포트폴리오라도 하락장에서 -50%를 경험하고 투자를 포기하게 만든다면 좋은 전략이 아닙니다. 자산 배분은 변동성을 줄여 투자자가 장기 투자를 지속할 수 있는 심리적 토대를 마련해줍니다.</p>
+
+            <h2>4. 대표적인 자산 배분 전략</h2>
+            <ul>
+                <li><strong>60/40 포트폴리오:</strong> 전통적인 주식 60%, 채권 40% 전략입니다.</li>
+                <li><strong>올웨더 포트폴리오 (All Weather):</strong> 레이 달리오가 제안한 전략으로, 경제의 사계절(성장, 위축, 인플레이션, 디플레이션)에 모두 대응하도록 설계되었습니다.</li>
+                <li><strong>영구 포트폴리오:</strong> 주식, 채권, 금, 현금을 25%씩 균등하게 배분하는 매우 안정적인 전략입니다.</li>
+            </ul>
+
+            <div class="mt-12 p-8 rounded-3xl bg-slate-100 dark:bg-slate-800 text-center">
+                <h3 class="text-xl font-bold mb-4">나의 투자 성향에 맞는 비중을 찾아보세요</h3>
+                <p class="mb-6">Hedge Dochi는 공격, 중도, 수비 성향에 따른 최적의 리밸런싱 가이드를 제공합니다.</p>
+                <a href="index.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all">자산 시뮬레이터 시작하기</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20">
+        <div class="max-w-6xl mx-auto px-4 text-sm text-slate-400">
+            <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
+        </div>
+    </footer>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+</body>
+</html>

@@ -330,11 +330,11 @@ function renderAssetList() {
         if (preset) {
             actionHTML = `
                 <div class="flex gap-2 w-full mt-3">
-                    <button onclick="triggerGuideSearch('${preset.us}')" class="flex-1 h-10 rounded-xl border-2 border-blue-500 text-blue-500 active:bg-blue-500 active:text-white transition-all font-bold text-[10px] uppercase">미국 (US)</button>
-                    <button onclick="triggerGuideSearch('${preset.kr}')" class="flex-1 h-10 rounded-xl border-2 border-indigo-500 text-indigo-500 active:bg-indigo-500 active:text-white transition-all font-bold text-[10px] uppercase">한국 (KR)</button>
+                    <button onclick="triggerGuideSearch('${preset.us}')" class="flex-1 h-12 rounded-xl border-2 border-blue-500 text-blue-500 active:bg-blue-500 active:text-white transition-all font-bold text-[10px] uppercase shadow-sm">미국 (US)</button>
+                    <button onclick="triggerGuideSearch('${preset.kr}')" class="flex-1 h-12 rounded-xl border-2 border-indigo-500 text-indigo-500 active:bg-indigo-500 active:text-white transition-all font-bold text-[10px] uppercase shadow-sm">한국 (KR)</button>
                 </div>`;
         } else {
-            actionHTML = `<button onclick="triggerGuideSearch('ETF')" class="w-full h-10 mt-3 rounded-xl border-2 border-blue-500 text-blue-500 active:bg-blue-500 active:text-white font-black text-[10px] transition-all uppercase">🔍 검색</button>`;
+            actionHTML = `<button onclick="triggerGuideSearch('ETF')" class="w-full h-12 mt-3 rounded-xl border-2 border-blue-500 text-blue-500 active:bg-blue-500 active:text-white font-black text-[10px] transition-all uppercase shadow-sm">🔍 검색</button>`;
         }
 
         const ghostLabel = preset ? `[가이드] ${preset.label}` : `[가이드] ${ghost.sector}`;
@@ -498,7 +498,7 @@ onAuthStateChanged(auth, async (user) => {
         if (document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL;
         if (loginAlert) loginAlert.classList.add('hidden'); if (appContent) { appContent.classList.remove('hidden'); appContent.classList.add('grid'); }
         if (authContainerMobile) {
-            authContainerMobile.innerHTML = `<div class="flex items-center justify-between"><div class="flex items-center gap-3"><img src="${user.photoURL}" class="w-10 h-10 rounded-full border border-slate-200"><span class="font-bold text-slate-800 dark:text-white">${user.displayName || '사용자'}</span></div><button id="logoutBtnMobile" class="text-sm text-red-500 font-bold">로그아웃</button></div>`;
+            authContainerMobile.innerHTML = `<div class="flex items-center justify-between"><div class="flex items-center gap-3"><img src="${user.photoURL}" alt="${user.displayName || '사용자'} 프로필 사진" class="w-10 h-10 rounded-full border border-slate-200"><span class="font-bold text-slate-800 dark:text-white">${user.displayName || '사용자'}</span></div><button id="logoutBtnMobile" class="text-sm text-red-500 font-bold">로그아웃</button></div>`;
             document.getElementById('logoutBtnMobile').addEventListener('click', () => signOut(auth).then(() => location.reload()));
         }
         try {

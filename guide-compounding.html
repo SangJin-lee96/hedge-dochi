@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-pt-20">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="복리의 마법과 장기 투자 시뮬레이션의 의미. 시간이 자산을 어떻게 폭발적으로 성장시키는지 알아봅니다.">
+    <title>복리의 마법: 10년 장기 투자의 비밀 | Hedge Dochi</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
+    <style>
+        :root { --color-background: #f8fafc; --color-primary-text: #1e293b; --color-nav-bg: #ffffff; --color-nav-border: #f1f5f9; --color-nav-link: #2563eb; }
+        html.dark { --color-background: #0f172a; --color-primary-text: #f8fafc; --color-nav-bg: #1e293b; --color-nav-border: #334155; --color-nav-link: #60a5fa; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); line-height: 1.7; word-break: keep-all; }
+        .article-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .article-header { margin-bottom: 60px; text-align: center; }
+        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3rem; margin-bottom: 1.5rem; color: #2563eb; }
+        .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; }
+        .article-content ul { margin-bottom: 1.5rem; padding-left: 1.5rem; list-style-type: disc; }
+        .quote-box { font-style: italic; border-left: 4px solid #e2e8f0; padding: 1rem 2rem; margin: 2rem 0; color: #64748b; }
+    </style>
+</head>
+<body class="transition-colors">
+    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b" style="background-color: rgba(255,255,255,0.7); border-color: var(--color-nav-border);">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
+                <span class="text-xl">💎</span><span class="font-bold text-lg">Hedge Dochi</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-4">
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 text-blue-600">금융 가이드</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="article-container">
+        <header class="article-header">
+            <div class="text-blue-600 font-bold mb-4">금융 가이드 #03</div>
+            <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">복리의 마법과 10년 장기 투자</h1>
+            <p class="mt-6 text-slate-500 text-lg">시간이 자산을 어떻게 지수함수적으로 성장시키는가</p>
+        </header>
+
+        <section class="article-content">
+            <div class="quote-box">
+                "복리는 세계 8대 불가사의다. 이를 이해하는 자는 돈을 벌고, 이해하지 못하는 자는 비용을 지불한다." - 알베르트 아인슈타인
+            </div>
+
+            <p>우리가 자산을 모을 때 가장 많이 간과하는 변수는 바로 '시간'입니다. 수익률을 1% 높이기 위해 매일 밤잠을 설치며 주식 차트를 보지만, 정작 시장에 머무는 시간을 늘리는 것이 훨씬 더 쉽고 확실한 방법이라는 사실을 놓치곤 합니다.</p>
+
+            <h2>1. 단리와 복리의 차이</h2>
+            <p>단리는 원금에 대해서만 이자가 붙는 방식입니다. 반면 복리는 '원금+이전에 발생한 이자'에 또다시 이자가 붙는 방식입니다. 눈덩이를 굴리는 것과 같습니다. 처음에는 주먹만 한 눈뭉치지만, 언덕을 굴러 내려가면서 표면적이 넓어질수록 붙는 눈의 양은 기하급수적으로 커집니다.</p>
+
+            <h2>2. 시간의 지수함수적 위력</h2>
+            <p>복리 공식은 <strong>A = P(1 + r)^n</strong> 입니다. 여기서 가장 주목해야 할 변수는 수익률(r)이 아니라 시간(n)입니다. 시간이 지수(제곱) 자리에 있기 때문입니다.</p>
+            <p>예를 들어, 매월 100만 원씩 연 8%의 수익률로 투자한다고 가정해 보겠습니다.</p>
+            <ul>
+                <li>5년 후: 약 7,300만 원 (원금 6,000만 원)</li>
+                <li>10년 후: 약 1억 8,000만 원 (원금 1억 2,000만 원)</li>
+                <li>20년 후: 약 5억 9,000만 원 (원금 2억 4,000만 원)</li>
+            </ul>
+            <p>시간이 두 배로 늘어났을 때 자산은 두 배가 아니라 두 배 이상 커집니다. 초반에는 원금의 비중이 높지만, 10년이 넘어가는 시점부터는 '이자가 벌어들이는 이자'가 원금 납입액을 압도하기 시작합니다.</p>
+
+            <h2>3. 인플레이션: 보이지 않는 세금</h2>
+            <p>복리 시뮬레이션을 할 때 반드시 고려해야 할 것이 인플레이션(물가 상승률)입니다. 10년 후의 10억 원은 현재의 10억 원과 가치가 다릅니다. 따라서 명목 수익률에서 물가 상승률을 뺀 '실질 수익률'로 나의 미래 자산을 계산해야 현실적인 목표 설정이 가능합니다.</p>
+
+            <h2>4. 일찍 시작할수록 유리한 게임</h2>
+            <p>25세에 시작하여 35세까지 10년간 매월 50만 원을 투자하고 멈춘 사람과, 35세에 시작하여 65세까지 30년간 매월 50만 원을 투자한 사람이 65세가 되었을 때 얻는 최종 자산은 누가 더 많을까요? 놀랍게도 단 10년만 투자하고 복리로 방치한 앞사람의 자산이 더 큽니다. 이것이 바로 시간의 힘입니다.</p>
+            
+            <div class="mt-12 p-8 rounded-3xl bg-slate-100 text-center">
+                <h3 class="text-xl font-bold mb-4">나의 10년 후 명목/실질 자산을 확인해보세요</h3>
+                <p class="mb-6">초기 자본, 월 저축액, 기대 수익률을 입력하면 10년 후의 자산 등급을 시뮬레이션 해드립니다.</p>
+                <a href="index.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all">현실 자산 시뮬레이터 시작하기</a>
+            </div>
+        </section>
+    </main>
+    <footer class="text-center py-12 border-t border-slate-100 mt-20 text-slate-400 text-sm"><p>© 2026 Hedge Dochi. All Rights Reserved.</p></footer>
+</body>
+</html>

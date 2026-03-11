@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="scroll-pt-20">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -83,8 +83,9 @@
             </div>
             <nav class="hidden md:flex items-center gap-4">
                 <a href="index.html" class="text-sm font-extrabold px-3 py-2 rounded-lg transition-colors bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 whitespace-nowrap" style="word-break: keep-all;">자산 시뮬레이터</a>
-                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">로또 추천</a>
                 <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">금융 가이드</a>
+                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">로또 추천</a>
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
             </nav>
@@ -98,8 +99,9 @@
         <div id="mobileMenu" class="hidden md:hidden absolute top-16 left-0 w-full border-b shadow-lg transition-all z-[110]" style="background-color: var(--color-nav-bg); border-color: var(--color-nav-border);">
             <nav class="flex flex-col p-4 space-y-2">
                 <a href="index.html" class="text-base font-extrabold p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600">자산 시뮬레이터</a>
-                <a href="lotto.html" class="text-base font-semibold p-4 rounded-xl" style="color: var(--color-nav-link);">로또 추천</a>
                 <a href="rebalance.html" class="text-base font-semibold p-4 rounded-xl" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-base font-semibold p-4 rounded-xl" style="color: var(--color-nav-link);">금융 가이드</a>
+                <a href="lotto.html" class="text-base font-semibold p-4 rounded-xl" style="color: var(--color-nav-link);">로또 추천</a>
                 <a href="contact-form.html" class="text-base font-semibold p-4 rounded-xl" style="color: var(--color-nav-link);">문의하기</a>
             </nav>
         </div>
@@ -234,6 +236,34 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- 상세 가이드 텍스트 (SEO 및 콘텐츠 보강) -->
+                <div class="mt-8 md:mt-12 px-4 py-8 md:p-12 rounded-2xl md:rounded-3xl border bg-white dark:bg-[#1e293b] transition-all border-slate-200 dark:border-slate-700 shadow-sm prose prose-slate dark:prose-invert max-w-none">
+                    <h2 class="text-xl md:text-2xl font-extrabold text-blue-600 dark:text-blue-400 mb-6">현실 자산 등급 시뮬레이터 활용 가이드</h2>
+                    
+                    <h3 class="text-lg font-bold mt-8 mb-4">1. 시뮬레이터의 계산 원리</h3>
+                    <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                        Hedge Dochi의 자산 시뮬레이터는 단순한 복리 계산기를 넘어, 현실적인 생애 주기 변수를 모두 포함하는 정교한 금융 도구입니다. 
+                        <strong>최종 명목 자산</strong>은 <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">초기 자본 × (1 + 투자수익률)^10 + 연간 잉여 현금흐름의 복리 누적합</code>으로 계산됩니다. 
+                        여기서 '연간 잉여 현금흐름'은 단순히 수입에서 지출을 뺀 것이 아닙니다. 매년 사용자가 설정한 <strong>'연봉 상승률'</strong>이 반영되어 수입이 증가하고, 동시에 <strong>'물가 상승률(인플레이션)'</strong>이 반영되어 고정 지출 역시 매년 증가하는 동태적(Dynamic) 모델을 따릅니다. 
+                        이러한 복합적인 시뮬레이션을 통해 사용자는 단순히 운에 기대는 것이 아닌, 저축과 투자가 결합된 현실적인 10년 후의 자산 궤적을 확인할 수 있습니다.
+                    </p>
+
+                    <h3 class="text-lg font-bold mt-8 mb-4">2. 왜 인플레이션을 고려해야 하는가?</h3>
+                    <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                        본 시뮬레이터가 다른 도구들과 차별화되는 가장 큰 지점은 <strong>'실질 가치(Real Value)'</strong>의 산출입니다. 
+                        예를 들어, 물가 상승률이 연 3%일 때 10년 후의 10억 원은 현재 가치로 환산하면 약 7.4억 원에 불과합니다. 
+                        투자 수익률이 물가 상승률보다 낮다면, 은행 통장에 찍힌 숫자는 커지더라도 실제 당신의 구매력은 감소하고 있는 것입니다. 
+                        우리는 사용자가 화폐 착각(Money Illusion)에 빠지지 않도록, 10년 후의 예상 자산을 현재 물가 기준의 가치로 환산하여 직관적으로 제공합니다. 이는 은퇴 계획(FIRE)을 세울 때 가장 중요한 핵심 지표입니다.
+                    </p>
+
+                    <h3 class="text-lg font-bold mt-8 mb-4">3. 자산 등급 시스템(Wealth Tier)의 의미</h3>
+                    <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                        단순히 숫자만 제시하는 것은 동기부여가 되지 않습니다. Hedge Dochi는 대한민국 통계청의 가구 금융 데이터와 글로벌 자본주의의 소득 분위 기준을 참고하여 자체적인 <strong>자산 등급 알고리즘</strong>을 구축했습니다. 
+                        최종 산출된 실질 자산을 바탕으로 브론즈, 실버, 골드, 플래티넘, 다이아몬드 등의 등급을 부여하여, 현재의 재무 습관을 유지했을 때 10년 뒤 내가 어느 경제적 계층에 도달할 수 있는지 명확한 청사진을 제시합니다. 
+                        등급을 올리기 위해서는 지출을 줄이거나, 자신의 몸값(연봉 상승률)을 높이거나, 자산 배분을 통해 안전하게 투자 수익률을 끌어올려야 합니다. 더 자세한 투자 방법론은 상단의 <a href="guides.html" class="text-blue-600 hover:underline">금융 가이드</a>에서 확인하실 수 있습니다.
+                    </p>
                 </div>
             </div>
         </div>

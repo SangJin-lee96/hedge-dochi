@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-pt-20">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="현대 포트폴리오 이론(MPT)과 효율적 투자선. 노벨상을 받은 자산 배분 모델의 핵심을 쉽게 풀어냅니다.">
+    <title>현대 포트폴리오 이론(MPT) 쉽게 이해하기 | Hedge Dochi</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
+    <style>
+        :root { --color-background: #f8fafc; --color-primary-text: #1e293b; --color-nav-bg: #ffffff; --color-nav-border: #f1f5f9; --color-nav-link: #2563eb; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); line-height: 1.7; word-break: keep-all; }
+        .article-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .article-header { margin-bottom: 60px; text-align: center; }
+        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3rem; margin-bottom: 1.5rem; color: #2563eb; }
+        .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; }
+    </style>
+</head>
+<body class="transition-colors">
+    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b" style="background-color: rgba(255,255,255,0.7); border-color: var(--color-nav-border);">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
+                <span class="text-xl">💎</span><span class="font-bold text-lg">Hedge Dochi</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-4">
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 text-blue-600">금융 가이드</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="article-container">
+        <header class="article-header">
+            <div class="text-blue-600 font-bold mb-4">금융 가이드 #04</div>
+            <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">현대 포트폴리오 이론(MPT) 해부</h1>
+            <p class="mt-6 text-slate-500 text-lg">리스크를 측정하고 통제하는 노벨 경제학상의 지혜</p>
+        </header>
+
+        <section class="article-content">
+            <p>투자의 세계에서 수익은 불확실하지만, '위험(Risk)'은 어느 정도 측정하고 통제할 수 있습니다. 1952년 해리 마코위츠가 발표한 <strong>현대 포트폴리오 이론(Modern Portfolio Theory, MPT)</strong>은 감이나 직관에 의존하던 투자를 수학과 통계의 영역으로 끌어올린 혁명적인 이론입니다.</p>
+
+            <h2>1. MPT의 핵심 가정</h2>
+            <p>이 이론의 가장 기본적인 가정은 "투자자는 합리적이며, 위험을 회피하려 한다(Risk Averse)"는 것입니다. 즉, 기대 수익률이 동일한 두 개의 투자안이 있다면 변동성(위험)이 적은 쪽을 선택하고, 변동성이 동일하다면 기대 수익률이 높은 쪽을 선택한다는 뜻입니다.</p>
+
+            <h2>2. 분산 투자의 수학적 증명</h2>
+            <p>MPT가 밝혀낸 가장 위대한 사실은, 개별 자산들의 단순한 합보다 '포트폴리오 전체'의 위험이 더 낮아질 수 있다는 점입니다. 이는 자산들 간의 <strong>상관계수(Correlation)</strong> 때문입니다.</p>
+            <p>상관계수가 +1인 두 자산(같이 오르고 같이 내림)을 섞으면 분산 효과가 없습니다. 그러나 상관계수가 0이거나 음수인 자산(하나가 내릴 때 다른 하나는 오르거나 덜 내림)을 섞으면, 포트폴리오의 기대 수익률은 유지하면서 전체적인 변동성(표준편차)은 크게 줄일 수 있습니다. 이것이 맹목적인 종목 늘리기와 과학적 자산 배분의 차이입니다.</p>
+
+            <h2>3. 효율적 투자선 (Efficient Frontier)</h2>
+            <p>다양한 자산 조합의 수많은 포트폴리오를 점으로 찍어보면 하나의 곡선이 만들어집니다. 이 곡선의 맨 위쪽 가장자리를 <strong>효율적 투자선</strong>이라고 부릅니다. 이 선 위에 있는 포트폴리오들은 "특정 위험 수준에서 얻을 수 있는 최대의 수익률" 또는 "특정 수익률을 얻기 위해 감수해야 할 최소의 위험"을 나타냅니다.</p>
+            <p>투자자는 자신의 위험 감수 성향에 따라 효율적 투자선 상의 한 점을 선택해야 하며, 이 선 아래에 있는 포트폴리오는 비효율적인 것으로 간주됩니다.</p>
+
+            <h2>4. 샤프 지수 (Sharpe Ratio)</h2>
+            <p>MPT를 바탕으로 윌리엄 샤프가 개발한 지표로, "위험 한 단위당 초과 수익률"을 의미합니다. (수익률 - 무위험 이자율) / 변동성(표준편차)로 계산됩니다. 샤프 지수가 높을수록 해당 포트폴리오가 리스크 대비 우수한 성과를 내고 있음을 뜻합니다.</p>
+            
+            <div class="mt-12 p-8 rounded-3xl bg-slate-100 text-center">
+                <h3 class="text-xl font-bold mb-4">내 포트폴리오를 체계적으로 관리하세요</h3>
+                <p class="mb-6">직관이 아닌 데이터에 기반하여 자산 비중을 설정하고 리밸런싱을 실행하세요.</p>
+                <a href="rebalance.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all">리밸런싱 매니저 시작하기</a>
+            </div>
+        </section>
+    </main>
+    <footer class="text-center py-12 border-t border-slate-100 mt-20 text-slate-400 text-sm"><p>© 2026 Hedge Dochi. All Rights Reserved.</p></footer>
+</body>
+</html>

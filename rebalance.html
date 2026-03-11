@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="scroll-pt-20">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -136,8 +136,9 @@
             </div>
             <nav class="hidden md:flex items-center gap-1 md:gap-4">
                 <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">자산 시뮬레이터</a>
-                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">로또 추천</a>
                 <a href="rebalance.html" class="text-sm font-extrabold px-3 py-2 rounded-lg transition-colors bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 whitespace-nowrap" style="word-break: keep-all;">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">금융 가이드</a>
+                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">로또 추천</a>
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
                 <div id="authContainer" class="ml-2">
@@ -420,6 +421,30 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- 상세 가이드 텍스트 (SEO 및 콘텐츠 보강) -->
+                <section class="mt-12 pt-12 border-t border-slate-100 dark:border-slate-800 prose prose-slate dark:prose-invert max-w-none">
+                    <h2 class="text-xl md:text-2xl font-extrabold text-blue-600 dark:text-blue-400 mb-6">포트폴리오 리밸런싱 매니저 작동 원리 및 방법론</h2>
+                    
+                    <h3 class="text-lg font-bold mt-8 mb-4">1. 계산 알고리즘 및 오차 최소화</h3>
+                    <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                        본 리밸런싱 도구는 사용자가 보유한 개별 종목의 현재가(실시간 연동 또는 수동 입력)와 수량을 기반으로 총 자산을 산출한 뒤, 사용자가 설정한 목표 비중(Target Weight)과 현재 비중(Actual Weight) 간의 <strong>비중 격차(Weight Gap)</strong>를 분석합니다. 
+                        단순히 비례식으로 수량을 구하는 것에 그치지 않고, <strong>'정수 단위 매매(Integer Mode)'</strong> 알고리즘을 적용하여 소수점 단위 거래가 불가능한 일반적인 주식 시장 환경을 완벽하게 모사합니다. 목표 수량을 산출할 때 반올림, 올림, 버림의 조합을 통해 목표 비중에 가장 근접하면서도 보유 현금을 초과하지 않도록 냅색 문제(Knapsack Problem)의 휴리스틱 접근법을 활용하여 최적의 매수/매도 수량을 제안합니다.
+                    </p>
+
+                    <h3 class="text-lg font-bold mt-8 mb-4">2. 거래 마찰 비용(Friction Cost) 최적화</h3>
+                    <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                        잦은 리밸런싱은 필연적으로 거래 수수료와 양도소득세 등의 '마찰 비용'을 발생시킵니다. Hedge Dochi는 이러한 실무적 한계를 인지하고, <strong>예상 거래 비용을 사전에 시뮬레이션</strong>하여 경고하는 기능을 내장하고 있습니다. 
+                        목표 비중과의 차이가 1~2% 내외로 미미할 경우 무리하게 매도하여 세금을 납부하기보다는, 새로운 현금 흐름(신규 저축액)을 비중이 부족한 자산에 투입하는 <strong>'추가 매수형 리밸런싱(Cash Flow Rebalancing)'</strong>을 유도하도록 설계되었습니다. 이는 총 자산을 깎아먹지 않고도 목표 비중을 자연스럽게 복구할 수 있는 가장 세금 효율적인 전략입니다.
+                    </p>
+
+                    <h3 class="text-lg font-bold mt-8 mb-4">3. 현대 포트폴리오 이론(MPT)과의 연계</h3>
+                    <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                        이 도구는 해리 마코위츠의 현대 포트폴리오 이론에 사상적 기반을 두고 있습니다. 도구 내에 탑재된 '공격도치', '중도도치', '수비도치' 전략은 단순히 주식과 채권의 비율을 임의로 나눈 것이 아닙니다. 
+                        과거 20년 이상의 거시 경제 데이터와 자산군 간의 <strong>상관관계 행렬(Correlation Matrix)</strong>을 분석하여, 각 위험 감수 성향(Risk Tolerance)에 따라 '샤프 지수(위험 대비 수익률)'를 극대화할 수 있는 효율적 투자선(Efficient Frontier) 상의 가중치를 제시한 것입니다. 
+                        리밸런싱은 결국 상승한 자산의 거품을 걷어내고 소외된 자산의 가치를 주워 담아 이 '효율적 투자선'을 지속적으로 추종하게 만드는 나침반 역할을 합니다.
+                    </p>
+                </section>
             </div>
         </div>
 
@@ -453,13 +478,14 @@
         </section>
     </main>
 
-    <footer class="text-center mt-12 py-8 border-t border-slate-100 dark:border-slate-800">
-        <div class="max-w-6xl mx-auto text-sm text-slate-400">
-            <div class="flex justify-center space-x-6 font-bold mb-4">
+    <footer class="text-center mt-12 py-12 border-t border-slate-100 dark:border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 text-sm text-slate-400">
+            <div class="flex justify-center space-x-6 font-bold mb-6">
                 <a href="about.html" class="hover:text-blue-600">소개</a>
                 <a href="privacy.html" class="hover:text-blue-600">약관</a>
                 <a href="contact-form.html" class="hover:text-blue-600">문의</a>
             </div>
+            <p class="mb-4 leading-relaxed max-w-2xl mx-auto">Hedge Dochi는 복잡한 금융 데이터를 직관적인 도구로 재해석하여, 모든 투자자가 데이터에 기반한 합리적인 자산 배분을 실천할 수 있도록 돕는 전문 금융 가이드 서비스입니다. 감정에 흔들리지 않는 투자의 표준을 제시합니다.</p>
             <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
         </div>
     </footer>

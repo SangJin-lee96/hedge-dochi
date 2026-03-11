@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-pt-20">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="금융 투자와 자산 관리의 핵심 원리를 배우는 Hedge Dochi 금융 가이드. 데이터 기반 투자의 모든 것을 확인하세요.">
+    <title>금융 인사이트 가이드 | Hedge Dochi</title>
+    <meta property="og:title" content="금융 인사이트 가이드 | Hedge Dochi">
+    <meta property="og:description" content="금융 투자와 자산 관리의 핵심 원리를 배우는 Hedge Dochi 금융 가이드.">
+    <meta property="og:image" content="https://hedge-dochi-live.pages.dev/og-image.png">
+    <meta property="og:url" content="https://hedge-dochi-live.pages.dev/guides.html">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-GFMXESYQFR');
+    </script>
+    <style>
+        :root {
+            --color-primary-text: #1e293b;
+            --color-secondary-text: #64748b;
+            --color-background: #f8fafc;
+            --color-card-background: #ffffff;
+            --color-card-border: #e2e8f0;
+            --color-nav-bg: #ffffff;
+            --nav-bg-rgb: 255, 255, 255;
+            --color-nav-border: #f1f5f9;
+            --color-nav-link: #2563eb;
+        }
+        html.dark {
+            --color-primary-text: #f8fafc;
+            --color-secondary-text: #94a3b8;
+            --color-background: #0f172a;
+            --color-card-background: #1e293b;
+            --color-card-border: #334155;
+            --color-nav-bg: #1e293b;
+            --nav-bg-rgb: 30, 41, 59;
+            --color-nav-border: #334155;
+            --color-nav-link: #60a5fa;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; }
+        .guide-card { transition: all 0.3s ease; }
+        .guide-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+    </style>
+</head>
+<body class="min-h-screen transition-colors">
+    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
+                <span class="text-xl">💎</span>
+                <span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-4">
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">금융 가이드</a>
+                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">로또 추천</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="py-12 px-4 max-w-6xl mx-auto">
+        <header class="mb-16 text-center">
+            <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">금융 지식 허브</h1>
+            <p class="text-lg md:text-xl text-slate-500 font-medium">데이터 기반 투자를 위한 심층 가이드와 분석 리포트</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- 가이드 카드 1 -->
+            <a href="guide-asset-allocation.html" class="guide-card p-8 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col h-full">
+                <div class="text-4xl mb-6">📈</div>
+                <h2 class="text-xl font-bold mb-3">자산 배분의 기초: 왜 분산투자인가?</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 flex-grow">"모든 달걀을 한 바구니에 담지 마라"는 격언의 수학적 실체를 분석합니다. 리스크를 줄이면서 수익을 지키는 핵심 원리.</p>
+                <span class="text-blue-600 dark:text-blue-400 font-bold text-sm flex items-center gap-1">자세히 보기 <span>→</span></span>
+            </a>
+
+            <!-- 가이드 카드 2 -->
+            <a href="guide-rebalancing.html" class="guide-card p-8 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col h-full">
+                <div class="text-4xl mb-6">⚖️</div>
+                <h2 class="text-xl font-bold mb-3">리밸런싱: 잠자는 수익률을 깨우는 법</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 flex-grow">주기적인 비중 조정이 어떻게 '저점 매수, 고점 매도'를 기계적으로 실현하는지, 섀넌의 도깨비 원리를 통해 알아봅니다.</p>
+                <span class="text-blue-600 dark:text-blue-400 font-bold text-sm flex items-center gap-1">자세히 보기 <span>→</span></span>
+            </a>
+
+            <!-- 가이드 카드 3 -->
+            <a href="guide-compounding.html" class="guide-card p-8 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col h-full">
+                <div class="text-4xl mb-6">⏳</div>
+                <h2 class="text-xl font-bold mb-3">복리의 마법과 장기 투자 시뮬레이션</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 flex-grow">10년 후 당신의 자산 등급이 바뀌는 이유. 시간과 수익률의 곱이 만들어내는 지수함수적 성장의 비밀을 공개합니다.</p>
+                <span class="text-blue-600 dark:text-blue-400 font-bold text-sm flex items-center gap-1">자세히 보기 <span>→</span></span>
+            </a>
+
+            <!-- 가이드 카드 4 -->
+            <a href="guide-mpt.html" class="guide-card p-8 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col h-full">
+                <div class="text-4xl mb-6">🧬</div>
+                <h2 class="text-xl font-bold mb-3">현대 포트폴리오 이론(MPT) 쉽게 이해하기</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 flex-grow">노벨 경제학상에 빛나는 MPT 이론을 실전 투자에 어떻게 적용할 수 있을까요? 효율적 투자선(Efficient Frontier)에 대해 알아봅니다.</p>
+                <span class="text-blue-600 dark:text-blue-400 font-bold text-sm flex items-center gap-1">자세히 보기 <span>→</span></span>
+            </a>
+
+            <!-- 가이드 카드 5 -->
+            <a href="guide-lotto-stats.html" class="guide-card p-8 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col h-full">
+                <div class="text-4xl mb-6">🎲</div>
+                <h2 class="text-xl font-bold mb-3">로또의 통계학: 기대값과 게임 이론</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 flex-grow">로또 번호 선택에도 전략이 있습니다. 당첨금을 나누는 인원을 줄여 기대 수익을 높이는 '회피 번호' 전략의 실체를 분석합니다.</p>
+                <span class="text-blue-600 dark:text-blue-400 font-bold text-sm flex items-center gap-1">자세히 보기 <span>→</span></span>
+            </a>
+        </div>
+    </main>
+
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20">
+        <div class="max-w-6xl mx-auto px-4 text-sm text-slate-400">
+            <div class="flex justify-center space-x-6 font-bold mb-6">
+                <a href="about.html" class="hover:text-blue-600">소개</a>
+                <a href="privacy.html" class="hover:text-blue-600">약관</a>
+                <a href="contact-form.html" class="hover:text-blue-600">문의</a>
+            </div>
+            <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
+        </div>
+    </footer>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+</body>
+</html>

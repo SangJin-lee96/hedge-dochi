@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="scroll-pt-20">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -81,6 +81,7 @@
                 <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">자산 시뮬레이터</a>
                 <a href="lotto.html" class="text-sm font-extrabold px-3 py-2 rounded-lg transition-colors bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 whitespace-nowrap" style="word-break: keep-all;">로또 추천</a>
                 <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">금융 가이드</a>
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
             </nav>
@@ -96,6 +97,7 @@
                 <a href="index.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">자산 시뮬레이터</a>
                 <a href="lotto.html" class="text-base font-extrabold p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 whitespace-nowrap" style="word-break: keep-all;">로또 추천</a>
                 <a href="rebalance.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">리밸런싱</a>
+                <a href="guides.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">금융 가이드</a>
             </nav>
         </div>
     </header>
@@ -178,6 +180,30 @@
                 </div>
             </div>
         </section>
+
+        <!-- 상세 가이드 텍스트 (SEO 및 콘텐츠 보강) -->
+        <section class="mt-16 pt-16 border-t border-slate-100 dark:border-slate-800 prose prose-slate dark:prose-invert max-w-none">
+            <h2 class="text-xl md:text-2xl font-extrabold text-blue-600 dark:text-blue-400 mb-6">AI 로또 추천 시스템의 작동 원리 및 통계적 방법론</h2>
+            
+            <h3 class="text-lg font-bold mt-8 mb-4">1. 난수 생성과 시드(Seed) 최적화</h3>
+            <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                기본적으로 로또 추첨은 독립 시행(Independent Trials)이며, 과거의 결과가 미래의 추첨에 영향을 미치지 않습니다. 따라서 어떤 번호가 나올지 '예측'하는 것은 수학적으로 불가능합니다. 
+                Hedge Dochi의 추천 시스템은 브라우저의 <code>crypto.getRandomValues()</code> 암호학적 난수 생성기(CSPRNG)를 사용하여 진정한 무작위성(True Randomness)을 보장합니다. 이는 일반적인 <code>Math.random()</code> 함수가 가지는 패턴화의 위험을 차단하여, 추첨기의 물리적 무작위성에 가장 가까운 번호를 생성하기 위함입니다.
+            </p>
+
+            <h3 class="text-lg font-bold mt-8 mb-4">2. 게임 이론에 입각한 '기대 수익률(Expected Value)' 극대화</h3>
+            <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                확률을 바꿀 수는 없지만 <strong>기대 수익률</strong>은 바꿀 수 있습니다. 로또는 당첨금을 당첨자 수가 나눠 갖는 <strong>패리뮤추얼(Pari-Mutuel) 구조</strong>입니다. 
+                사람들은 무의식적으로 생일(1~31), 행운의 숫자(7), 또는 시각적으로 예쁜 패턴(1, 2, 3, 4, 5, 6이나 대각선 배열)을 선호합니다. 만약 이런 번호로 당첨될 경우 수십, 수백 명과 1등 당첨금을 나눠 가져야 하므로 실제 수령액은 극도로 낮아집니다(실제 사례 존재). 
+                본 AI 도구는 내부적으로 <strong>심리적 회피 번호 알고리즘</strong>을 적용하여, 대중이 선호하는 번호 대역의 가중치를 미세하게 낮추고 상대적으로 인기가 없는 번호(예: 32 이상의 고가 번호들의 조합, 불규칙한 산포도)의 조합을 우선 필터링합니다. 이는 당첨 시 '독식'할 확률을 높여 투자의 기대값을 끌어올리는 가장 과학적인 접근법입니다.
+            </p>
+
+            <h3 class="text-lg font-bold mt-8 mb-4">3. 로또와 자산 관리의 상관관계</h3>
+            <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                Hedge Dochi가 자산 배분 플랫폼임에도 로또 도구를 제공하는 이유는 무엇일까요? 로또는 기대 수익률이 마이너스인 '세금'과 같지만, 소액의 구매는 사용자에게 일주일간의 심리적 위안(Utility)을 제공합니다. 
+                우리는 사용자가 로또에 과도한 자금을 투입하는 것을 방지하고, 이를 포트폴리오의 '극단적 고위험/고수익(Tail Risk)' 옵션으로 소액만 통제 하에 편입하도록 권장합니다. 즉, 로또 구매 비용은 철저히 <strong>'소멸성 예산'</strong>으로 분리하고, 나머지 자본은 리밸런싱 매니저를 통해 철저하게 인덱스 및 자산 배분 전략에 따라 굴려야 한다는 것이 우리의 금융 철학입니다.
+            </p>
+        </section>
     </main>
 
     <!-- Glossary Section -->
@@ -209,15 +235,16 @@
         </div>
     </section>
 
-    <footer class="text-center mt-12 py-8 border-t border-slate-100 dark:border-slate-800">
-        <div class="max-w-6xl mx-auto text-sm text-slate-400">
-            <div class="flex justify-center space-x-6 font-bold mb-4">
+    <footer class="text-center mt-12 py-12 border-t border-slate-100 dark:border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 text-sm text-slate-400">
+            <div class="flex justify-center space-x-6 font-bold mb-6">
                 <a href="about.html" class="hover:text-blue-600">소개</a>
                 <a href="privacy.html" class="hover:text-blue-600">약관</a>
                 <a href="contact-form.html" class="hover:text-blue-600">문의</a>
             </div>
+            <p class="mb-4 leading-relaxed max-w-2xl mx-auto">Hedge Dochi는 복잡한 금융 데이터를 직관적인 도구로 재해석하여, 모든 투자자가 데이터에 기반한 합리적인 자산 배분을 실천할 수 있도록 돕는 전문 금융 가이드 서비스입니다. 감정에 흔들리지 않는 투자의 표준을 제시합니다.</p>
             <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
-            <p class="mt-2 text-[10px] opacity-60 px-4">본 사이트의 모든 콘텐츠는 정보 제공을 목적으로 하며, 법적 조언이나 투자 권유를 구성하지 않습니다.</p>
+            <p class="mt-2 text-[10px] opacity-60">본 사이트의 모든 콘텐츠는 정보 제공을 목적으로 하며, 법적 조언이나 투자 권유를 구성하지 않습니다.</p>
         </div>
     </footer>
 
