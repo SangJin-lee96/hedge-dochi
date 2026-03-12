@@ -40,14 +40,15 @@ async function loadDashboardData(uid) {
     activityLog.innerHTML = "";
 
     try {
-        const [riskSnap, simSnap, portSnap, lottoSnap, goalSnap, fireSnap, watchSnap] = await Promise.all([
+        const [riskSnap, simSnap, portSnap, lottoSnap, goalSnap, fireSnap, watchSnap, divSnap] = await Promise.all([
             getDoc(doc(db, "risk_profiles", uid)),
             getDoc(doc(db, "simulations", uid)),
             getDoc(doc(db, "portfolios", uid)),
             getDoc(doc(db, "lotto_history", uid)),
             getDoc(doc(db, "user_goals", uid)),
             getDoc(doc(db, "fire_goals", uid)),
-            getDoc(doc(db, "user_watchlists", uid))
+            getDoc(doc(db, "user_watchlists", uid)),
+            getDoc(doc(db, "dividend_goals", uid))
         ]);
 
         if (riskSnap.exists()) {
@@ -105,6 +106,11 @@ async function loadDashboardData(uid) {
             renderWatchlist(watchSnap.data().tickers || []);
         }
 
+        if (divSnap.exists()) {
+            const d = divSnap.data();
+            document.getElementById('dashMonthlyDividend').innerText = `예상 월 배당금: ${formatVal(d.monthlyIncome, 'KRW')}`;
+        }
+
         renderDailyQuote();
     } catch (e) { console.error(e); }
     finally { cards.forEach(c => c.classList.remove('skeleton')); }
@@ -146,6 +152,54 @@ window.saveFinancialGoal = async function() {
     alert("목표가 저장되었습니다! 🎯"); location.reload();
 };
 
+function formatVal(v, curr) {
+    if (curr === 'KRW') return v >= 10000 ? (v / 10000).toFixed(1) + '억' : Math.round(v).toLocaleString() + '만';
+    return '$' + (v / 1000000).toFixed(2) + 'M';
+}
+
+function addLog(msg) {
+    const log = document.getElementById('dashActivityLog');
+    const div = document.createElement('div');
+    div.className = "flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl animate-fade-in-up";
+    div.innerHTML = `<span class="text-blue-500">✔</span> <span>${msg}</span>`;
+    log.appendChild(div);
+}
+
+function renderDailyQuote() {
+    const quotes = ["자산 배분은 공짜 점심입니다.", "가장 좋은 투자 시기는 오늘입니다.", "시장의 소음이 아닌 비중에 집중하세요.", "복리는 세상의 8번째 불가사의입니다."];
+    addLog(`💡 오늘의 팁: ${quotes[Math.floor(Math.random() * quotes.length)]}`);
+}
+
+async function renderMarketSentiment() {
+    try {
+        const res = await fetch('/api/price?ticker=^GSPC');
+        const data = await res.json();
+        const meta = data?.chart?.result?.[0]?.meta;
+        if (!meta) return;
+        const sentiment = Math.max(5, Math.min(95, 50 + ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose * 1000)));
+        document.getElementById('sentimentIndicator').style.left = `${sentiment}%`;
+        document.getElementById('sentimentValue').innerText = Math.round(sentiment);
+    } catch (e) {}
+}
+
+function renderDashChart(assets) {
+    const ctx = document.getElementById('dashTotalChart').getContext('2d');
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: assets.map(a => a.ticker), datasets: [{ data: assets.map(a => a.qty * (a.price || 0)), backgroundColor: colors, borderWidth: 0 }] },
+        options: { cutout: '80%', plugins: { legend: { display: false } } }
+    });
+}
+
+function calculateHealthScore(assets) {
+    const total = assets.reduce((sum, a) => sum + (a.qty * (a.price || 0)), 0);
+    if (total === 0) return 0;
+    let dev = 0;
+    assets.forEach(a => dev += Math.abs(((a.qty * (a.price || 0)) / total * 100) - (a.targetWeight || 0)));
+    return Math.max(0, 100 - Math.round(dev));
+}
+
 window.quickPriceSearch = async function() {
     const ticker = document.getElementById('quickSearchInput').value.trim().toUpperCase();
     const resEl = document.getElementById('quickSearchResult');
@@ -155,17 +209,8 @@ window.quickPriceSearch = async function() {
         const res = await fetch(`/api/price?ticker=${ticker}`);
         const data = await res.json();
         const meta = data?.chart?.result?.[0]?.meta;
-        if (!meta) throw new Error();
         const color = meta.regularMarketPrice >= meta.chartPreviousClose ? 'text-red-500' : 'text-blue-500';
-        resEl.innerHTML = `
-            <div class="flex items-center justify-between w-full animate-fade-in-up">
-                <div class="flex items-baseline gap-2">
-                    <span class="text-lg font-black">${ticker}</span>
-                    <span class="text-base font-bold">${meta.regularMarketPrice.toLocaleString()}</span>
-                    <span class="text-xs font-bold ${color}">${meta.regularMarketPrice >= meta.chartPreviousClose ? '+' : ''}${((meta.regularMarketPrice - meta.chartPreviousClose)/meta.chartPreviousClose*100).toFixed(2)}%</span>
-                </div>
-                <button onclick="addToWatchlist('${ticker}')" class="text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-2 py-1 rounded-lg border border-blue-100">+ 관심 등록</button>
-            </div>`;
+        resEl.innerHTML = `<div class="flex items-baseline gap-2 animate-fade-in-up"><span class="text-lg font-black">${ticker}</span><span class="text-base font-bold">${meta.regularMarketPrice.toLocaleString()}</span><span class="text-xs font-bold ${color}">${((meta.regularMarketPrice - meta.chartPreviousClose)/meta.chartPreviousClose*100).toFixed(2)}%</span></div>`;
     } catch (e) { resEl.innerHTML = '<p class="text-[10px] text-red-400">찾을 수 없음</p>'; }
 };
 
@@ -215,77 +260,6 @@ async function renderWatchlist(tickers) {
             }
         } catch (e) {}
     });
-}
-
-function formatVal(v, curr) {
-    if (curr === 'KRW') return v >= 10000 ? (v / 10000).toFixed(1) + '억' : Math.round(v).toLocaleString() + '만';
-    return '$' + (v / 1000000).toFixed(2) + 'M';
-}
-
-function addLog(msg) {
-    const log = document.getElementById('dashActivityLog');
-    const div = document.createElement('div');
-    div.className = "flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl animate-fade-in-up";
-    div.innerHTML = `<span class="text-blue-500">✔</span> <span>${msg}</span>`;
-    log.appendChild(div);
-}
-
-function renderDailyQuote() {
-    const quotes = ["자산 배분은 공짜 점심입니다.", "가장 좋은 투자 시기는 오늘입니다.", "시장의 소음이 아닌 비중에 집중하세요.", "복리는 세상의 8번째 불가사의입니다."];
-    addLog(`💡 오늘의 팁: ${quotes[Math.floor(Math.random() * quotes.length)]}`);
-}
-
-async function renderMarketSentiment() {
-    try {
-        const res = await fetch('/api/price?ticker=^GSPC');
-        const data = await res.json();
-        const meta = data?.chart?.result?.[0]?.meta;
-        if (!meta) return;
-        const sentiment = Math.max(5, Math.min(95, 50 + ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose * 1000)));
-        document.getElementById('sentimentIndicator').style.left = `${sentiment}%`;
-        document.getElementById('sentimentValue').innerText = Math.round(sentiment);
-    } catch (e) {}
-}
-
-function renderDashChart(assets) {
-    const ctx = document.getElementById('dashTotalChart').getContext('2d');
-    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: { labels: assets.map(a => a.ticker), datasets: [{ data: assets.map(a => a.qty * (a.price || 0)), backgroundColor: colors, borderWidth: 0 }] },
-        options: { cutout: '80%', plugins: { legend: { display: false } } }
-    });
-}
-
-function calculateHealthScore(assets) {
-    const total = assets.reduce((sum, a) => sum + (a.qty * (a.price || 0)), 0);
-    if (total === 0) return 0;
-    
-    let dev = 0;
-    let maxDevAsset = { ticker: '', diff: 0 };
-
-    assets.forEach(a => {
-        const curWeight = (a.qty * (a.price || 0) / total) * 100;
-        const diff = Math.abs(curWeight - (a.targetWeight || 0));
-        dev += diff;
-        if (diff > maxDevAsset.diff) {
-            maxDevAsset = { ticker: a.ticker, diff: diff };
-        }
-    });
-
-    const score = Math.max(0, 100 - Math.round(dev));
-    
-    // 이격도가 큰 경우 알림 배너 표시
-    const alertBanner = document.getElementById('rebalanceAlert');
-    const alertReason = document.getElementById('alertReason');
-    if (alertBanner && maxDevAsset.diff >= 10) {
-        alertBanner.classList.remove('hidden');
-        alertReason.innerText = `'${maxDevAsset.ticker}' 종목이 목표 비중보다 약 ${Math.round(maxDevAsset.diff)}%p 이격되었습니다.`;
-    } else if (alertBanner) {
-        alertBanner.classList.add('hidden');
-    }
-
-    return score;
 }
 
 document.getElementById('loginBtn')?.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
