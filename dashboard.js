@@ -40,33 +40,69 @@ async function loadDashboardData(uid) {
     activityLog.innerHTML = "";
 
     try {
-        const [riskSnap, simSnap, portSnap, lottoSnap, goalSnap, fireSnap] = await Promise.all([
+        const [riskSnap, simSnap, portSnap, lottoSnap, goalSnap, fireSnap, watchSnap] = await Promise.all([
             getDoc(doc(db, "risk_profiles", uid)),
             getDoc(doc(db, "simulations", uid)),
             getDoc(doc(db, "portfolios", uid)),
             getDoc(doc(db, "lotto_history", uid)),
             getDoc(doc(db, "user_goals", uid)),
-            getDoc(doc(db, "fire_goals", uid))
+            getDoc(doc(db, "fire_goals", uid)),
+            getDoc(doc(db, "user_watchlists", uid))
         ]);
 
-        // ... (투자 성향, 시뮬레이션, 포트폴리오 로직 동일)
-// ... (생략)
-        if (lottoSnap.exists()) {
-            // ... (로또 로직 동일)
+        if (riskSnap.exists()) {
+            const d = riskSnap.data();
+            document.getElementById('dashRiskType').innerText = d.type;
+            document.getElementById('dashRiskDesc').innerText = `추천: ${d.portfolio}`;
+            const icons = { "공격투자형": "🔥", "적극투자형": "🚀", "위험중립형": "⚖️", "안정추구형": "🛡️", "안정형": "💎" };
+            document.getElementById('dashRiskIcon').innerText = icons[d.type] || "🧠";
         }
 
-        // 5. 은퇴 목표 데이터 (신설)
+        let simResult = null;
+        if (simSnap.exists()) {
+            simResult = calculateSummary(simSnap.data());
+            document.getElementById('dashTierName').innerText = simResult.tier;
+            document.getElementById('dashTierIcon').innerText = simResult.icon;
+            addLog(`10년 후 예상 자산: ${simResult.nominalWealth}`);
+        }
+
+        if (portSnap.exists()) {
+            const assets = portSnap.data().assets || [];
+            if (assets.length > 0) {
+                const score = calculateHealthScore(assets);
+                const scoreEl = document.getElementById('dashScoreValue');
+                scoreEl.innerText = score;
+                scoreEl.className = `text-6xl font-black mb-4 ${score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500'}`;
+                renderDashChart(assets);
+            }
+        }
+
+        if (lottoSnap.exists()) {
+            const d = lottoSnap.data();
+            const container = document.getElementById('dashLottoList');
+            container.innerHTML = "";
+            d.results.slice(0, 4).forEach((res, i) => {
+                const div = document.createElement('div');
+                div.className = "p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between";
+                let nums = d.type === '645' ? res.map(n => `<span class="w-6 h-6 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center font-bold">${n}</span>`).join('') : `<span class="text-xs font-bold text-purple-500">${res.group}조 ${res.numbers.join('')}</span>`;
+                div.innerHTML = `<span class="text-[10px] font-black text-slate-400">G${i+1}</span><div class="flex gap-1">${nums}</div>`;
+                container.appendChild(div);
+            });
+        }
+
         if (fireSnap.exists()) {
             const d = fireSnap.data();
             document.getElementById('dashFireRemaining').innerText = `${d.remainingYears}년 남음`;
             document.getElementById('dashFireDate').innerText = `${d.targetYear}년 은퇴 예정`;
             document.getElementById('dashFireIcon').innerText = d.remainingYears <= 5 ? "🥂" : "🏝️";
-            addLog(`경제적 자유까지 약 ${d.remainingYears}년 남았습니다.`);
         }
 
         if (goalSnap.exists() && simResult) {
-            const goalEok = goalSnap.data().amount;
-            updateGoalUI(simResult.rawNominal, goalEok);
+            updateGoalUI(simResult.rawNominal, goalSnap.data().amount);
+        }
+
+        if (watchSnap.exists()) {
+            renderWatchlist(watchSnap.data().tickers || []);
         }
 
         renderDailyQuote();
@@ -109,6 +145,77 @@ window.saveFinancialGoal = async function() {
     await setDoc(doc(db, "user_goals", currentUser.uid), { amount, updatedAt: new Date() });
     alert("목표가 저장되었습니다! 🎯"); location.reload();
 };
+
+window.quickPriceSearch = async function() {
+    const ticker = document.getElementById('quickSearchInput').value.trim().toUpperCase();
+    const resEl = document.getElementById('quickSearchResult');
+    if (!ticker) return;
+    resEl.innerHTML = '<div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>';
+    try {
+        const res = await fetch(`/api/price?ticker=${ticker}`);
+        const data = await res.json();
+        const meta = data?.chart?.result?.[0]?.meta;
+        if (!meta) throw new Error();
+        const color = meta.regularMarketPrice >= meta.chartPreviousClose ? 'text-red-500' : 'text-blue-500';
+        resEl.innerHTML = `
+            <div class="flex items-center justify-between w-full animate-fade-in-up">
+                <div class="flex items-baseline gap-2">
+                    <span class="text-lg font-black">${ticker}</span>
+                    <span class="text-base font-bold">${meta.regularMarketPrice.toLocaleString()}</span>
+                    <span class="text-xs font-bold ${color}">${meta.regularMarketPrice >= meta.chartPreviousClose ? '+' : ''}${((meta.regularMarketPrice - meta.chartPreviousClose)/meta.chartPreviousClose*100).toFixed(2)}%</span>
+                </div>
+                <button onclick="addToWatchlist('${ticker}')" class="text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-2 py-1 rounded-lg border border-blue-100">+ 관심 등록</button>
+            </div>`;
+    } catch (e) { resEl.innerHTML = '<p class="text-[10px] text-red-400">찾을 수 없음</p>'; }
+};
+
+window.addToWatchlist = async function(ticker) {
+    if (!currentUser) return;
+    try {
+        const snap = await getDoc(doc(db, "user_watchlists", currentUser.uid));
+        let tickers = snap.exists() ? snap.data().tickers : [];
+        if (!tickers.includes(ticker)) {
+            tickers.push(ticker);
+            await setDoc(doc(db, "user_watchlists", currentUser.uid), { tickers, updatedAt: new Date() });
+            renderWatchlist(tickers);
+            addLog(`'${ticker}' 종목이 관심 자산에 추가되었습니다.`);
+        }
+    } catch (e) { console.error(e); }
+};
+
+window.removeFromWatchlist = async function(ticker) {
+    if (!currentUser) return;
+    try {
+        const snap = await getDoc(doc(db, "user_watchlists", currentUser.uid));
+        if (snap.exists()) {
+            let tickers = snap.data().tickers.filter(t => t !== ticker);
+            await setDoc(doc(db, "user_watchlists", currentUser.uid), { tickers, updatedAt: new Date() });
+            renderWatchlist(tickers);
+        }
+    } catch (e) { console.error(e); }
+};
+
+async function renderWatchlist(tickers) {
+    const container = document.getElementById('dashWatchlist');
+    if (!container) return;
+    if (tickers.length === 0) { container.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">관심 있는 티커를 등록하세요.</p>'; return; }
+    container.innerHTML = "";
+    tickers.forEach(async (ticker) => {
+        const div = document.createElement('div');
+        div.className = "p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between animate-fade-in-up";
+        div.innerHTML = `<div class="flex items-center gap-3"><span class="font-black">${ticker}</span><span id="price-${ticker}" class="text-xs font-bold text-slate-400">Loading...</span></div><button onclick="removeFromWatchlist('${ticker}')" class="text-slate-300 hover:text-red-500">✕</button>`;
+        container.appendChild(div);
+        try {
+            const res = await fetch(`/api/price?ticker=${ticker}`);
+            const data = await res.json();
+            const meta = data?.chart?.result?.[0]?.meta;
+            if (meta) {
+                const color = meta.regularMarketPrice >= meta.chartPreviousClose ? 'text-red-500' : 'text-blue-500';
+                document.getElementById(`price-${ticker}`).innerHTML = `<span class="text-slate-800 dark:text-slate-200">${meta.regularMarketPrice.toLocaleString()}</span> <span class="${color}">${meta.regularMarketPrice >= meta.chartPreviousClose ? '+' : ''}${((meta.regularMarketPrice - meta.chartPreviousClose)/meta.chartPreviousClose*100).toFixed(2)}%</span>`;
+            }
+        } catch (e) {}
+    });
+}
 
 function formatVal(v, curr) {
     if (curr === 'KRW') return v >= 10000 ? (v / 10000).toFixed(1) + '억' : Math.round(v).toLocaleString() + '만';
@@ -157,20 +264,6 @@ function calculateHealthScore(assets) {
     assets.forEach(a => dev += Math.abs(((a.qty * (a.price || 0)) / total * 100) - (a.targetWeight || 0)));
     return Math.max(0, 100 - Math.round(dev));
 }
-
-window.quickPriceSearch = async function() {
-    const ticker = document.getElementById('quickSearchInput').value.trim().toUpperCase();
-    const resEl = document.getElementById('quickSearchResult');
-    if (!ticker) return;
-    resEl.innerHTML = '<div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>';
-    try {
-        const res = await fetch(`/api/price?ticker=${ticker}`);
-        const data = await res.json();
-        const meta = data?.chart?.result?.[0]?.meta;
-        const color = meta.regularMarketPrice >= meta.chartPreviousClose ? 'text-red-500' : 'text-blue-500';
-        resEl.innerHTML = `<div class="flex items-baseline gap-2 animate-fade-in-up"><span class="text-lg font-black">${ticker}</span><span class="text-base font-bold">${meta.regularMarketPrice.toLocaleString()}</span><span class="text-xs font-bold ${color}">${((meta.regularMarketPrice - meta.chartPreviousClose)/meta.chartPreviousClose*100).toFixed(2)}%</span></div>`;
-    } catch (e) { resEl.innerHTML = '<p class="text-[10px] text-red-400">찾을 수 없음</p>'; }
-};
 
 document.getElementById('loginBtn')?.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
 document.getElementById('logoutBtn')?.addEventListener('click', () => signOut(auth).then(() => location.reload()));
