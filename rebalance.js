@@ -53,7 +53,7 @@ let currentStep = 1;
 let currentUser = null;
 let chartInstance = null, simulationChartInstance = null;
 let baseCurrency = 'USD';
-let exchangeRate = 1350; // 기본 환율
+let exchangeRate = 1350; 
 
 // --- Wizard Navigation ---
 window.goToStep = async function(step) {
@@ -62,18 +62,17 @@ window.goToStep = async function(step) {
         return;
     }
     
-    // 환율 정보 미리 가져오기
-    if (step === 2) {
-        try {
-            const res = await fetch('/api/price?ticker=USDKRW=X');
-            const data = await res.json();
-            const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-            if (rate) {
-                exchangeRate = rate;
-                document.getElementById('current-rate-text').innerText = rate.toLocaleString();
-            }
-        } catch (e) { console.error("환율 로드 실패", e); }
-    }
+    // 환율 정보 가져오기
+    try {
+        const res = await fetch('/api/price?ticker=USDKRW=X');
+        const data = await res.json();
+        const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+        if (rate) {
+            exchangeRate = rate;
+            const rateEl = document.getElementById('current-rate-text');
+            if (rateEl) rateEl.innerText = rate.toLocaleString();
+        }
+    } catch (e) { console.error("환율 로드 실패", e); }
 
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
     const targetSection = document.getElementById(`step-${step}`);
@@ -98,7 +97,6 @@ window.setCurrency = function(code) {
     baseCurrency = code;
     const isUSD = code === 'USD';
     
-    // UI 버튼 상태 업데이트
     const btnUsd = document.getElementById('btn-currency-usd');
     const btnKrw = document.getElementById('btn-currency-krw');
     const symbolWizard = document.getElementById('currency-symbol-wizard');
@@ -108,41 +106,60 @@ window.setCurrency = function(code) {
         btnUsd.className = "flex-1 py-3 rounded-xl font-bold transition-all bg-white dark:bg-slate-700 shadow-md text-blue-600 dark:text-blue-400";
         btnKrw.className = "flex-1 py-3 rounded-xl font-bold transition-all text-slate-400";
         symbolWizard.innerText = '$';
-        rateInfo.classList.add('hidden');
+        rateInfo?.classList.add('hidden');
     } else {
         btnKrw.className = "flex-1 py-3 rounded-xl font-bold transition-all bg-white dark:bg-slate-700 shadow-md text-blue-600 dark:text-blue-400";
         btnUsd.className = "flex-1 py-3 rounded-xl font-bold transition-all text-slate-400";
         symbolWizard.innerText = '₩';
-        rateInfo.classList.remove('hidden');
+        rateInfo?.classList.remove('hidden');
     }
+    
+    // 통화 변경 시 리스트 다시 그리기
+    renderAssetList();
 };
 
 function formatValue(val) {
     const symbol = baseCurrency === 'USD' ? '$' : '₩';
     if (baseCurrency === 'KRW') {
-        // 원화일 경우 소수점 없이 표현
         return `${symbol}${Math.round(val).toLocaleString()}`;
     }
     return `${symbol}${val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 }
 
+// 자산의 가격을 기준 통화로 환산하는 헬퍼
+function getPriceInBaseCurrency(h) {
+    const assetCurrency = h.currency || 'USD';
+    if (assetCurrency === baseCurrency) return h.price;
+    
+    if (assetCurrency === 'USD' && baseCurrency === 'KRW') {
+        return h.price * exchangeRate;
+    } else if (assetCurrency === 'KRW' && baseCurrency === 'USD') {
+        return h.price / exchangeRate;
+    }
+    return h.price;
+}
+
 // --- Core Logic ---
 function updateCalculation() {
-    // 자산 총액 계산 (달러 자산은 환율 적용)
     const currentTotal = holdings.reduce((sum, h) => {
-        const itemPrice = baseCurrency === 'KRW' ? (h.price * exchangeRate) : h.price;
-        return sum + (parseFloat(h.qty) * itemPrice || 0);
+        const price = getPriceInBaseCurrency(h);
+        return sum + (parseFloat(h.qty) * price || 0);
     }, 0);
 
     const targetCapital = parseFloat(document.getElementById('targetCapitalInputWizard').value) || currentTotal;
 
-    // UI Summary
     document.getElementById('totalValueDisplay').innerText = formatValue(currentTotal);
     document.getElementById('targetCapitalDisplay').innerText = formatValue(targetCapital);
 
     renderSectorDashboard(currentTotal, targetCapital);
     renderActionPlan(currentTotal, targetCapital);
     updateCharts(currentTotal, targetCapital);
+    
+    // 결과 페이지(Step 4)에 보유 자산 목록 렌더링
+    renderFinalHoldingsList();
+    
+    // 건강 점수 계산
+    calculateHealthScore(currentTotal, targetCapital);
 }
 
 function renderAssetList() {
@@ -159,7 +176,7 @@ function renderAssetList() {
     holdings.forEach((h, idx) => {
         const tr = document.createElement('tr');
         tr.className = "border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors";
-        const displayPrice = baseCurrency === 'KRW' ? (h.price * exchangeRate) : h.price;
+        const displayPrice = getPriceInBaseCurrency(h);
         
         tr.innerHTML = `
             <td class="py-4 px-2">
@@ -178,6 +195,50 @@ function renderAssetList() {
     });
 }
 
+function renderFinalHoldingsList() {
+    const listContainer = document.getElementById('finalHoldingsList');
+    if (!listContainer) return;
+    listContainer.innerHTML = '';
+
+    holdings.forEach(h => {
+        const price = getPriceInBaseCurrency(h);
+        const value = h.qty * price;
+        const div = document.createElement('div');
+        div.className = "flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700";
+        div.innerHTML = `
+            <div class="min-w-0 pr-4">
+                <div class="font-bold text-sm truncate">${h.name || h.ticker}</div>
+                <div class="text-[10px] text-slate-400">${h.qty.toLocaleString()}주 보유</div>
+            </div>
+            <div class="text-right font-mono font-bold text-sm text-slate-600 dark:text-slate-300">
+                ${formatValue(value)}
+            </div>
+        `;
+        listContainer.appendChild(div);
+    });
+}
+
+function calculateHealthScore(currentTotal, targetCapital) {
+    if (currentTotal === 0) return;
+    
+    let totalDeviance = 0;
+    PRIMARY_SECTORS.forEach(sector => {
+        const actualVal = holdings.filter(h => h.sector === sector).reduce((s, h) => s + (h.qty * getPriceInBaseCurrency(h) || 0), 0);
+        const actualPct = (actualVal / currentTotal * 100);
+        const targetPct = sectorTargets[sector] || 0;
+        totalDeviance += Math.abs(actualPct - targetPct);
+    });
+
+    // 오차 합계가 적을수록 높은 점수 (0% 오차면 100점, 100% 오차면 0점)
+    const score = Math.max(0, 100 - Math.round(totalDeviance));
+    const scoreEl = document.getElementById('portfolioHealthScore');
+    if (scoreEl) {
+        scoreEl.innerText = `${score}점`;
+        // 점수에 따른 색상 변경
+        scoreEl.className = `text-4xl font-black ${score > 80 ? 'text-emerald-400' : score > 50 ? 'text-blue-400' : 'text-rose-400'}`;
+    }
+}
+
 function renderActionPlan(currentTotal, targetCapital) {
     const list = document.getElementById('actionPlanList');
     if (!list) return;
@@ -191,11 +252,11 @@ function renderActionPlan(currentTotal, targetCapital) {
         const targetPctPerAsset = sectorTargetPct / sectorHoldings.length;
         
         const targetVal = targetCapital * (targetPctPerAsset / 100);
-        
-        const itemPrice = baseCurrency === 'KRW' ? (h.price * exchangeRate) : h.price;
+        const itemPrice = getPriceInBaseCurrency(h);
         const currentVal = h.qty * itemPrice;
         const diffVal = targetVal - currentVal;
 
+        // $10 또는 ₩10,000 이상의 차이가 있을 때만 표시
         if (Math.abs(diffVal) > (targetCapital * 0.01) || Math.abs(diffVal) > (baseCurrency === 'USD' ? 10 : 10000)) {
             hasAction = true;
             const isBuy = diffVal > 0;
@@ -210,7 +271,7 @@ function renderActionPlan(currentTotal, targetCapital) {
                     <div class="${isBuy ? 'bg-rose-600' : 'bg-blue-600'} text-white text-[10px] font-black px-2 py-1 rounded-lg">${isBuy ? '매수' : '매도'}</div>
                     <div>
                         <div class="font-bold text-sm">${h.name || h.ticker}</div>
-                        <div class="text-xs ${isBuy ? 'text-rose-600' : 'text-blue-600'} font-bold">${qtyDiff}주 ${isBuy ? '추가 매수' : '처분'}</div>
+                        <div class="text-xs ${isBuy ? 'text-rose-600' : 'text-blue-600'} font-bold">${qtyDiff.toLocaleString()}주 ${isBuy ? '추가 매수' : '처분'}</div>
                     </div>
                 </div>
                 <div class="text-right">
@@ -222,9 +283,105 @@ function renderActionPlan(currentTotal, targetCapital) {
         }
     });
 
-    if (!hasAction) {
+    if (!hasAction && holdings.length > 0) {
         list.innerHTML = '<div class="text-center py-10 text-slate-400 font-bold">이미 최적의 비중을 유지하고 있습니다! 🏆</div>';
     }
+}
+
+function updateCharts(currentTotal, targetCapital) {
+    const ctxP = document.getElementById('portfolioChart')?.getContext('2d');
+    const ctxS = document.getElementById('simulationChart')?.getContext('2d');
+    
+    if (chartInstance) chartInstance.destroy();
+    if (simulationChartInstance) simulationChartInstance.destroy();
+
+    const sectorData = PRIMARY_SECTORS.map(s => {
+        return holdings.filter(h => h.sector === s).reduce((sum, h) => sum + (h.qty * getPriceInBaseCurrency(h) || 0), 0);
+    });
+
+    chartInstance = new Chart(ctxP, {
+        type: 'doughnut',
+        data: {
+            labels: PRIMARY_SECTORS.map(s => s.split(' ')[0]),
+            datasets: [{
+                data: sectorData,
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#f97316', '#8b5cf6', '#64748b'],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b', font: { size: 10, weight: 'bold' } } } } }
+    });
+
+    const years = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const rate = 0.08; 
+    simulationChartInstance = new Chart(ctxS, {
+        type: 'line',
+        data: {
+            labels: years.map(y => y + 'y'),
+            datasets: [{
+                label: '예상 성장',
+                data: years.map(y => targetCapital * Math.pow(1 + rate, y)),
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } }
+    });
+}
+
+// --- Search Implementation ---
+async function performSearch(query) {
+    const container = document.getElementById('searchResultsContainer');
+    const list = document.getElementById('searchResults');
+    if (!container || !list) return;
+    
+    container.classList.remove('hidden');
+    list.innerHTML = '<li class="text-center py-4 text-slate-400 text-sm">검색 중...</li>';
+    
+    try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        const quotes = data.quotes || [];
+        
+        list.innerHTML = quotes.length ? '' : '<li class="text-center py-4 text-slate-400 text-sm">결과 없음</li>';
+        
+        quotes.forEach(quote => {
+            if (!quote.symbol) return;
+            const li = document.createElement('li');
+            li.className = "p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-blue-200 flex justify-between items-center";
+            li.innerHTML = `
+                <div class="min-w-0 pr-4">
+                    <div class="font-bold text-blue-600 dark:text-blue-400 truncate">${quote.symbol}</div>
+                    <div class="text-xs text-slate-500 truncate">${quote.shortname || quote.symbol}</div>
+                </div>
+                <button class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">추가</button>
+            `;
+            li.onclick = async () => {
+                const priceRes = await fetch(`/api/price?ticker=${quote.symbol}`);
+                const priceData = await priceRes.json();
+                const meta = priceData?.chart?.result?.[0]?.meta;
+                const price = meta?.regularMarketPrice || 0;
+                const currency = meta?.currency || 'USD';
+                
+                holdings.push({
+                    ticker: quote.symbol,
+                    name: quote.shortname || quote.symbol,
+                    qty: 0,
+                    price: price,
+                    currency: currency, // 통화 정보 저장
+                    sector: getMappedSector(quote.symbol, quote.quoteType, quote.sector)
+                });
+                
+                document.getElementById('tickerSearchInput').value = '';
+                container.classList.add('hidden');
+                renderAssetList();
+            };
+            list.appendChild(li);
+        });
+    } catch (e) { console.error(e); }
 }
 
 function updateCharts(currentTotal, targetCapital) {

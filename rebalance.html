@@ -308,31 +308,41 @@
                 </div>
             </div>
 
-            <!-- STEP 4: 최종 진단 보고서 (기존 대시보드 활용) -->
+            <!-- STEP 4: 최종 진단 보고서 -->
             <div id="step-4" class="step-section hidden space-y-8 animate-fade-in-up">
                 <div class="flex flex-col md:flex-row justify-between items-end gap-4">
                     <div>
                         <h2 class="text-3xl font-black text-slate-900 dark:text-white">🚀 자산 진단 보고서</h2>
                         <p class="text-slate-500 mt-1">당신의 현재 포트폴리오 분석 결과입니다.</p>
                     </div>
-                    <button onclick="goToStep(1)" class="text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-xl">⚙️ 설정 다시하기</button>
+                    <div class="flex gap-2">
+                        <button onclick="goToStep(3)" class="text-sm font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl">자산 수정</button>
+                        <button onclick="goToStep(1)" class="text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-xl">⚙️ 설정 다시하기</button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <!-- 상단 요약 카드 -->
-                    <div class="lg:col-span-4 p-8 rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-700 text-white shadow-2xl">
-                        <div class="mb-8">
-                            <p class="text-xs font-bold uppercase tracking-widest opacity-70 mb-2">선택한 투자 성향</p>
-                            <div id="finalPropensityBadge" class="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full font-black text-lg">🦔 중도도치</div>
+                    <!-- 건강 점수 및 성향 요약 -->
+                    <div class="lg:col-span-4 space-y-6">
+                        <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-700 text-center">
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">포트폴리오 건강 점수</p>
+                            <div id="portfolioHealthScore" class="text-5xl font-black text-blue-600 mb-2">0점</div>
+                            <p class="text-xs text-slate-500">목표 비중과 일치할수록 점수가 높습니다.</p>
                         </div>
-                        <div class="space-y-6">
-                            <div>
-                                <p class="text-xs font-bold uppercase opacity-70 mb-1">현재 총 자산</p>
-                                <h2 id="totalValueDisplay" class="text-4xl font-black">$0.00</h2>
+                        <div class="p-8 rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-700 text-white shadow-2xl">
+                            <div class="mb-8">
+                                <p class="text-xs font-bold uppercase tracking-widest opacity-70 mb-2">선택한 투자 성향</p>
+                                <div id="finalPropensityBadge" class="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full font-black text-lg">🦔 중도도치</div>
                             </div>
-                            <div>
-                                <p class="text-xs font-bold uppercase opacity-70 mb-1">목표 투자 금액</p>
-                                <h3 id="targetCapitalDisplay" class="text-2xl font-black text-blue-200">$0.00</h3>
+                            <div class="space-y-6">
+                                <div>
+                                    <p class="text-xs font-bold uppercase opacity-70 mb-1">현재 총 자산</p>
+                                    <h2 id="totalValueDisplay" class="text-4xl font-black">$0.00</h2>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold uppercase opacity-70 mb-1">목표 투자 금액</p>
+                                    <h3 id="targetCapitalDisplay" class="text-2xl font-black text-blue-200">$0.00</h3>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -359,24 +369,20 @@
                                 </div>
                             </div>
                             <div id="actionPlanList" class="space-y-3"></div>
-                            <div id="totalFrictionCostDisplay" class="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 hidden">
-                                <div class="flex justify-between items-center font-bold">
-                                    <span class="text-sm text-slate-500">예상 거래 비용</span>
-                                    <span id="frictionCostValue" class="text-rose-500">$0.00</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
-                    <!-- 시각화 차트 -->
+                    <!-- 보유 자산 리스트 -->
                     <div class="lg:col-span-5 space-y-6">
+                        <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-700">
+                            <h3 class="text-xl font-bold mb-6 flex items-center gap-2"><span>📋</span> 현재 자산 목록</h3>
+                            <div id="finalHoldingsList" class="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar">
+                                <!-- JS에서 리스트 생성 -->
+                            </div>
+                        </div>
                         <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-700">
                             <h3 class="text-sm font-bold uppercase text-slate-400 mb-6 text-center">자산 배분 시각화</h3>
                             <div class="relative h-64"><canvas id="portfolioChart"></canvas></div>
-                        </div>
-                        <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-700">
-                            <h3 class="text-sm font-bold uppercase text-slate-400 mb-6 text-center">10년 후 성장 예측</h3>
-                            <div class="relative h-48"><canvas id="simulationChart"></canvas></div>
                         </div>
                     </div>
                 </div>
