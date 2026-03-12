@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="왜 자산 배분이 투자 수익의 90%를 결정할까요? 분산 투자의 수학적 원리와 리스크 관리의 핵심을 배웁니다.">
+    <meta name="description" content="왜 자산 배분이 투자 수익의 90%를 결정할까요? 분산 투자의 수학적 원리와 리스크 관리의 핵심을 심층 분석합니다.">
     <title>자산 배분의 기초: 왜 모든 달걀을 한 바구니에 담지 않는가? | Hedge Dochi</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
@@ -12,6 +12,15 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-GFMXESYQFR');
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "자산 배분의 기초: 왜 모든 달걀을 한 바구니에 담지 않는가?",
+      "author": { "@type": "Organization", "name": "Hedge Dochi Research" },
+      "datePublished": "2026-03-11"
+    }
     </script>
     <style>
         :root {
@@ -34,16 +43,21 @@
             --color-nav-link: #60a5fa;
             --color-toggle-text: #94a3b8;
         }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; transition: background-color 0.3s; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.8; transition: background-color 0.3s; }
         .article-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-        .article-header { margin-bottom: 60px; text-align: center; }
-        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3.5rem; margin-bottom: 1.5rem; color: #2563eb; }
-        html.dark .article-content h2 { color: #60a5fa; }
+        .breadcrumb { display: flex; gap: 8px; font-size: 0.8rem; font-weight: 600; color: var(--color-secondary-text); margin-bottom: 40px; }
+        .article-header { margin-bottom: 60px; text-align: left; }
+        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 4rem; margin-bottom: 1.5rem; color: #2563eb; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem; }
+        html.dark .article-content h2 { color: #60a5fa; border-color: #334155; }
+        .article-content h3 { font-size: 1.3rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; }
         .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; opacity: 0.9; }
-        .article-content ul { margin-bottom: 1.5rem; padding-left: 1.5rem; list-style-type: disc; }
-        .article-content li { margin-bottom: 0.5rem; font-size: 1.05rem; }
-        .quote-box { font-style: italic; border-left: 4px solid #e2e8f0; padding: 1rem 2rem; margin: 2rem 0; color: var(--color-secondary-text); }
-        html.dark .quote-box { border-left-color: #334155; }
+        .quote-box { font-style: italic; border-left: 4px solid #3b82f6; padding: 1.5rem 2rem; margin: 3rem 0; background: #eff6ff; border-radius: 0 1rem 1rem 0; color: #1e40af; }
+        html.dark .quote-box { background: #1e293b; color: #bfdbfe; }
+        .data-table { width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: 0.9rem; }
+        .data-table th, .data-table td { padding: 12px; border: 1px solid #e2e8f0; text-align: center; }
+        html.dark .data-table th, html.dark .data-table td { border-color: #334155; }
+        .data-table th { background: #f8fafc; font-weight: 800; }
+        html.dark .data-table th { background: #1e293b; }
     </style>
 </head>
 <body>
@@ -51,7 +65,7 @@
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
                 <span class="text-xl">💎</span>
-                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
+                <span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
             </div>
             <nav class="hidden md:flex items-center gap-4">
                 <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
@@ -60,49 +74,110 @@
                 <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
+                <div id="authContainer" class="ml-2">
+                    <button id="loginBtn" class="bg-blue-600 text-white text-xs font-bold py-2 px-4 rounded-full">구글 로그인</button>
+                    <div id="userProfile" class="hidden flex items-center gap-2">
+                        <img id="userPhoto" src="" alt="Profile" class="w-8 h-8 rounded-full">
+                        <button id="logoutBtn" class="text-xs text-slate-500 font-semibold">로그아웃</button>
+                    </div>
+                </div>
             </nav>
         </div>
     </header>
 
-    <main class="article-container animate-fade-in-up">
+    <main class="article-container">
+        <nav class="breadcrumb">
+            <a href="index.html" class="hover:text-blue-600">Home</a>
+            <span>/</span>
+            <a href="guides.html" class="hover:text-blue-600">Guides</a>
+            <span>/</span>
+            <span class="text-blue-600">Asset Allocation</span>
+        </nav>
+
         <header class="article-header">
             <div class="text-blue-600 dark:text-blue-400 font-bold mb-4">금융 가이드 #01</div>
-            <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">자산 배분의 기초: 분산 투자의 비밀</h1>
-            <p class="mt-6 text-slate-500 dark:text-slate-400 text-lg">리스크를 줄이면서 장기 수익을 지키는 유일한 방법</p>
+            <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-tight">자산 배분의 기초:<br>분산 투자의 비밀</h1>
+            <p class="mt-8 text-slate-500 dark:text-slate-400 text-xl leading-relaxed">리스크를 줄이면서 장기 수익을 지키는 유일한 방법, 현대 포트폴리오 이론의 핵심을 파헤칩니다.</p>
         </header>
 
         <section class="article-content">
             <div class="quote-box">
-                "자산 배분은 투자자가 유일하게 공짜로 얻을 수 있는 점심이다." - 해리 마코위츠 (노벨 경제학상 수상자)
+                "자산 배분은 투자자가 유일하게 공짜로 얻을 수 있는 점심이다."<br> - 해리 마코위츠 (1990년 노벨 경제학상 수상자)
             </div>
 
-            <p>투자를 시작할 때 가장 많이 듣는 조언 중 하나가 바로 "달걀을 한 바구니에 담지 마라"는 말입니다. 하지만 단순히 여러 종목을 사는 것이 자산 배분의 전부는 아닙니다. 진정한 자산 배분은 **서로 다르게 움직이는 자산들**을 조합하여 위험 대비 수익률을 최적화하는 과정입니다.</p>
+            <p>투자를 시작할 때 가장 많이 듣는 조언 중 하나가 바로 "달걀을 한 바구니에 담지 마라"는 말입니다. 하지만 단순히 여러 종목을 사는 것이 자산 배분의 전부는 아닙니다. 진정한 자산 배분은 **서로 다르게 움직이는 자산들**을 조합하여 위험 대비 수익률을 최적화하는 고도의 통계적 과정입니다.</p>
 
-            <h2>1. 왜 자산 배분이 중요한가?</h2>
-            <p>학술적 연구에 따르면, 포트폴리오 수익률 변동의 약 90% 이상은 종목 선정이나 매매 타이밍이 아닌 '자산 배분 정책'에 의해 결정됩니다. 어떤 주식을 언제 샀느냐보다, 내 자산 중 주식과 채권, 현금의 비중을 어떻게 가져갔느냐가 10년 후 결과를 좌우한다는 뜻입니다.</p>
+            <h2>1. 왜 종목 선정보다 '비중'이 중요한가?</h2>
+            <p>1986년 게리 브린슨의 연구 이후 수많은 학술적 결과들은 충격적인 사실을 말해줍니다. 포트폴리오 수익률 변동의 약 <strong>91.5%</strong>는 '어떤 주식을 골랐는가(Stock Selection)'나 '언제 사고 팔았는가(Market Timing)'가 아닌, <strong>'자산군별 비중(Asset Allocation Policy)'</strong>에 의해 결정됩니다.</p>
+            <p>우리가 테슬라나 엔비디아 같은 급등주를 찾으려 애쓰는 것보다, 주식과 채권, 금의 비율을 어떻게 설정하느냐가 내 10년 후의 자산을 결정짓는 가장 큰 요인이라는 뜻입니다.</p>
 
-            <h2>2. 비상관 자산의 조합</h2>
-            <p>자산 배분의 핵심은 상관관계(Correlation)에 있습니다. 주식이 떨어질 때 같이 떨어지는 자산들로만 포트폴리오를 구성하면 분산 효과가 없습니다. 주식이 하락할 때 상승하거나 자리를 지켜주는 자산(예: 채권, 금, 달러 등)을 섞어야 하락장에서 내 자산을 보호할 수 있습니다.</p>
+            <h2>2. 상관관계(Correlation): 분산의 마법</h2>
+            <p>자산 배분의 핵심 열쇠는 자산 간의 '상관계수'에 있습니다. 상관계수는 -1에서 +1 사이의 값을 가집니다.</p>
+            <ul>
+                <li><strong>+1.0:</strong> 두 자산이 완벽하게 같이 움직입니다. (분산 효과 없음)</li>
+                <li><strong>0:</strong> 두 자산의 움직임이 서로 관계가 없습니다. (분산 효과 발생)</li>
+                <li><strong>-1.0:</strong> 한 자산이 오를 때 다른 자산은 반드시 내립니다. (리스크 완벽 헤지)</li>
+            </ul>
+            <p>예를 들어, 주식과 상관관계가 낮은 국채나 금을 섞으면 주식 시장이 폭락할 때 포트폴리오 전체의 하락폭을 방어할 수 있습니다. 이는 단순히 돈을 잃지 않는 것을 넘어, <strong>'장기 투자를 지속할 수 있는 심리적 토대'</strong>를 마련해줍니다.</p>
 
-            <h2>3. 리스크 관리와 변동성</h2>
-            <p>자산 배분의 목적은 단순히 수익률을 높이는 것이 아니라, **'견딜 수 있는 고통'**의 수준을 조절하는 데 있습니다. 아무리 높은 기대 수익률을 가진 포트폴리오라도 하락장에서 -50%를 경험하고 투자를 포기하게 만든다면 좋은 전략이 아닙니다. 자산 배분은 변동성을 줄여 투자자가 장기 투자를 지속할 수 있는 심리적 토대를 마련해줍니다.</p>
+            <h2>3. 자산군별 특성 이해</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>자산군</th>
+                        <th>기대수익</th>
+                        <th>변동성(위험)</th>
+                        <th>핵심 역할</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>주식 (Equity)</td>
+                        <td>높음</td>
+                        <td>높음</td>
+                        <td>자산 증식, 성장</td>
+                    </tr>
+                    <tr>
+                        <td>채권 (Bonds)</td>
+                        <td>낮음/보통</td>
+                        <td>낮음</td>
+                        <td>하락장 방어, 이자 수익</td>
+                    </tr>
+                    <tr>
+                        <td>금 (Gold)</td>
+                        <td>보통</td>
+                        <td>보통</td>
+                        <td>인플레이션 헤지, 위기 대응</td>
+                    </tr>
+                    <tr>
+                        <td>현금 (Cash)</td>
+                        <td>매우 낮음</td>
+                        <td>없음</td>
+                        <td>유동성 확보, 리밸런싱 재원</td>
+                    </tr>
+                </tbody>
+            </table>
 
             <h2>4. 대표적인 자산 배분 전략</h2>
-            <ul>
-                <li><strong>60/40 포트폴리오:</strong> 전통적인 주식 60%, 채권 40% 전략입니다.</li>
-                <li><strong>올웨더 포트폴리오 (All Weather):</strong> 레이 달리오가 제안한 전략으로, 경제의 사계절(성장, 위축, 인플레이션, 디플레이션)에 모두 대응하도록 설계되었습니다.</li>
-                <li><strong>영구 포트폴리오:</strong> 주식, 채권, 금, 현금을 25%씩 균등하게 배분하는 매우 안정적인 전략입니다.</li>
-            </ul>
+            <h3>A. 60/40 포트폴리오</h3>
+            <p>가장 전통적인 전략으로 주식 60%, 채권 40%를 보유합니다. 경제 성장기에는 주식에서 수익을 내고, 침체기에는 채권이 가격 하락을 방어합니다.</p>
+            
+            <h3>B. 올웨더 포트폴리오 (All Weather)</h3>
+            <p>세계 최대 헤지펀드인 브리지워터의 레이 달리오가 제안한 전략입니다. 경제의 네 가지 국면(성장, 위축, 인플레이션, 디플레이션)에 모두 대응할 수 있도록 주식, 채권, 원자재, 금을 정교한 비율로 나눕니다.</p>
 
-            <div class="mt-12 p-8 rounded-[2.5rem] bg-slate-100 dark:bg-slate-800/50 text-center border border-slate-200 dark:border-slate-700">
-                <h3 class="text-xl font-bold mb-4">나의 투자 성향에 맞는 비중을 찾아보세요</h3>
-                <p class="mb-6 opacity-70">Hedge Dochi는 공격, 중도, 수비 성향에 따른 최적의 리밸런싱 가이드를 제공합니다.</p>
-                <a href="index.html" class="inline-block bg-blue-600 text-white font-bold py-4 px-10 rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">자산 시뮬레이터 시작하기</a>
+            <h3>C. 영구 포트폴리오 (Permanent Portfolio)</h3>
+            <p>해리 브라운이 제안한 전략으로 주식, 채권, 금, 현금을 25%씩 똑같이 보유합니다. 극도의 안정성을 추구하며, 어떤 시장 상황에서도 큰 손실을 보지 않도록 설계되었습니다.</p>
+
+            <div class="mt-20 p-10 rounded-[3rem] bg-indigo-600 text-white text-center shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                <h3 class="text-2xl font-black mb-4">내 성향에 맞는 황금 비율을 찾아보세요</h3>
+                <p class="mb-8 opacity-80 leading-relaxed">Hedge Dochi의 리밸런싱 매니저는 위 전략들을 현대적으로 재해석하여<br>당신에게 최적화된 매수/매도 수량을 알려드립니다.</p>
+                <a href="rebalance.html" class="inline-block bg-white text-indigo-600 font-black py-4 px-12 rounded-2xl hover:bg-blue-50 transition-all shadow-xl active:scale-95">리밸런싱 매니저 바로가기 ➔</a>
             </div>
         </section>
     </main>
 
-    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400">
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
         <div class="flex justify-center space-x-6 font-bold mb-4">
             <a href="about.html" class="hover:text-blue-600">소개</a>
             <a href="privacy.html" class="hover:text-blue-600">약관</a>
