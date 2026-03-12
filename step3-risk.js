@@ -64,46 +64,50 @@ const questions = [
 let currentQuestion = 0;
 let totalScore = 0;
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('start-btn')?.addEventListener('click', startTest);
-});
-
-function startTest() {
-    document.getElementById('intro-section').classList.add('hidden');
+window.startQuiz = function() {
+    const startScreen = document.getElementById('start-screen');
+    if (startScreen) startScreen.classList.add('hidden');
+    
     document.getElementById('test-header').classList.remove('hidden');
     document.getElementById('quiz-container').classList.remove('hidden');
     currentQuestion = 0;
     totalScore = 0;
     renderQuestion();
-}
+};
 
 function renderQuestion() {
     const qData = questions[currentQuestion];
     
     // Update Header
-    document.getElementById('progress-text').innerText = `질문 ${currentQuestion + 1} / ${questions.length}`;
-    document.getElementById('progress-fill').style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
-    document.getElementById('question-text').innerText = qData.q;
+    const progressText = document.getElementById('progress-text');
+    const progressInner = document.getElementById('progress-inner');
+    const questionText = document.getElementById('question-text') || document.querySelector('#test-header p');
 
-    // Render Options
-    const optionsContainer = document.getElementById('options-container');
-    optionsContainer.innerHTML = '';
+    if (progressText) progressText.innerText = `${currentQuestion + 1} / ${questions.length}`;
+    if (progressInner) progressInner.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
     
+    // Render Question & Options
+    const container = document.getElementById('quiz-container');
+    container.innerHTML = `
+        <div class="bg-white dark:bg-slate-800 p-8 md:p-12 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-700 animate-fade-in-up">
+            <h2 class="text-2xl md:text-3xl font-black mb-10 text-center leading-tight">${qData.q}</h2>
+            <div class="space-y-4" id="options-container"></div>
+        </div>
+    `;
+
+    const optionsContainer = document.getElementById('options-container');
     qData.options.forEach((opt, index) => {
         const btn = document.createElement('button');
-        btn.className = "w-full p-6 text-left rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-xl transition-all group animate-fade-in-up";
-        btn.style.animationDelay = `${index * 0.1}s`;
-        
+        btn.className = "w-full p-6 text-left rounded-3xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-lg transition-all group";
         btn.innerHTML = `
             <div class="flex items-center gap-4">
-                <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 font-bold flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                <div class="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 text-slate-400 font-bold flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-sm">
                     ${String.fromCharCode(65 + index)}
                 </div>
-                <span class="font-semibold text-lg text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${opt.text}</span>
+                <span class="font-bold text-lg text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${opt.text}</span>
             </div>
         `;
-        
-        btn.onclick = () => selectOption(opt.score);
+        btn.onclick = () => window.selectOption(opt.score);
         optionsContainer.appendChild(btn);
     });
 }
