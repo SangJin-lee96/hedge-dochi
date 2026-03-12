@@ -1,13 +1,32 @@
+// Import Firebase SDKs
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
+    authDomain: "hedge-dochi.firebaseapp.com",
+    projectId: "hedge-dochi",
+    storageBucket: "hedge-dochi.firebasestorage.app",
+    messagingSenderId: "157519209721",
+    appId: "1:157519209721:web:d1f196e41dcd579a286e28",
+    measurementId: "G-7Y0G1CVXBR"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 // --- State Management ---
 let currentStep = 1;
 let wealthChart = null;
-let baseCurrency = 'KRW'; // 메인 시뮬레이터는 기본 원화 세팅
+let baseCurrency = 'KRW';
 let exchangeRate = 1350;
+let currentUser = null;
 
 // --- Wizard Navigation ---
 window.goToStep = async function(step) {
-    // 환율 정보 가져오기 (필요 시)
-    if (step === 1 || step === 4) {
+    if (step === 2 || step === 4) {
         try {
             const res = await fetch('/api/price?ticker=USDKRW=X');
             const data = await res.json();
@@ -78,7 +97,24 @@ function formatValue(val) {
 window.calculateAndShowResult = function() {
     updateCalculation();
     goToStep(4);
+    saveDataToFirebase(); // 결과 볼 때 자동 저장 시도
 };
+
+async function saveDataToFirebase() {
+    if (!currentUser) return;
+    try {
+        await setDoc(doc(db, "simulations", currentUser.uid), {
+            annualSalary: document.getElementById('annualSalary').value,
+            initialSeed: document.getElementById('initialSeed').value,
+            monthlyExpense: document.getElementById('monthlyExpense').value,
+            salaryGrowth: document.getElementById('salaryGrowth').value,
+            investmentReturn: document.getElementById('investmentReturn').value,
+            inflationRate: document.getElementById('inflationRate').value,
+            baseCurrency,
+            lastUpdated: new Date()
+        }, { merge: true });
+    } catch (e) { console.error("Save Error:", e); }
+}
 
 function updateCalculation() {
     const annualSalary = parseFloat(document.getElementById('annualSalary').value) || 0;
@@ -107,7 +143,7 @@ function updateCalculation() {
         currentMonthlyExpense *= (1 + inflationRate);
         
         yearlyData.push(Math.round(currentWealth));
-        const realValue = currentWealth / Math.pow(1 + (baseCurrency === 'KRW' ? inflationRate : 0.03), year); // 달러는 고정 물가 3% 가정 가능
+        const realValue = currentWealth / Math.pow(1 + (baseCurrency === 'KRW' ? inflationRate : 0.03), year);
         realYearlyData.push(Math.round(realValue));
     }
 
@@ -141,8 +177,6 @@ function renderYearlyTable(data) {
 function updateWealthTier(realWealth) {
     let tier = "브론즈", icon = "🥉", color = "from-slate-400 to-slate-600";
     let desc = "기초를 다지는 단계입니다. 저축액을 늘려 시드를 모으는 데 집중하세요.";
-    
-    // 통화별 기준값 조정 (KRW 만원 단위 vs USD)
     const threshold = baseCurrency === 'KRW' ? 1 : (1/exchangeRate * 10000); 
     const val = realWealth / threshold;
 
@@ -175,21 +209,58 @@ function renderChart(nominalData, realData) {
     });
 }
 
-const strategyContent = {
-    "다이아몬드": { icon: "💎", title: "다이아몬드 등급 전략", content: "이미 본 궤도에 오르셨습니다. 베타 가속과 절세에 집중하세요." },
-    "플래티넘": { icon: "💍", title: "플래티넘 등급 전략", content: "60:40 포트폴리오를 통해 안정적인 우상향을 추구하세요." },
-    "골드": { icon: "🥇", title: "골드 등급 전략", content: "복리가 일할 수 있도록 시장 지수 적립식 투자를 추천합니다." },
-    "실버": { icon: "🥈", title: "실버 등급 전략", content: "비상금을 확보하고 자산 배분의 기초를 다지세요." },
-    "브론즈": { icon: "🥉", title: "브론즈 등급 전략", content: "지금은 수익률보다 저축률이 압도적으로 중요한 시기입니다." }
-};
+// --- Auth & Init ---
+onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    const authContainerMobile = document.getElementById('authContainerMobile');
+    const loginBtn = document.getElementById('loginBtn');
+    const userProfile = document.getElementById('userProfile');
+
+    if (user) {
+        if (loginBtn) loginBtn.classList.add('hidden');
+        if (userProfile) userProfile.classList.remove('hidden');
+        if (document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL;
+        
+        if (authContainerMobile) {
+            authContainerMobile.innerHTML = `<div class="flex items-center justify-between"><div class="flex items-center gap-3"><img src="${user.photoURL}" class="w-10 h-10 rounded-full border border-slate-200"><span class="font-bold text-slate-800 dark:text-white">${user.displayName}</span></div><button id="logoutBtnMobile" class="text-sm text-red-500 font-bold">로그아웃</button></div>`;
+            document.getElementById('logoutBtnMobile').addEventListener('click', () => signOut(auth).then(() => location.reload()));
+        }
+
+        // 데이터 불러오기
+        try {
+            const docSnap = await getDoc(doc(db, "simulations", user.uid));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('annualSalary').value = data.annualSalary;
+                document.getElementById('initialSeed').value = data.initialSeed;
+                document.getElementById('monthlyExpense').value = data.monthlyExpense;
+                document.getElementById('salaryGrowth').value = data.salaryGrowth;
+                document.getElementById('investmentReturn').value = data.investmentReturn;
+                document.getElementById('inflationRate').value = data.inflationRate;
+                if (data.baseCurrency) setCurrency(data.baseCurrency);
+                
+                if (confirm("이전에 시뮬레이션한 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) {
+                    calculateAndShowResult();
+                }
+            }
+        } catch (e) { console.error("Load Error:", e); }
+    } else {
+        if (loginBtn) loginBtn.classList.remove('hidden');
+        if (userProfile) userProfile.classList.add('hidden');
+        if (authContainerMobile) authContainerMobile.innerHTML = `<button onclick="document.getElementById('loginBtn').click()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">구글 로그인</button>`;
+    }
+});
+
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+
+if (loginBtn) loginBtn.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
+if (logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth).then(() => location.reload()));
 
 window.toggleStrategyModal = function(show) {
     const modal = document.getElementById('strategyModal'), container = document.getElementById('modalContainer');
     if (!modal || !container) return;
     if (show) {
-        const tier = document.getElementById('gradeTitle').innerText;
-        const data = strategyContent[tier] || strategyContent["브론즈"];
-        document.getElementById('modalContent').innerHTML = `<div class="text-center mb-6"><div class="text-6xl mb-4">${data.icon}</div><h4 class="text-xl font-bold text-blue-600">${data.title}</h4></div><div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-2xl leading-relaxed">${data.content}</div>`;
         modal.classList.remove('hidden'); modal.classList.add('flex');
         setTimeout(() => container.classList.remove('scale-95', 'opacity-0'), 10);
     } else {

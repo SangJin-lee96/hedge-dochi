@@ -102,6 +102,13 @@
                 <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">로또 추천</a>
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
+                <div id="authContainer" class="ml-2">
+                    <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-colors">구글 로그인</button>
+                    <div id="userProfile" class="hidden flex items-center gap-2">
+                        <img id="userPhoto" src="" alt="Profile" class="w-8 h-8 rounded-full border border-slate-200">
+                        <button id="logoutBtn" class="text-xs text-slate-500 font-semibold">로그아웃</button>
+                    </div>
+                </div>
             </nav>
             <div class="flex items-center gap-2 md:hidden">
                 <button id="darkModeToggleMobile" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
@@ -116,7 +123,7 @@
                 <a href="rebalance.html" class="text-base font-semibold p-4 rounded-xl" style="color: var(--color-nav-link);">리밸런싱</a>
                 <a href="guides.html" class="text-base font-semibold p-4 rounded-xl" style="color: var(--color-nav-link);">금융 가이드</a>
                 <a href="lotto.html" class="text-base font-semibold p-4 rounded-xl" style="color: var(--color-nav-link);">로또 추천</a>
-                <a href="contact-form.html" class="text-base font-semibold p-4 rounded-xl" style="color: var(--color-nav-link);">문의하기</a>
+                <div id="authContainerMobile" class="p-4 border-t border-slate-100 dark:border-slate-700 text-center"></div>
             </nav>
         </div>
     </header>
