@@ -24,8 +24,9 @@ onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         loginBtn?.classList.add('hidden'); userProfile?.classList.remove('hidden');
         if (document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL;
-        document.getElementById('dashUserName').innerText = user.displayName;
-        document.getElementById('dashUserPhoto').src = user.photoURL;
+        
+        // 대시보드 사용자 정보 초기화
+        document.getElementById('dashUserName').innerHTML = `${user.displayName} <span id="userTraitBadge" class="ml-2 text-[10px] px-2 py-1 rounded-lg bg-slate-500 text-white opacity-0 transition-opacity duration-1000">분석 중</span>`;
         loadDashboardData(user.uid);
         renderMarketSentiment();
     } else {
@@ -52,20 +53,69 @@ async function loadDashboardData(uid) {
             getDoc(doc(db, "compound_settings", uid))
         ]);
 
-        // ... (이전 로직 유지)
-// ... (중략)
+        let riskType = null;
+        if (riskSnap.exists()) {
+            const d = riskSnap.data();
+            riskType = d.type;
+            document.getElementById('dashRiskType').innerText = d.type;
+            document.getElementById('dashRiskDesc').innerText = `추천: ${d.portfolio}`;
+            const icons = { "공격투자형": "🔥", "적극투자형": "🚀", "위험중립형": "⚖️", "안정추구형": "🛡️", "안정형": "💎" };
+            document.getElementById('dashRiskIcon').innerText = icons[d.type] || "🧠";
+        }
+
+        let simResult = null;
+        if (simSnap.exists()) {
+            simResult = calculateSummary(simSnap.data());
+            document.getElementById('dashTierName').innerText = simResult.tier;
+            document.getElementById('dashTierIcon').innerText = simResult.icon;
+            addLog(`10년 후 예상 자산: ${simResult.nominalWealth}`);
+        }
+
+        // 캐릭터 및 뱃지 업데이트
+        updateUserAvatar(simResult, riskType);
+
+        if (portSnap.exists()) {
+            const assets = portSnap.data().assets || [];
+            if (assets.length > 0) {
+                const score = calculateHealthScore(assets);
+                const scoreEl = document.getElementById('dashScoreValue');
+                scoreEl.innerText = score;
+                scoreEl.className = `text-6xl font-black mb-4 ${score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500'}`;
+                renderDashChart(assets);
+            }
+        }
+
+        if (lottoSnap.exists()) {
+            const d = lottoSnap.data();
+            const container = document.getElementById('dashLottoList');
+            container.innerHTML = "";
+            d.results.slice(0, 4).forEach((res, i) => {
+                const div = document.createElement('div');
+                div.className = "p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between";
+                let nums = d.type === '645' ? res.map(n => `<span class="w-6 h-6 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center font-bold">${n}</span>`).join('') : `<span class="text-xs font-bold text-purple-500">${res.group}조 ${res.numbers.join('')}</span>`;
+                div.innerHTML = `<span class="text-[10px] font-black text-slate-400">G${i+1}</span><div class="flex gap-1">${nums}</div>`;
+                container.appendChild(div);
+            });
+        }
+
+        if (fireSnap.exists()) {
+            const d = fireSnap.data();
+            document.getElementById('dashFireRemaining').innerText = `${d.remainingYears}년 남음`;
+            document.getElementById('dashFireDate').innerText = `${d.targetYear}년 은퇴 예정`;
+            document.getElementById('dashFireIcon').innerText = d.remainingYears <= 5 ? "🥂" : "🏝️";
+        }
+
+        if (goalSnap.exists() && simResult) {
+            updateGoalUI(simResult.rawNominal, goalSnap.data().amount);
+        }
+
+        if (watchSnap.exists()) {
+            renderWatchlist(watchSnap.data().tickers || []);
+        }
+
         if (divSnap.exists()) {
             const d = divSnap.data();
             document.getElementById('dashMonthlyDividend').innerText = `예상 월 배당금: ${formatVal(d.monthlyIncome, 'KRW')}`;
-        }
-
-        // 8. 복리 계산 데이터 (신설)
-        if (compSnap.exists()) {
-            const d = compSnap.data();
-            const resultWealth = calculateCompoundFinal(d);
-            document.getElementById('dashCompoundWealth').innerText = formatVal(resultWealth, 'KRW');
-            document.getElementById('dashCompoundIcon').innerText = "🚀";
-            addLog(`복리 투자 목표 자산: ${formatVal(resultWealth, 'KRW')}`);
         }
 
         renderDailyQuote();
@@ -73,15 +123,23 @@ async function loadDashboardData(uid) {
     finally { cards.forEach(c => c.classList.remove('skeleton')); }
 }
 
-function calculateCompoundFinal(d) {
-    const seed = parseFloat(d.seed) || 0, monthly = parseFloat(d.monthly) || 0;
-    const rate = (parseFloat(d.rate) || 0) / 100, period = parseInt(d.period) || 0;
-    let total = seed;
-    const mRate = rate / 12;
-    for (let i = 0; i < period * 12; i++) {
-        total = (total + monthly) * (1 + mRate);
+function updateUserAvatar(sim, riskType) {
+    const photoEl = document.getElementById('dashUserPhoto');
+    const badgeEl = document.getElementById('userTraitBadge');
+    if (!photoEl || !badgeEl) return;
+
+    const avatars = { "다이아몬드": "👑", "플래티넘": "💎", "골드": "💰", "실버": "🥈", "브론즈": "🦔" };
+    const char = avatars[sim?.tier] || "🦔";
+    
+    // 캐릭터 이모지 기반 프로필 생성
+    photoEl.parentElement.innerHTML = `<div id="dashUserPhoto" class="w-24 h-24 rounded-[2.5rem] bg-gradient-to-br from-blue-600 to-indigo-700 shadow-2xl flex items-center justify-center text-5xl transform hover:rotate-12 transition-transform duration-500 cursor-pointer" title="나의 금융 캐릭터">${char}</div>`;
+    
+    if (riskType) {
+        badgeEl.innerText = riskType;
+        badgeEl.classList.remove('opacity-0');
+        const colors = { "공격투자형": "bg-red-500", "적극투자형": "bg-orange-500", "위험중립형": "bg-blue-500", "안정추구형": "bg-emerald-500", "안정형": "bg-slate-500" };
+        badgeEl.className = `ml-2 text-[10px] px-2 py-1 rounded-lg text-white font-black shadow-sm ${colors[riskType] || "bg-blue-500"}`;
     }
-    return total;
 }
 
 function calculateSummary(d) {
@@ -96,9 +154,9 @@ function calculateSummary(d) {
     const realWealth = current / Math.pow(1 + inflation, 10);
     let tier = "브론즈", icon = "🥉";
     const val = realWealth / (d.baseCurrency === 'KRW' ? 1 : (1/1350 * 10000));
-    if (val >= 200000) { tier = "다이아몬드"; icon = "💎"; }
-    else if (val >= 100000) { tier = "플래티넘"; icon = "💍"; }
-    else if (val >= 50000) { tier = "골드"; icon = "🥇"; }
+    if (val >= 200000) { tier = "다이아몬드"; icon = "👑"; }
+    else if (val >= 100000) { tier = "플래티넘"; icon = "💎"; }
+    else if (val >= 50000) { tier = "골드"; icon = "💰"; }
     else if (val >= 20000) { tier = "실버"; icon = "🥈"; }
     return { tier, icon, nominalWealth: formatVal(current, d.baseCurrency), realWealth: formatVal(realWealth, d.baseCurrency), rawNominal: current };
 }
@@ -145,8 +203,10 @@ async function renderMarketSentiment() {
         const meta = data?.chart?.result?.[0]?.meta;
         if (!meta) return;
         const sentiment = Math.max(5, Math.min(95, 50 + ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose * 1000)));
-        document.getElementById('sentimentIndicator').style.left = `${sentiment}%`;
-        document.getElementById('sentimentValue').innerText = Math.round(sentiment);
+        const indicator = document.getElementById('sentimentIndicator');
+        if (indicator) indicator.style.left = `${sentiment}%`;
+        const valEl = document.getElementById('sentimentValue');
+        if (valEl) valEl.innerText = Math.round(sentiment);
     } catch (e) {}
 }
 
@@ -165,7 +225,15 @@ function calculateHealthScore(assets) {
     if (total === 0) return 0;
     let dev = 0;
     assets.forEach(a => dev += Math.abs(((a.qty * (a.price || 0)) / total * 100) - (a.targetWeight || 0)));
-    return Math.max(0, 100 - Math.round(dev));
+    const score = Math.max(0, 100 - Math.round(dev));
+    
+    // 이격도 알림 처리 (기존 로직 유지)
+    const alertBanner = document.getElementById('rebalanceAlert');
+    if (alertBanner) {
+        if (dev >= 10) alertBanner.classList.remove('hidden');
+        else alertBanner.classList.add('hidden');
+    }
+    return score;
 }
 
 window.quickPriceSearch = async function() {
@@ -178,7 +246,7 @@ window.quickPriceSearch = async function() {
         const data = await res.json();
         const meta = data?.chart?.result?.[0]?.meta;
         const color = meta.regularMarketPrice >= meta.chartPreviousClose ? 'text-red-500' : 'text-blue-500';
-        resEl.innerHTML = `<div class="flex items-baseline gap-2 animate-fade-in-up"><span class="text-lg font-black">${ticker}</span><span class="text-base font-bold">${meta.regularMarketPrice.toLocaleString()}</span><span class="text-xs font-bold ${color}">${((meta.regularMarketPrice - meta.chartPreviousClose)/meta.chartPreviousClose*100).toFixed(2)}%</span></div>`;
+        resEl.innerHTML = `<div class="flex items-center justify-between w-full animate-fade-in-up"><div class="flex items-baseline gap-2"><span class="text-lg font-black">${ticker}</span><span class="text-base font-bold">${meta.regularMarketPrice.toLocaleString()}</span><span class="text-xs font-bold ${color}">${((meta.regularMarketPrice - meta.chartPreviousClose)/meta.chartPreviousClose*100).toFixed(2)}%</span></div><button onclick="addToWatchlist('${ticker}')" class="text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-2 py-1 rounded-lg border border-blue-100">+ 관심 등록</button></div>`;
     } catch (e) { resEl.innerHTML = '<p class="text-[10px] text-red-400">찾을 수 없음</p>'; }
 };
 
@@ -191,7 +259,6 @@ window.addToWatchlist = async function(ticker) {
             tickers.push(ticker);
             await setDoc(doc(db, "user_watchlists", currentUser.uid), { tickers, updatedAt: new Date() });
             renderWatchlist(tickers);
-            addLog(`'${ticker}' 종목이 관심 자산에 추가되었습니다.`);
         }
     } catch (e) { console.error(e); }
 };
@@ -216,7 +283,7 @@ async function renderWatchlist(tickers) {
     tickers.forEach(async (ticker) => {
         const div = document.createElement('div');
         div.className = "p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between animate-fade-in-up";
-        div.innerHTML = `<div class="flex items-center gap-3"><span class="font-black">${ticker}</span><span id="price-${ticker}" class="text-xs font-bold text-slate-400">Loading...</span></div><button onclick="removeFromWatchlist('${ticker}')" class="text-slate-300 hover:text-red-500">✕</button>`;
+        div.innerHTML = `<div class="flex items-center gap-3"><span class="font-black text-sm">${ticker}</span><span id="price-${ticker}" class="text-xs font-bold text-slate-400">Loading...</span></div><button onclick="removeFromWatchlist('${ticker}')" class="text-slate-300 hover:text-red-500">✕</button>`;
         container.appendChild(div);
         try {
             const res = await fetch(`/api/price?ticker=${ticker}`);
@@ -224,7 +291,8 @@ async function renderWatchlist(tickers) {
             const meta = data?.chart?.result?.[0]?.meta;
             if (meta) {
                 const color = meta.regularMarketPrice >= meta.chartPreviousClose ? 'text-red-500' : 'text-blue-500';
-                document.getElementById(`price-${ticker}`).innerHTML = `<span class="text-slate-800 dark:text-slate-200">${meta.regularMarketPrice.toLocaleString()}</span> <span class="${color}">${meta.regularMarketPrice >= meta.chartPreviousClose ? '+' : ''}${((meta.regularMarketPrice - meta.chartPreviousClose)/meta.chartPreviousClose*100).toFixed(2)}%</span>`;
+                const el = document.getElementById(`price-${ticker}`);
+                if (el) el.innerHTML = `<span class="text-slate-800 dark:text-slate-200">${meta.regularMarketPrice.toLocaleString()}</span> <span class="${color}">${meta.regularMarketPrice >= meta.chartPreviousClose ? '+' : ''}${((meta.regularMarketPrice - meta.chartPreviousClose)/meta.chartPreviousClose*100).toFixed(2)}%</span>`;
             }
         } catch (e) {}
     });
