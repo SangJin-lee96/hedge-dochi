@@ -52,50 +52,40 @@
     </script>
     <style>
         :root {
-            --color-primary-text: #1e293b;
-            --color-secondary-text: #64748b;
-            --color-background: #f8fafc;
-            --color-card-background: #ffffff;
-            --color-card-border: #e2e8f0;
-            --color-input-background: #f8fafc;
-            --color-input-border: #e2e8f0;
-            --color-input-text: #334155;
+            --color-primary-text: #0f172a;
+            --color-secondary-text: #475569;
+            --color-background: #f8fafc; --color-accent: #2563eb;
+            --color-accent: #2563eb;
             --color-nav-bg: #ffffff;
             --nav-bg-rgb: 255, 255, 255;
             --color-nav-border: #f1f5f9;
-            --color-nav-link: #2563eb;
-            --color-nav-link-hover-bg: #eff6ff;
+            --color-nav-link: #334155;
             --color-toggle-text: #64748b;
-            --color-toggle-hover-bg: #f8fafc;
         }
         html.dark {
             --color-primary-text: #f8fafc;
             --color-secondary-text: #94a3b8;
-            --color-background: #0f172a;
-            --color-card-background: #1e293b;
-            --color-card-border: #334155;
-            --color-input-background: #334155;
-            --color-input-border: #475569;
-            --color-input-text: #f1f5f9;
-            --color-nav-bg: #1e293b;
-            --nav-bg-rgb: 30, 41, 59;
-            --color-nav-border: #334155;
-            --color-nav-link: #60a5fa;
-            --color-nav-link-hover-bg: #0f172a;
+            --color-background: #020617;
+            --color-accent: #38bdf8;
+            --color-nav-bg: #0f172a;
+            --nav-bg-rgb: 15, 23, 42;
+            --color-nav-border: #1e293b;
+            --color-nav-link: #94a3b8;
             --color-toggle-text: #94a3b8;
-            --color-toggle-hover-bg: #334155;
         }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; }
-        .transition-colors { transition-duration: 300ms; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; transition: background-color 0.5s; }
+        .stat-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border-radius: 2.5rem; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        html.dark .stat-card { background: rgba(30, 41, 59, 0.5); border-color: rgba(255, 255, 255, 0.05); }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); }
         
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
-        .capture-area { box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
-        #toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: #1e293b; color: white; padding: 1rem 2rem; border-radius: 1rem; font-weight: 700; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 200; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); pointer-events: none; opacity: 0; }
+        button, a { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        button:active, a:active { transform: scale(0.96); }
+        
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        .capture-area { box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25); }
+        #toast { position: fixed; bottom: 3rem; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: white; padding: 1rem 2.5rem; border-radius: 9999px; font-weight: 800; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 200; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); pointer-events: none; opacity: 0; border: 1px solid rgba(255,255,255,0.1); }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        html.dark #toast { background: #3b82f6; }
     </style>
 </head>
 <body class="min-h-screen relative overflow-x-hidden transition-colors">
