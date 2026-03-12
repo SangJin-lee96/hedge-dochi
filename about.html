@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Hedge Dochi(My Wealth Tier)는 포트폴리오 리밸런싱의 과학적 원리와 자산 성장의 미래를 제시하는 전문 금융 가이드 도구입니다.">
-    <title>사이트 소개 및 철학 | Hedge Dochi</title>
-    <meta property="og:title" content="사이트 소개 및 철학 | Hedge Dochi">
-    <meta property="og:description" content="자산 배분과 리밸런싱, 왜 중요할까요? Hedge Dochi가 제안하는 스마트한 투자 전략을 확인하세요.">
-    <meta property="og:image" content="https://hedge-dochi.com/og-image.png">
-    <meta property="og:url" content="https://hedge-dochi-live.pages.dev/about.html">
+    <meta name="description" content="Hedge Dochi(My Wealth Tier)는 데이터와 로직으로 당신의 경제적 자유를 설계하는 전문 금융 가이드 플랫폼입니다.">
+    <title>Hedge Dochi: 우리의 비전과 철학 | Hedge Dochi</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
     <script>
@@ -18,96 +14,153 @@
       gtag('config', 'G-GFMXESYQFR');
     </script>
     <style>
-        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; color: #1e293b; word-break: keep-all; }
-        .content-card { background: white; border-radius: 2.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+        :root {
+            --color-primary-text: #1e293b;
+            --color-secondary-text: #64748b;
+            --color-background: #f8fafc;
+            --color-nav-bg: #ffffff;
+            --nav-bg-rgb: 255, 255, 255;
+            --color-nav-border: #f1f5f9;
+            --color-nav-link: #2563eb;
+            --color-toggle-text: #64748b;
+        }
+        html.dark {
+            --color-primary-text: #f8fafc;
+            --color-secondary-text: #94a3b8;
+            --color-background: #0f172a;
+            --color-nav-bg: #1e293b;
+            --nav-bg-rgb: 30, 41, 59;
+            --color-nav-border: #334155;
+            --color-nav-link: #60a5fa;
+            --color-toggle-text: #94a3b8;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; transition: background-color 0.3s; }
+        .hero-gradient { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); }
+        .feature-card { background: white; border-radius: 2rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); transition: all 0.3s; }
+        html.dark .feature-card { background: #1e293b; border: 1px solid #334155; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
     </style>
 </head>
-<body class="py-8 px-4 md:py-12">
-    <div class="max-w-4xl mx-auto">
-        <header class="mb-12 text-center relative">
-            <nav class="absolute top-0 right-0 flex items-center bg-white p-2 rounded-full shadow-lg border border-slate-100">
-                <a href="index.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">홈</a>
-                <span class="text-slate-300 mx-2">|</span>
-                <a href="rebalance.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">리밸런싱</a>
-                <span class="text-slate-300 mx-2">|</span>
-                <a href="guides.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">가이드</a>
+<body class="min-h-screen">
+    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
+                <span class="text-xl">💎</span>
+                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-4">
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">금융 가이드</a>
+                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
+                <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
             </nav>
-            <div class="text-4xl mb-4 text-blue-600">💎</div>
-            <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight">Hedge Dochi의 가치와 철학</h1>
-            <p class="text-slate-500 mt-4 text-lg font-medium">데이터와 로직으로 설계하는 당신의 부의 지도</p>
-        </header>
+        </div>
+    </header>
 
-        <div class="content-card p-8 md:p-16 prose prose-slate lg:prose-xl max-w-none mb-12">
-            <h2 class="text-blue-600 font-bold text-2xl mb-4">1. 왜 '리밸런싱'이 필요한가요?</h2>
-            <p class="mb-6 leading-relaxed">
-                성공적인 투자는 단순히 좋은 종목을 고르는 것에서 끝나지 않습니다. 시장의 변동성에 따라 자산의 비중은 끊임없이 변화합니다. 
-                예를 들어 주식이 급등하면 포트폴리오 내 주식 비중이 지나치게 높아져 위험(Risk)에 노출됩니다. 
-                <strong>리밸런싱</strong>은 비대해진 자산을 매도하고 저평가된 자산을 매수함으로써, 초기에 설정한 '승리하는 비율'을 유지하는 과학적인 과정입니다.
-            </p>
+    <main class="animate-fade-in-up">
+        <!-- Hero Section -->
+        <section class="py-20 px-4 text-center hero-gradient text-white overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            <div class="max-w-4xl mx-auto relative z-10">
+                <h1 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">Hedge Your Future,<br>Build Your Tier.</h1>
+                <p class="text-xl md:text-2xl font-medium opacity-90 max-w-2xl mx-auto leading-relaxed">Hedge Dochi는 복잡한 금융 데이터를 직관적인 도구로 재해석하여, 누구나 합리적인 자산 배분을 실천할 수 있도록 돕습니다.</p>
+            </div>
+        </section>
+
+        <!-- Our Philosophy -->
+        <section class="py-24 px-4 max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-black mb-4">우리의 3대 원칙</h2>
+                <p class="text-slate-500">우리가 도구를 만들고 정보를 전달할 때 타협하지 않는 기준입니다.</p>
+            </div>
             
-            <h2 class="text-blue-600 font-bold text-2xl mb-4">2. Hedge Dochi의 전략 (APS)</h2>
-            <p class="mb-4 leading-relaxed">
-                우리는 금융 공학의 핵심 원리인 <strong>APS(Asset Portfolio Strategy)</strong>를 대중화하고자 합니다. 
-                단순한 계산기를 넘어, 각 사용자의 성향에 맞춘 최적의 효율적 투자선(Efficient Frontier)을 제안합니다.
-            </p>
-            <ul class="list-disc pl-6 mb-6 space-y-2">
-                <li><strong>변동성 제어:</strong> 자산 간 상관관계를 분석하여 하락장에서의 방어력을 극대화합니다.</li>
-                <li><strong>베타 가속:</strong> 성장 잠재력이 높은 자산에 집중하여 상승장에서의 수익을 극대화합니다.</li>
-                <li><strong>샤프 지수 최적화:</strong> 위험 한 단위당 얻을 수 있는 기대 수익을 정밀하게 계산합니다.</li>
-            </ul>
-
-            <h2 class="text-blue-600 font-bold text-2xl mb-4">3. 우리의 미션</h2>
-            <p class="mb-8 leading-relaxed">
-                Hedge Dochi(My Wealth Tier)는 복잡한 금융 데이터를 직관적인 시각화 도구로 변환하여 제공합니다. 
-                우리는 누구나 감정에 휘둘리지 않고 데이터에 기반한 합리적인 투자 결정을 내릴 수 있는 세상을 꿈꿉니다. 
-                오늘의 시뮬레이션이 당신의 10년 후 등급을 바꿀 수 있도록, 우리는 가장 정교한 도구를 계속해서 개발할 것입니다.
-            </p>
-
-            <div class="text-center mt-12 pt-8 border-t border-slate-100">
-                <a href="index.html" class="bg-blue-600 text-white font-bold py-4 px-10 rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30">지금 나의 포트폴리오 진단하기</a>
-            </div>
-        </div>
-    </div>
-
-    <section class="max-w-6xl mx-auto px-4 mt-16 mb-12">
-        <div class="p-8 md:p-12 rounded-3xl bg-slate-50 border border-slate-200">
-            <h3 class="text-xl md:text-2xl font-bold mb-8 flex items-center gap-2"><span>📖</span> 투자 용어 사전 (Glossary)</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 class="font-bold text-blue-600 text-sm mb-2">MPT (현대 포트폴리오 이론)</h4>
-                    <p class="text-xs text-slate-500 leading-relaxed">자산 간의 상관관계를 분석하여 동일한 기대 수익률에서 위험(변동성)을 최소화하거나, 동일한 위험 수준에서 수익을 극대화하는 자산 배분 방식입니다.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="feature-card p-10 hover:-translate-y-2 transition-all">
+                    <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-3xl mb-6">📊</div>
+                    <h3 class="text-xl font-bold mb-4">데이터 기반 (Data-Driven)</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">감정이나 주변의 소문이 아닌, 실시간 시장 데이터와 통계적 알고리즘을 바탕으로 최적의 투자 비중을 산출합니다.</p>
                 </div>
-                <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 class="font-bold text-blue-600 text-sm mb-2">Sharpe Ratio (샤프 지수)</h4>
-                    <p class="text-xs text-slate-500 leading-relaxed">위험 한 단위당 얼마나 많은 수익을 올렸는지를 나타내는 지표입니다. 수치가 높을수록 위험 대비 수익률이 우수함을 의미합니다.</p>
+                <div class="feature-card p-10 hover:-translate-y-2 transition-all">
+                    <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center text-3xl mb-6">🧠</div>
+                    <h3 class="text-xl font-bold mb-4">직관적 경험 (Intuitive UX)</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">복잡한 금융 공학 이론(MPT, 복리 등)을 초보자도 1분 만에 이해하고 적용할 수 있도록 시각화된 마법사 UI로 제공합니다.</p>
                 </div>
-                <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 class="font-bold text-blue-600 text-sm mb-2">Rebalancing (리밸런싱)</h4>
-                    <p class="text-xs text-slate-500 leading-relaxed">가격 변동으로 인해 비중이 변한 포트폴리오를 초기 설정한 목표 비중으로 되돌리는 과정입니다. 기계적인 고점 매도와 저점 매수를 유도합니다.</p>
-                </div>
-                <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 class="font-bold text-blue-600 text-sm mb-2">Volatility (변동성)</h4>
-                    <p class="text-xs text-slate-500 leading-relaxed">자산 가격이 시간에 따라 얼마나 크게 오르내리는지를 나타냅니다. 금융에서는 보통 표준편차로 계산하며, 위험의 척도로 사용됩니다.</p>
-                </div>
-                <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm lg:col-span-2">
-                    <h4 class="font-bold text-blue-600 text-sm mb-2">Asset Allocation (자산 배분)</h4>
-                    <p class="text-xs text-slate-500 leading-relaxed">주식, 채권, 현금, 대체 자산 등 성격이 다른 여러 자산군에 투자 자금을 나누어 배분하는 전략으로, 전체 포트폴리오 수익과 위험의 90% 이상을 결정합니다.</p>
+                <div class="feature-card p-10 hover:-translate-y-2 transition-all">
+                    <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-3xl mb-6">⏳</div>
+                    <h3 class="text-xl font-bold mb-4">장기적 관점 (Long-Termism)</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">일시적인 유행을 쫓는 투자가 아닌, 10년 후의 자산 등급을 바꾸기 위한 지속 가능한 자산 배분 전략을 지향합니다.</p>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <footer class="text-center py-12 border-t border-slate-200 bg-white">
-        <div class="max-w-6xl mx-auto text-sm text-slate-500 px-4">
-            <div class="flex justify-center space-x-8 font-bold mb-6">
-                <a href="about.html" class="hover:text-blue-600">사이트 소개</a>
-                <a href="privacy.html" class="hover:text-blue-600">개인정보처리방침</a>
-                <a href="contact-form.html" class="hover:text-blue-600">문의하기</a>
+        <!-- Why Hedge Dochi? -->
+        <section class="py-24 bg-slate-50 dark:bg-slate-900/50 px-4 border-y border-slate-100 dark:border-slate-800">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex flex-col md:flex-row items-center gap-12">
+                    <div class="flex-1">
+                        <h2 class="text-3xl font-black mb-6">왜 'Hedge Dochi' 인가요?</h2>
+                        <div class="space-y-6 text-slate-600 dark:text-slate-300">
+                            <p><strong>Hedge(헤지)</strong>는 위험으로부터 자산을 보호한다는 금융 용어이며, <strong>Dochi(고슴도치)</strong>는 평소엔 작고 귀엽지만 위협을 느끼면 가시를 세워 자신을 철저히 방어하는 영리한 동물을 상징합니다.</p>
+                            <p>우리는 변동성이 큰 자본주의 시장에서 개개인의 투자자들이 고슴도치처럼 자신의 자산을 단단하게 지키고(Defense), 전략적으로 성장(Offense)시키기를 바라는 마음에서 시작되었습니다.</p>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 w-64 h-64 bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl flex items-center justify-center text-9xl">🦔</div>
+                </div>
             </div>
-            <p class="mb-4 leading-relaxed max-w-2xl mx-auto">Hedge Dochi는 복잡한 금융 데이터를 직관적인 도구로 재해석하여, 모든 투자자가 데이터에 기반한 합리적인 자산 배분을 실천할 수 있도록 돕는 전문 금융 가이드 서비스입니다. 감정에 흔들리지 않는 투자의 표준을 제시합니다.</p>
-            <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
+        </section>
+
+        <!-- Use Cases -->
+        <section class="py-24 px-4 max-w-4xl mx-auto">
+            <h2 class="text-3xl font-black mb-12 text-center">Hedge Dochi 활용 시나리오</h2>
+            <div class="space-y-6">
+                <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 flex gap-6 items-start">
+                    <span class="text-2xl">1️⃣</span>
+                    <div>
+                        <h4 class="font-bold text-lg mb-2 text-blue-600">자산 시뮬레이터로 미래 설계</h4>
+                        <p class="text-sm text-slate-500">나의 현재 연봉과 생활비, 수익률을 입력하여 10년 후 도달할 수 있는 '자산 등급'을 미리 확인하고 재무 목표를 수정하세요.</p>
+                    </div>
+                </div>
+                <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 flex gap-6 items-start">
+                    <span class="text-2xl">2️⃣</span>
+                    <div>
+                        <h4 class="font-bold text-lg mb-2 text-blue-600">리밸런싱 매니저로 포트폴리오 관리</h4>
+                        <p class="text-sm text-slate-500">보유한 종목들을 입력하고 클릭 한 번으로 내 성향에 맞는 목표 비중을 설정하세요. 매수/매도해야 할 정확한 수량을 알려드립니다.</p>
+                    </div>
+                </div>
+                <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 flex gap-6 items-start">
+                    <span class="text-2xl">3️⃣</span>
+                    <div>
+                        <h4 class="font-bold text-lg mb-2 text-blue-600">금융 가이드로 지식 무장</h4>
+                        <p class="text-sm text-slate-500">MPT 이론, 복리의 마법 등 도구의 배경이 되는 전문 금융 지식을 학습하여 감정에 휘둘리지 않는 투자자가 되세요.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Professional Disclaimer -->
+        <section class="py-24 px-4 max-w-4xl mx-auto text-center border-t border-slate-100 dark:border-slate-800">
+            <h2 class="text-xl font-bold mb-6 text-slate-400 uppercase tracking-widest">Financial Disclaimer</h2>
+            <div class="text-xs md:text-sm text-slate-400 leading-relaxed space-y-4 max-w-2xl mx-auto bg-slate-50 dark:bg-slate-900/50 p-8 rounded-3xl">
+                <p>본 사이트(Hedge Dochi)에서 제공하는 모든 시뮬레이션 결과, 리밸런싱 가이드 및 정보성 콘텐츠는 통계적 데이터와 일반적인 금융 이론을 바탕으로 한 참고용 자료이며, 어떠한 경우에도 투자 권유나 법적 조언으로 간주될 수 없습니다.</p>
+                <p>모든 투자의 책임은 투자자 본인에게 있으며, 과거의 수익률이 미래의 수익률을 보장하지 않습니다. 실전 투자 시에는 반드시 공인된 전문가와의 상담을 권장합니다.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400">
+        <div class="flex justify-center space-x-6 font-bold mb-4">
+            <a href="about.html" class="text-blue-600">소개</a>
+            <a href="privacy.html" class="hover:text-blue-600">약관</a>
+            <a href="contact-form.html" class="hover:text-blue-600">문의</a>
         </div>
+        <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
     </footer>
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="dark-mode.js"></script>
 </body>
 </html>
