@@ -3,38 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - 페이지를 찾을 수 없습니다 | My Wealth Tier</title>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-GFMXESYQFR');
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>페이지를 찾을 수 없습니다 | Hedge Dochi</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
-        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; color: #1e293b; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; word-break: keep-all; }
+        .container { text-align: center; padding: 2rem; max-width: 400px; }
+        .icon { font-size: 6rem; margin-bottom: 2rem; display: block; animation: float 3s ease-in-out infinite; }
+        h1 { font-size: 2rem; font-weight: 900; margin-bottom: 1rem; color: #3b82f6; }
+        p { color: #64748b; margin-bottom: 2.5rem; line-height: 1.6; }
+        .btn { background-color: #3b82f6; color: white; padding: 1rem 2rem; border-radius: 1.5rem; text-decoration: none; font-weight: 800; display: inline-block; transition: all 0.3s; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3); }
+        .btn:hover { background-color: #2563eb; transform: translateY(-2px); }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
     </style>
 </head>
-<body class="py-8 px-4 md:py-12">
-    <div class="max-w-4xl mx-auto text-center">
-        <header class="mb-8 text-center relative">
-            <nav class="absolute top-0 right-0 flex items-center bg-white p-2 rounded-full shadow-lg border border-slate-100">
-                <a href="index.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">홈으로 돌아가기</a>
-            </nav>
-            <h1 class="text-9xl font-extrabold text-slate-900 tracking-tight">404</h1>
-            <p class="text-slate-500 mt-3 text-2xl">페이지를 찾을 수 없습니다.</p>
-        </header>
-
-        <div class="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-lg">
-            <p class="text-lg">요청하신 페이지가 존재하지 않거나, 현재 사용할 수 없습니다. 입력하신 주소가 정확한지 다시 한번 확인해주세요.</p>
-            <div class="mt-8">
-                <a href="index.html" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-blue-700 transition-all">홈으로 돌아가기</a>
-            </div>
-        </div>
+<body>
+    <div class="container">
+        <span class="icon">🦔</span>
+        <h1>길을 잃으셨나요?</h1>
+        <p>요청하신 페이지가 존재하지 않거나 이동되었습니다.<br>고슴도치를 따라 홈으로 돌아가세요!</p>
+        <a href="index.html" class="btn">홈으로 안전하게 이동 ➔</a>
     </div>
 </body>
 </html>
