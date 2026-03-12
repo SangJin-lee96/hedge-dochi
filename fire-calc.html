@@ -16,29 +16,37 @@
     </script>
     <style>
         :root {
-            --color-primary-text: #1e293b;
-            --color-secondary-text: #64748b;
-            --color-background: #f8fafc; --color-accent: #2563eb;
+            --color-primary-text: #0f172a;
+            --color-secondary-text: #475569;
+            --color-background: #f8fafc;
+            --color-accent: #2563eb;
             --color-nav-bg: #ffffff;
             --nav-bg-rgb: 255, 255, 255;
             --color-nav-border: #f1f5f9;
-            --color-nav-link: #2563eb;
+            --color-nav-link: #334155;
             --color-toggle-text: #64748b;
         }
         html.dark {
             --color-primary-text: #f8fafc;
             --color-secondary-text: #94a3b8;
-            --color-background: #020617; --color-accent: #38bdf8;
+            --color-background: #020617;
+            --color-accent: #38bdf8;
             --color-nav-bg: #0f172a;
-            --nav-bg-rgb: 30, 41, 59;
-            --color-nav-border: #334155;
-            --color-nav-link: #60a5fa;
+            --nav-bg-rgb: 15, 23, 42;
+            --color-nav-border: #1e293b;
+            --color-nav-link: #94a3b8;
             --color-toggle-text: #94a3b8;
         }
         body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; transition: background-color 0.3s; }
         .step-section { animation: fadeInUp 0.5s ease-out forwards; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* Tooltip Styles */
+        .tooltip-trigger { border-bottom: 1px dashed var(--color-accent); cursor: help; position: relative; display: inline-block; }
+        .tooltip-trigger::after { content: attr(data-tooltip); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%) translateY(10px); background: #1e293b; color: white; padding: 0.75rem 1rem; border-radius: 0.75rem; font-size: 0.7rem; width: 200px; text-align: center; line-height: 1.4; opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 150; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); pointer-events: none; word-break: keep-all; font-weight: 500; }
+        .tooltip-trigger:hover::after { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+        html.dark .tooltip-trigger::after { background: #334155; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body class="min-h-screen">
@@ -86,8 +94,8 @@
         <div class="max-w-4xl mx-auto">
             <!-- STEP 1: 생활비 설정 -->
             <div id="step-1" class="step-section space-y-8">
-                <div class="max-w-md mx-auto bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8">
-                    <div class="input-group text-center">
+                <div class="max-w-md mx-auto bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8 text-center">
+                    <div class="input-group">
                         <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">은퇴 후 희망 월 생활비</label>
                         <div class="relative"><input type="number" id="f-expense" value="300" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 font-black text-2xl text-center"><span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">만원</span></div>
                     </div>
@@ -97,12 +105,12 @@
 
             <!-- STEP 2: 자산 및 저축액 -->
             <div id="step-2" class="step-section hidden space-y-8">
-                <div class="max-w-md mx-auto bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8">
-                    <div class="input-group text-center">
+                <div class="max-w-md mx-auto bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8 text-center">
+                    <div class="input-group">
                         <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">현재 보유 순자산</label>
                         <div class="relative"><input type="number" id="f-seed" value="5000" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 font-black text-2xl text-center"><span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">만원</span></div>
                     </div>
-                    <div class="input-group text-center">
+                    <div class="input-group">
                         <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">연간 추가 저축액</label>
                         <div class="relative"><input type="number" id="f-annual-save" value="2400" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 font-black text-2xl text-center text-blue-600"><span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">만원</span></div>
                     </div>
@@ -110,15 +118,22 @@
                 <div class="flex justify-center gap-4"><button onclick="goToStep(1)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button><button onclick="goToStep(3)" class="px-12 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-xl">다음 단계 ➔</button></div>
             </div>
 
-            <!-- STEP 3: 수익률 설정 -->
+            <!-- STEP 3: 수익률 및 인출률 설정 -->
             <div id="step-3" class="step-section hidden space-y-8">
-                <div class="max-w-md mx-auto bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8">
-                    <div class="input-group text-center">
+                <div class="max-w-md mx-auto bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8 text-center">
+                    <div class="input-group">
                         <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">기대 투자 수익률 (연)</label>
                         <div class="relative"><input type="number" id="f-rate" value="7" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 font-black text-2xl text-center text-emerald-500"><span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">%</span></div>
                     </div>
+                    <div class="input-group">
+                        <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">
+                            <span class="tooltip-trigger" data-tooltip="은퇴 자산의 고갈 없이 매년 인출 가능한 비율입니다.">안전 인출률 (SWR)</span>
+                        </label>
+                        <div class="relative"><input type="number" id="f-swr" value="4" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 font-black text-2xl text-center"><span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">%</span></div>
+                        <p class="mt-4 text-[10px] text-slate-400 font-bold">미국 트리니티 대학 연구 기준 <span class="tooltip-trigger" data-tooltip="30년 이상 은퇴 자금이 지속될 확률이 95% 이상인 인출 공식">4% 법칙</span> 권장</p>
+                    </div>
                 </div>
-                <div class="flex justify-center gap-4"><button onclick="goToStep(2)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button><button onclick="calculateFIRE()" class="px-12 py-5 bg-blue-600 text-white font-black rounded-2xl shadow-xl animate-pulse">은퇴 시점 계산하기 🚀</button></div>
+                <div class="flex justify-center gap-4"><button onclick="goToStep(2)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button><button onclick="calculateFIRE()" class="px-12 py-5 bg-blue-600 text-white font-black rounded-2xl shadow-xl">결과 보기 🚀</button></div>
             </div>
 
             <!-- STEP 4: 결과 리포트 -->
@@ -132,8 +147,14 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="space-y-6">
-                        <div class="p-8 rounded-[2.5rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800 text-center"><p class="text-[10px] font-bold text-slate-400 uppercase mb-2">목표 은퇴 자산</p><h3 id="fireGoalAmount" class="text-3xl font-black text-blue-600">0원</h3></div>
-                        <div class="p-8 rounded-[2.5rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800 text-center"><p class="text-[10px] font-bold text-slate-400 uppercase mb-2">월 예상 인출액</p><h3 id="fireMonthlyIncome" class="text-3xl font-black text-emerald-500">0원</h3></div>
+                        <div class="p-8 rounded-[2.5rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800 text-center">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">목표 은퇴 자산</p>
+                            <h3 id="fireGoalAmount" class="text-3xl font-black text-blue-600">0원</h3>
+                        </div>
+                        <div class="p-8 rounded-[2.5rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800 text-center">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">월 예상 인출액</p>
+                            <h3 id="fireMonthlyIncome" class="text-3xl font-black text-emerald-500">0원</h3>
+                        </div>
                     </div>
                     <div class="p-8 rounded-[2.5rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800">
                         <h4 class="text-sm font-black mb-6">📉 자산 성장 궤적</h4>
@@ -157,7 +178,7 @@
     </main>
 
     <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
-        <!-- 푸터 생략 -->
+        <!-- 푸터 내용 생략 -->
     </footer>
 
     <script src="https://cdn.tailwindcss.com"></script>

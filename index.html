@@ -86,6 +86,12 @@
         .capture-area { box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25); }
         #toast { position: fixed; bottom: 3rem; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: white; padding: 1rem 2.5rem; border-radius: 9999px; font-weight: 800; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 200; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); pointer-events: none; opacity: 0; border: 1px solid rgba(255,255,255,0.1); }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Tooltip Styles */
+        .tooltip-trigger { border-bottom: 1px dashed #3b82f6; cursor: help; position: relative; display: inline-block; }
+        .tooltip-trigger::after { content: attr(data-tooltip); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%) translateY(10px); background: #1e293b; color: white; padding: 0.75rem 1rem; border-radius: 0.75rem; font-size: 0.7rem; width: 200px; text-align: center; line-height: 1.4; opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 150; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); pointer-events: none; word-break: keep-all; font-weight: 500; }
+        .tooltip-trigger:hover::after { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+        html.dark .tooltip-trigger::after { background: #334155; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body class="min-h-screen relative overflow-x-hidden transition-colors">
