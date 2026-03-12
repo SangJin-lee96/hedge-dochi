@@ -182,12 +182,13 @@
                     <span class="tag bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">안정성 최우선</span>
                 </div>
                 <p class="text-slate-500 mb-8 leading-relaxed">어떤 경제 상황(성장, 침체, 인플레이션, 디플레이션)에서도 살아남도록 설계된 전략입니다.</p>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-8">
                     <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl"><span class="block text-[10px] font-bold text-slate-400 uppercase mb-2">주식</span><span class="font-black text-xl">30%</span></div>
                     <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl"><span class="block text-[10px] font-bold text-slate-400 uppercase mb-2">중기채</span><span class="font-black text-xl">15%</span></div>
                     <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl"><span class="block text-[10px] font-bold text-slate-400 uppercase mb-2">장기채</span><span class="font-black text-xl">40%</span></div>
                     <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl"><span class="block text-[10px] font-bold text-slate-400 uppercase mb-2">원자재/금</span><span class="font-black text-xl">15%</span></div>
                 </div>
+                <button onclick="selectStrategy('All Weather')" class="w-full py-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold rounded-2xl border border-emerald-100 dark:border-emerald-800 hover:bg-emerald-100 transition-all">이 전략 선택하기</button>
             </div>
 
             <!-- Model 2 -->
@@ -197,10 +198,11 @@
                     <span class="tag bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">표준형</span>
                 </div>
                 <p class="text-slate-500 mb-8 leading-relaxed">가장 대중적이고 검증된 비율로, 성장은 주식이 맡고 하락장 방어는 채권이 담당합니다.</p>
-                <div class="grid grid-cols-2 gap-4 text-center">
+                <div class="grid grid-cols-2 gap-4 text-center mb-8">
                     <div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-2xl"><span class="block text-[10px] font-bold text-slate-400 uppercase mb-2">주식 (S&P500)</span><span class="font-black text-2xl">60%</span></div>
                     <div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-2xl"><span class="block text-[10px] font-bold text-slate-400 uppercase mb-2">채권 (Aggregate)</span><span class="font-black text-2xl">40%</span></div>
                 </div>
+                <button onclick="selectStrategy('60/40')" class="w-full py-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold rounded-2xl border border-blue-100 dark:border-blue-800 hover:bg-blue-100 transition-all">이 전략 선택하기</button>
             </div>
 
             <!-- Model 3 -->
@@ -210,17 +212,34 @@
                     <span class="tag bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">극도의 방어</span>
                 </div>
                 <p class="text-slate-500 mb-8 leading-relaxed">해리 브라운이 제안한 모델로, 자산군을 25%씩 똑같이 배분하여 극강의 안정성을 추구합니다.</p>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-8">
                     <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl"><span class="block text-[10px] font-bold text-slate-400 uppercase mb-2">주식</span><span class="font-black text-xl">25%</span></div>
                     <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl"><span class="block text-[10px] font-bold text-slate-400 uppercase mb-2">채권</span><span class="font-black text-xl">25%</span></div>
                     <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl"><span class="block text-[10px] font-bold text-slate-400 uppercase mb-2">현금</span><span class="font-black text-xl">25%</span></div>
                     <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl"><span class="block text-[10px] font-bold text-slate-400 uppercase mb-2">금</span><span class="font-black text-xl">25%</span></div>
                 </div>
+                <button onclick="selectStrategy('Permanent')" class="w-full py-4 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-bold rounded-2xl border border-purple-100 dark:border-purple-800 hover:bg-purple-100 transition-all">이 전략 선택하기</button>
             </div>
 
-            <div class="text-center mt-12 mb-8"><a href="step4-guide.html" class="px-10 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all inline-block">⬅ 학습 목록으로 돌아가기</a></div>
+            <div class="text-center mt-20 mb-8">
+                <button onclick="import('./core.js').then(m=>m.goToNextStep(5))" class="px-12 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[2rem] font-black shadow-2xl hover:scale-105 transition-all text-xl">
+                    6단계: 수익 시뮬레이션 돌려보기 ➔
+                </button>
+                <div class="mt-6">
+                    <a href="step4-guide.html" class="text-sm font-bold text-slate-400 hover:text-blue-600 transition-colors">⬅ 학습 목록으로 돌아가기</a>
+                </div>
+            </div>
         </section>
     </main>
+
+    <script>
+        window.selectStrategy = function(name) {
+            alert(name + " 전략이 선택되었습니다! 이제 하단의 '6단계' 버튼을 눌러 수익률을 예측해보세요. ✨");
+            // 선택 효과
+            event.target.innerText = "선택 완료 ✓";
+            event.target.classList.add('bg-slate-900', 'text-white');
+        };
+    </script>
 
     <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
         <div class="max-w-6xl mx-auto">
