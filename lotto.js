@@ -1,6 +1,7 @@
 // Import Firebase SDKs
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
@@ -14,6 +15,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // --- State Management ---
 let currentStep = 1;
@@ -73,18 +75,34 @@ window.generateAndShowResults = function() {
     
     setTimeout(() => {
         resultsContainer.innerHTML = '';
+        let resultSet = [];
         if (selectedType === '645') {
-            generateLotto645();
+            resultSet = generateLotto645();
         } else {
-            generatePension720();
+            resultSet = generatePension720();
+        }
+
+        if (currentUser) {
+            saveLottoHistory(resultSet);
         }
     }, 800);
 };
+
+async function saveLottoHistory(results) {
+    try {
+        await setDoc(doc(db, "lotto_history", currentUser.uid), {
+            type: selectedType,
+            results: results,
+            updatedAt: new Date()
+        }, { merge: true });
+    } catch (e) { console.error("Lotto Save Error:", e); }
+}
 
 // --- Lotto Generation Logic ---
 function generateLotto645() {
     const container = document.getElementById('lottoResults');
     const includeBonus = document.getElementById('includeBonus').checked;
+    const history = [];
 
     for (let i = 0; i < numGames; i++) {
         const numbers = [];
@@ -93,6 +111,7 @@ function generateLotto645() {
             if (!numbers.includes(n)) numbers.push(n);
         }
         numbers.sort((a, b) => a - b);
+        history.push(numbers);
 
         const row = document.createElement('div');
         row.className = "p-6 rounded-[2rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 animate-fade-in-up";
@@ -108,40 +127,26 @@ function generateLotto645() {
         }
         ballsHTML += '</div>';
 
-        row.innerHTML = `
-            <div class="flex items-center gap-4">
-                <span class="text-xs font-black text-slate-300 uppercase tracking-widest">G${i+1}</span>
-                ${ballsHTML}
-            </div>
-            <div class="text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full">통계적 우위 조합</div>
-        `;
+        row.innerHTML = `<div class="flex items-center gap-4"><span class="text-xs font-black text-slate-300 uppercase tracking-widest">G${i+1}</span>${ballsHTML}</div><div class="text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full">통계적 우위 조합</div>`;
         container.appendChild(row);
     }
+    return history;
 }
 
 function generatePension720() {
     const container = document.getElementById('lottoResults');
+    const history = [];
     for (let i = 0; i < numGames; i++) {
         const group = Math.floor(Math.random() * 5) + 1;
         const numbers = Array.from({length: 6}, () => Math.floor(Math.random() * 10));
+        history.push({ group, numbers });
 
         const row = document.createElement('div');
         row.className = "p-6 rounded-[2rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 animate-fade-in-up";
-        
-        row.innerHTML = `
-            <div class="flex items-center gap-4">
-                <span class="text-xs font-black text-slate-300 uppercase tracking-widest">G${i+1}</span>
-                <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 bg-purple-600 text-white rounded-lg font-black text-sm">${group}조</span>
-                    <div class="flex gap-1">
-                        ${numbers.map(n => `<span class="w-8 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-lg font-black text-lg">${n}</span>`).join('')}
-                    </div>
-                </div>
-            </div>
-            <div class="text-[10px] font-bold text-purple-500 bg-purple-50 dark:bg-purple-900/30 px-3 py-1 rounded-full">안정적 연금형 조합</div>
-        `;
+        row.innerHTML = `<div class="flex items-center gap-4"><span class="text-xs font-black text-slate-300 uppercase tracking-widest">G${i+1}</span><div class="flex items-center gap-3"><span class="px-3 py-1 bg-purple-600 text-white rounded-lg font-black text-sm">${group}조</span><div class="flex gap-1">${numbers.map(n => `<span class="w-8 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-lg font-black text-lg">${n}</span>`).join('')}</div></div></div><div class="text-[10px] font-bold text-purple-500 bg-purple-50 dark:bg-purple-900/30 px-3 py-1 rounded-full">안정적 연금형 조합</div>`;
         container.appendChild(row);
     }
+    return history;
 }
 
 function getLottoColor(n) {

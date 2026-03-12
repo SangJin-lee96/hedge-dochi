@@ -126,8 +126,19 @@
             </div>
         </div>
 
-        <!-- 상세 리포트 섹션 (Placeholder) -->
-        <div class="stat-card animate-fade-in-up" style="animation-delay: 0.2s;">
+        <!-- 나의 행운 번호 섹션 (신설) -->
+        <div class="stat-card mb-12 animate-fade-in-up" style="animation-delay: 0.3s;">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-xl font-black">🍀 나의 행운 번호</h3>
+                <a href="lotto.html" class="text-blue-600 text-xs font-bold hover:underline">더 뽑기 ➔</a>
+            </div>
+            <div id="dashLottoList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p class="text-sm text-slate-400 col-span-full text-center py-8">아직 저장된 번호가 없습니다.</p>
+            </div>
+        </div>
+
+        <!-- 상세 리포트 섹션 -->
+        <div class="stat-card animate-fade-in-up" style="animation-delay: 0.4s;">
             <h3 class="text-xl font-black mb-6">최근 업데이트 내역</h3>
             <div id="dashActivityLog" class="space-y-4 text-sm text-slate-500">
                 로그인이 필요하거나 데이터를 불러오는 중입니다...

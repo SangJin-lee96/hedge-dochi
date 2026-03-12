@@ -79,6 +79,29 @@ async function loadDashboardData(uid) {
             }
         }
 
+        // 4. 로또 행운 번호 데이터
+        const lottoSnap = await getDoc(doc(db, "lotto_history", uid));
+        const lottoContainer = document.getElementById('dashLottoList');
+        if (lottoSnap.exists()) {
+            const data = lottoSnap.data();
+            lottoContainer.innerHTML = "";
+            data.results.slice(0, 4).forEach((res, i) => {
+                const div = document.createElement('div');
+                div.className = "p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between gap-2";
+                
+                let numsHTML = "";
+                if (data.type === '645') {
+                    numsHTML = res.map(n => `<span class="w-6 h-6 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center font-bold">${n}</span>`).join('');
+                } else {
+                    numsHTML = `<span class="text-xs font-bold text-purple-500">${res.group}조 ${res.numbers.join('')}</span>`;
+                }
+
+                div.innerHTML = `<span class="text-[10px] font-black text-slate-400">G${i+1}</span><div class="flex gap-1">${numsHTML}</div>`;
+                lottoContainer.appendChild(div);
+            });
+            addLog("최근 행운의 번호가 저장되었습니다.");
+        }
+
         if (activityLog.innerHTML === "") {
             activityLog.innerHTML = "아직 기록된 활동이 없습니다. 도구를 사용하여 자산을 분석해보세요!";
         }
