@@ -26,12 +26,16 @@ let currentUser = null;
 
 // --- Wizard Navigation ---
 window.goToStep = async function(step) {
-    if (step === 2 || step === 4) {
+    if (step === 3 || step === 4) {
         try {
             const res = await fetch('/api/price?ticker=USDKRW=X');
             const data = await res.json();
             const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-            if (rate) exchangeRate = rate;
+            if (rate) {
+                const input = document.getElementById('manualExchangeRate');
+                if (input && step === 3 && !input.value) input.value = Math.round(rate);
+                exchangeRate = rate; // 실시간 값 업데이트
+            }
         } catch (e) { console.error("환율 로드 실패", e); }
     }
 
@@ -50,6 +54,15 @@ window.goToStep = async function(step) {
 
     currentStep = step;
     window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.resetToLiveExchangeRate = function() {
+    const input = document.getElementById('manualExchangeRate');
+    if (input) {
+        input.value = Math.round(exchangeRate);
+        showToast("실시간 환율이 적용되었습니다. 🔄");
+        updateCalculation();
+    }
 };
 
 // --- Currency Management ---
@@ -130,6 +143,9 @@ async function saveDataToFirebase() {
 }
 
 function updateCalculation() {
+    const manualRate = parseFloat(document.getElementById('manualExchangeRate')?.value) || exchangeRate;
+    const rateForCalc = manualRate; 
+
     const annualSalary = parseFloat(document.getElementById('annualSalary').value) || 0;
     const initialSeed = parseFloat(document.getElementById('initialSeed').value) || 0;
     const monthlyExpense = parseFloat(document.getElementById('monthlyExpense').value) || 0;
@@ -166,7 +182,7 @@ function updateCalculation() {
     document.getElementById('netSavingsText').innerText = formatValue(avgNetSavings).replace('$', '');
 
     renderYearlyTable(tableData);
-    updateWealthTier(realYearlyData[10]);
+    updateWealthTier(realYearlyData[10], rateForCalc);
     renderChart(yearlyData, realYearlyData);
 }
 
@@ -187,10 +203,10 @@ function renderYearlyTable(data) {
     });
 }
 
-function updateWealthTier(realWealth) {
+function updateWealthTier(realWealth, rate) {
     let tier = "브론즈", icon = "🥉", color = "from-slate-400 to-slate-600";
     let desc = "기초를 다지는 단계입니다. 저축액을 늘려 시드를 모으는 데 집중하세요.";
-    const threshold = baseCurrency === 'KRW' ? 1 : (1/exchangeRate * 10000); 
+    const threshold = baseCurrency === 'KRW' ? 1 : (1/rate * 10000); 
     const val = realWealth / threshold;
 
     if (val >= 200000) { tier = "다이아몬드"; icon = "💎"; color = "from-indigo-500 via-purple-500 to-pink-500"; desc = "경제적 자유 달성! 당신은 상위 1%의 자산가입니다."; }
