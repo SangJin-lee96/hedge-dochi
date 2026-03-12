@@ -1,86 +1,109 @@
-// --- State Management ---
-let currentStep = 1;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// --- Navigation ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
+    authDomain: "hedge-dochi.firebaseapp.com",
+    projectId: "hedge-dochi",
+    storageBucket: "hedge-dochi.firebasestorage.app",
+    messagingSenderId: "157519209721",
+    appId: "1:157519209721:web:d1f196e41dcd579a286e28",
+    measurementId: "G-7Y0G1CVXBR"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentStep = 1;
+let fireChart = null;
+let currentUser = null;
+
+onAuthStateChanged(auth, user => currentUser = user);
+
 window.goToStep = function(step) {
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
     document.getElementById(`step-${step}`).classList.remove('hidden');
-    
     document.querySelectorAll('.step-dot').forEach((dot, idx) => {
-        if (idx + 1 <= step) {
-            dot.classList.remove('bg-slate-200');
-            dot.classList.add('bg-blue-600');
-        } else {
-            dot.classList.remove('bg-blue-600');
-            dot.classList.add('bg-slate-200');
-        }
+        dot.className = `step-dot w-3 h-3 rounded-full transition-all ${idx + 1 <= step ? 'bg-blue-600' : 'bg-slate-200'}`;
     });
-
     currentStep = step;
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// --- Calculation ---
 window.calculateFIRE = function() {
     const monthlyExpense = parseFloat(document.getElementById('f-expense').value) || 0;
     const currentSeed = parseFloat(document.getElementById('f-seed').value) || 0;
     const annualSave = parseFloat(document.getElementById('f-annual-save').value) || 0;
     const rate = (parseFloat(document.getElementById('f-rate').value) || 0) / 100;
-    const swr = (parseFloat(document.getElementById('f-swr').value) || 0) / 100;
+    const swr = 0.04; // 4% 법칙 고정
 
-    // 1. 목표 은퇴 자산 (FIRE Number) 계산
-    // 공식: 연 생활비 / 인출률 (4% 법칙은 연 생활비 * 25)
-    const annualExpense = monthlyExpense * 12;
-    const fireGoal = annualExpense / swr;
-
-    // 2. 목표 도달 기간 시뮬레이션
+    const fireGoal = (monthlyExpense * 12) / swr;
     let currentWealth = currentSeed;
     let months = 0;
     const monthlySave = annualSave / 12;
     const monthlyRate = rate / 12;
+    const chartData = [currentSeed];
+    const chartLabels = ["현재"];
 
-    // 최대 100년(1200개월)까지만 계산 (무한 루프 방지)
-    while (currentWealth < fireGoal && months < 1200) {
+    while (currentWealth < fireGoal && months < 600) { // 최대 50년
         currentWealth = (currentWealth + monthlySave) * (1 + monthlyRate);
         months++;
+        if (months % 12 === 0) {
+            chartData.push(Math.round(currentWealth));
+            chartLabels.push(`${months/12}년`);
+        }
     }
 
     const years = Math.floor(months / 12);
-    const remainingMonths = months % 12;
-    const currentYear = new Date().getFullYear();
-    const achievementYear = currentYear + years;
+    const achievementYear = new Date().getFullYear() + years;
 
-    // 3. 결과 렌더링
-    document.getElementById('fireYearsResult').innerText = `${years}년 ${remainingMonths}개월 후`;
-    document.getElementById('fireDateResult').innerText = `당신은 ${achievementYear}년 ${new Date().getMonth() + 1}월에 은퇴 가능합니다.`;
+    document.getElementById('fireYearsResult').innerText = `${years}년 후`;
+    document.getElementById('fireDateResult').innerText = `당신은 ${achievementYear}년에 은퇴 가능합니다.`;
     document.getElementById('fireGoalAmount').innerText = formatKorean(fireGoal);
     document.getElementById('fireMonthlyIncome').innerText = formatKorean(monthlyExpense);
 
-    // 전문가 조언 생성
-    renderAdvice(fireGoal, currentSeed, years);
+    renderFireChart(chartLabels, chartData);
+    renderAdvice(years);
+    if (currentUser) saveFireData(fireGoal, years, achievementYear);
     
     goToStep(4);
 };
 
-function renderAdvice(goal, seed, years) {
-    const adviceEl = document.getElementById('fireAdvice');
-    let text = "";
-    
-    if (years <= 5) {
-        text = "은퇴가 눈앞입니다! 이제는 자산의 증식보다 '인출 전략'과 '세금 관리'를 계획할 때입니다. 연금 저축 계좌를 점검하세요.";
-    } else if (years <= 15) {
-        text = "자산 형성의 황금기에 계십니다. 불필요한 지출을 10%만 더 줄여도 은퇴 시점을 2~3년 더 앞당길 수 있습니다.";
-    } else {
-        text = "긴 여정이 남아있지만, 복리는 시간이 흐를수록 강력해집니다. 지금은 수익률에 일희일비하기보다 '꾸준한 저축'과 '자산 배분'에 집중하세요.";
-    }
-    
-    adviceEl.innerText = text;
+function renderFireChart(labels, data) {
+    const ctx = document.getElementById('fireChart').getContext('2d');
+    if (fireChart) fireChart.destroy();
+    fireChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{ label: '자산 성장', data: data, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4, pointRadius: 0 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
+    });
+}
+
+async function saveFireData(goal, years, targetYear) {
+    try {
+        await setDoc(doc(db, "fire_goals", currentUser.uid), {
+            goalAmount: goal,
+            remainingYears: years,
+            targetYear: targetYear,
+            updatedAt: new Date()
+        }, { merge: true });
+    } catch (e) { console.error(e); }
+}
+
+function renderAdvice(years) {
+    const el = document.getElementById('fireAdvice');
+    if (years <= 10) el.innerText = "은퇴가 가깝습니다! 이제는 자산의 하락 방어와 인출 전략을 구체화하세요.";
+    else if (years <= 20) el.innerText = "안정적인 궤도입니다. 저축률을 5%만 높여도 은퇴를 3년 앞당길 수 있습니다.";
+    else el.innerText = "긴 여정이지만 복리의 힘은 마지막에 폭발합니다. 꾸준함이 정답입니다.";
 }
 
 function formatKorean(val) {
-    if (val >= 10000) return (val / 10000).toFixed(1) + '억';
-    return Math.round(val).toLocaleString() + '만';
+    return val >= 10000 ? (val / 10000).toFixed(1) + '억' : Math.round(val).toLocaleString() + '만';
 }
 
-// --- Init ---
 goToStep(1);
