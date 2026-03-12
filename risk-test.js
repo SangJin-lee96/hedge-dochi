@@ -142,8 +142,37 @@ function showResult() {
             </div>
         </div>
 
-        <div class="p-8 rounded-[2.5rem] bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 text-center">
-            <p class="text-sm text-amber-800 dark:text-amber-200">결과를 저장하고 싶으신가요? <br><strong>로그인</strong>을 하시면 진단 결과가 클라우드에 기록됩니다. (준비 중)</p>
+        <div id="save-status" class="p-8 rounded-[2.5rem] bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 text-center">
+            <p class="text-sm text-blue-800 dark:text-blue-200">진단 결과를 저장하시겠습니까? <br><strong>로그인</strong>을 하시면 개인 대시보드에 기록됩니다.</p>
         </div>
     `;
+
+    if (currentUser) {
+        saveRiskProfile(result.type, result.portfolio);
+    }
 }
+
+async function saveRiskProfile(type, portfolio) {
+    try {
+        const { getFirestore, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+        const db = getFirestore();
+        await setDoc(doc(db, "risk_profiles", currentUser.uid), {
+            type,
+            portfolio,
+            score: totalScore,
+            updatedAt: new Date()
+        }, { merge: true });
+        
+        const statusEl = document.getElementById('save-status');
+        if (statusEl) {
+            statusEl.innerHTML = `<p class="text-sm text-emerald-600 font-bold">✅ 진단 결과가 대시보드에 안전하게 저장되었습니다!</p>`;
+        }
+    } catch (e) { console.error("Save Error:", e); }
+}
+
+// --- Firebase Auth Link ---
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+const auth = getAuth();
+onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+});
