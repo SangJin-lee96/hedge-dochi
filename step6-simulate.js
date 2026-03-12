@@ -32,7 +32,7 @@ window.goToStep = function(step) {
 };
 
 // --- Calculation ---
-window.calculateCompound = function() {
+window.calculateCompound = async function() {
     const seed = parseFloat(document.getElementById('c-seed').value) || 0;
     const monthly = parseFloat(document.getElementById('c-monthly').value) || 0;
     const rate = (parseFloat(document.getElementById('c-rate').value) || 0) / 100;
@@ -61,6 +61,20 @@ window.calculateCompound = function() {
     
     renderTable(yearlyData);
     
+    // Save progress and simulation data
+    const compoundData = {
+        compoundSeed: seed,
+        monthlySavings: monthly,
+        compoundRate: rate * 100,
+        compoundPeriod: period,
+        finalProjectedWealth: currentWealth
+    };
+    
+    import('./core.js').then(async m => {
+        await m.saveProgress(7, compoundData);
+        m.showToast("복리 시뮬레이션 결과가 저장되었습니다. ⏳", "success");
+    });
+
     // Set up the Next Step button for the curriculum
     const actionContainer = document.querySelector('#step-3 .flex.flex-col') || document.querySelector('#step-3 .flex.justify-center');
     if (actionContainer) {
@@ -76,10 +90,6 @@ window.calculateCompound = function() {
     }
 
     goToStep(3);
-    if (currentUser) {
-        saveCompoundData(seed, monthly, rate * 100, period);
-        syncToGlobalProfile(seed, rate * 100);
-    }
 };
 
 window.proceedToCurriculumStep7 = function() {

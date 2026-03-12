@@ -146,9 +146,15 @@ function showResult() {
         result = { type: "안정형", icon: "💎", color: "text-slate-500", desc: "자산의 보존이 최우선입니다. 변동성이 극도로 낮은 자산 위주로 구성하세요.", portfolio: "채권 80%, 현금 20%" };
     }
 
+    // Save progress and risk data immediately
+    import('./core.js').then(async m => {
+        await m.saveProgress(4, { riskType: result.type, recommendedPortfolio: result.portfolio });
+        m.showToast("투자 성향 데이터가 계정에 저장되었습니다. 🧠", "success");
+    });
+
     resultContainer.innerHTML = `
         <div class="text-center space-y-6">
-            <div class="text-8xl mb-4">${result.icon}</div>
+    ...
             <h2 class="text-4xl md:text-6xl font-black">당신은 <span class="${result.color}">${result.type}</span></h2>
             <p class="text-lg text-slate-500 max-w-md mx-auto leading-relaxed">${result.desc}</p>
         </div>

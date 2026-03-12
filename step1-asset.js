@@ -1,5 +1,5 @@
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, goToNextStep, showToast } from './core.js';
+import { db, currentUser, goToNextStep, saveProgress, showToast } from './core.js';
 
 let currentStep = 1;
 let wealthChart = null;
@@ -78,14 +78,28 @@ function formatValue(val) {
     }
 }
 
-window.calculateAndShowResult = function() {
+window.calculateAndShowResult = async function() {
     updateCalculation();
     goToStep(4);
-    saveDataToFirebase();
+    
+    // 즉시 저장 로직 실행
+    const simulationData = {
+        annualSalary: document.getElementById('annualSalary').value,
+        initialSeed: document.getElementById('initialSeed').value,
+        monthlyExpense: document.getElementById('monthlyExpense').value,
+        salaryGrowth: document.getElementById('salaryGrowth').value,
+        investmentReturn: document.getElementById('investmentReturn').value,
+        inflationRate: document.getElementById('inflationRate').value,
+        baseCurrency: baseCurrency
+    };
+
+    // 로드맵 진행 상황을 2단계로 업데이트하며 모든 데이터 저장
+    await saveProgress(2, simulationData);
+    showToast("진행 상황이 계정에 안전하게 저장되었습니다. ☁️", "success");
 };
 
 window.proceedToCurriculumStep2 = function() {
-    goToNextStep(1); // Call core.js navigation to move to Step 2
+    goToNextStep(1); // 1단계 완료 처리 후 2단계 이동
 };
 
 function updateCalculation() {
@@ -169,7 +183,6 @@ function updateWealthTier(realWealth, rate) {
     document.getElementById('gradeDesc').innerText = desc;
     document.getElementById('gradeSection').className = `capture-area bg-gradient-to-br ${color} p-10 md:p-16 rounded-[3rem] shadow-2xl text-center text-white relative overflow-hidden`;
     
-    // UI 업데이트: 기존의 "다시 하기" 버튼들 대신 다음 단계 버튼 삽입
     const actionContainer = document.querySelector('#gradeSection .mt-12');
     if (actionContainer) {
         actionContainer.innerHTML = `
@@ -237,7 +250,6 @@ async function fetchMarketData() {
     if (timeEl) timeEl.innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
 }
 
-// Core.js에서 데이터 로드 시 동기화
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
     if (user) {
@@ -257,22 +269,6 @@ document.addEventListener('coreDataReady', async (e) => {
         } catch (err) {}
     }
 });
-
-async function saveDataToFirebase() {
-    if (!currentUser) return;
-    try {
-        await setDoc(doc(db, "simulations", currentUser.uid), {
-            annualSalary: document.getElementById('annualSalary').value,
-            initialSeed: document.getElementById('initialSeed').value,
-            monthlyExpense: document.getElementById('monthlyExpense').value,
-            salaryGrowth: document.getElementById('salaryGrowth').value,
-            investmentReturn: document.getElementById('investmentReturn').value,
-            inflationRate: document.getElementById('inflationRate').value,
-            baseCurrency, lastUpdated: new Date()
-        }, { merge: true });
-        showToast("데이터가 안전하게 저장되었습니다. ☁️");
-    } catch (e) {}
-}
 
 window.downloadResultImage = function() {
     const area = document.querySelector('.capture-area');

@@ -78,17 +78,25 @@ export async function loginWithGoogle() {
 }
 
 // --- Roadmap Progress API ---
-export async function saveProgress(stepId) {
+export async function saveProgress(stepId, additionalData = {}) {
     userProgress = Math.max(userProgress, stepId);
+    const dataToSave = {
+        roadmapProgress: userProgress,
+        lastUpdated: new Date(),
+        ...additionalData
+    };
+
     if (currentUser) {
         try {
-            await setDoc(doc(db, "simulations", currentUser.uid), {
-                roadmapProgress: userProgress,
-                lastUpdated: new Date()
-            }, { merge: true });
+            await setDoc(doc(db, "simulations", currentUser.uid), dataToSave, { merge: true });
+            console.log("Progress saved to Firebase:", userProgress);
         } catch (e) { console.error("Save progress failed", e); }
     } else {
+        // Guest user storage
         sessionStorage.setItem('roadmapProgress', userProgress);
+        Object.keys(additionalData).forEach(key => {
+            sessionStorage.setItem(key, additionalData[key]);
+        });
     }
 }
 

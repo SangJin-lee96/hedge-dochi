@@ -33,7 +33,7 @@ window.goToStep = function(step) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-window.calculateFire = function() {
+window.calculateFire = async function() {
     const targetIncome = parseFloat(document.getElementById('f-expense').value) || 200;
     const withdrawRate = parseFloat(document.getElementById('f-withdraw-rate').value) || 4.0;
     const seed = parseFloat(document.getElementById('f-seed').value) || 0;
@@ -41,21 +41,16 @@ window.calculateFire = function() {
     const returnRate = (parseFloat(document.getElementById('f-rate').value) || 0) / 100;
     const inflRate = (parseFloat(document.getElementById('f-inflation').value) || 0) / 100;
 
-    // 실질 수익률 (수익률 - 물가상승률)
+    // ... (calculation logic) ...
     const realRate = returnRate - inflRate;
-
-    // 목표 은퇴 자금 = (월 필요 금액 * 12) / (인출률 / 100)
     const fireGoal = (targetIncome * 12) / (withdrawRate / 100);
-
     let currentWealth = seed;
     let years = 0;
     const chartLabels = [];
     const chartData = [];
-
     chartLabels.push('현재');
     chartData.push(currentWealth);
 
-    // 자산이 목표치에 도달할 때까지 연도별 계산 (최대 50년 제한)
     while (currentWealth < fireGoal && years < 50) {
         years++;
         const profit = currentWealth * realRate;
@@ -73,8 +68,6 @@ window.calculateFire = function() {
         document.getElementById('fireYearsResult').innerText = `${years}년`;
         document.getElementById('fireDateResult').innerText = `${targetYear}년`;
         document.getElementById('fireDateResult').classList.remove('text-red-500');
-        
-        if (currentUser) saveFireData(fireGoal, years, targetYear);
     }
 
     document.getElementById('fireGoalAmount').innerText = formatKorean(fireGoal);
@@ -82,11 +75,22 @@ window.calculateFire = function() {
     
     renderAdvice(years);
     renderFireChart(chartLabels, chartData);
-    syncToMainSimulation();
     
-    // Set up the Next Step button for the curriculum in STEP 4
+    // 즉시 저장 및 진행률 업데이트 (3단계로)
+    const fireData = {
+        monthlyExpense: targetIncome,
+        initialSeed: seed,
+        annualSave: annualSave,
+        investmentReturn: returnRate * 100,
+        inflationRate: inflRate * 100,
+        fireGoalAmount: fireGoal,
+        fireTargetYear: new Date().getFullYear() + years
+    };
+    await saveProgress(3, fireData);
+    showToast("은퇴 설계 데이터가 저장되었습니다. 🏖️", "success");
+
+    // UI 업데이트
     const actionContainer = document.querySelector('#step-4 .flex.flex-col') || document.querySelector('#step-4 .flex.flex-row');
-    
     if (actionContainer) {
         actionContainer.innerHTML = `
             <button onclick="proceedToCurriculumStep3()" class="flex-[2] py-5 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black shadow-2xl hover:scale-105 transition-all active:scale-95 text-lg">
