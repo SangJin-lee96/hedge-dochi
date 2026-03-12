@@ -60,11 +60,30 @@ window.calculateCompound = function() {
     document.getElementById('profitRatio').innerText = `${((finalProfit / totalPrincipal) * 100).toFixed(1)}% 성장`;
     
     renderTable(yearlyData);
+    
+    // Set up the Next Step button for the curriculum
+    const actionContainer = document.querySelector('#step-3 .flex.flex-col') || document.querySelector('#step-3 .flex.justify-center');
+    if (actionContainer) {
+        actionContainer.innerHTML = `
+            <button onclick="proceedToCurriculumStep7()" class="w-full md:w-auto px-10 py-5 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black shadow-2xl hover:scale-105 transition-all active:scale-95 text-lg mb-4">
+                7단계: 실전 포트폴리오 구축하기 ➔
+            </button>
+            <div class="flex gap-4">
+                <button onclick="copyCompoundResult()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">결과 복사</button>
+                <button onclick="goToStep(1)" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">다시 계산</button>
+            </div>
+        `;
+    }
+
     goToStep(3);
     if (currentUser) {
         saveCompoundData(seed, monthly, rate * 100, period);
         syncToGlobalProfile(seed, rate * 100);
     }
+};
+
+window.proceedToCurriculumStep7 = function() {
+    import('./core.js').then(m => m.goToNextStep(6));
 };
 
 async function syncToGlobalProfile(seed, rate) {

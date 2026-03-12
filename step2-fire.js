@@ -84,23 +84,22 @@ window.calculateFire = function() {
     renderFireChart(chartLabels, chartData);
     syncToMainSimulation();
     
-    // Set up the Next Step button for the curriculum
-    const resultCard = document.getElementById('fireAdvice').parentElement.parentElement; // find the action button area
-    const actionContainer = resultCard.querySelector('.flex.flex-col') || document.querySelector('#step-2 .flex.justify-center');
+    // Set up the Next Step button for the curriculum in STEP 4
+    const actionContainer = document.querySelector('#step-4 .flex.flex-col') || document.querySelector('#step-4 .flex.flex-row');
     
     if (actionContainer) {
         actionContainer.innerHTML = `
-            <button onclick="proceedToCurriculumStep3()" class="w-full md:w-auto px-10 py-5 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black shadow-2xl hover:scale-105 transition-all active:scale-95 text-lg mb-4">
+            <button onclick="proceedToCurriculumStep3()" class="flex-[2] py-5 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black shadow-2xl hover:scale-105 transition-all active:scale-95 text-lg">
                 3단계: 투자 성향 파악하기 ➔
             </button>
-            <div class="flex gap-4">
-                <button onclick="copyFireResult()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 font-bold rounded-[2rem] text-slate-500">결과 복사</button>
-                <button onclick="goToStep(1)" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 font-bold rounded-[2rem] text-slate-500">다시 계산</button>
-            </div>
+            <button onclick="copyFireResult()" class="flex-1 py-5 bg-indigo-600 text-white font-bold rounded-2xl shadow-xl hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2">
+                <span>📋 복사</span>
+            </button>
+            <button onclick="goToStep(1)" class="flex-1 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">다시 계산</button>
         `;
     }
 
-    goToStep(2);
+    goToStep(4);
 };
 
 window.proceedToCurriculumStep3 = function() {
