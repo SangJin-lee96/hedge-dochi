@@ -51,7 +51,7 @@
     </style>
 </head>
 <body class="min-h-screen">
-        <!-- 헤더 네비게이션 -->
+    <!-- 헤더 네비게이션 -->
     <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <!-- 로고 -->
@@ -143,24 +143,24 @@
                 <div>
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">투자 관리</p>
                     <div class="flex flex-col space-y-1">
-                        <a href="step7-dashboard.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">대시보드</a>
-                        <a href="step8-rebalance.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">리밸런싱</a>
+                        <a href="step7-dashboard.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">대시보드</a>
+                        <a href="step8-rebalance.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">리밸런싱</a>
                     </div>
                 </div>
                 <!-- 계산기 -->
                 <div>
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">계산기</p>
                     <div class="flex flex-col space-y-1">
-                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">복리 계산기</a>
-                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">배당 계산기</a>
+                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">복리 계산기</a>
+                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">배당 계산기</a>
                     </div>
                 </div>
                 <!-- 서비스 -->
                 <div>
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">서비스</p>
                     <div class="flex flex-col space-y-1">
-                        <a href="step4-guide.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">금융 가이드</a>
-                        <a href="lotto.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
+                        <a href="step4-guide.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">금융 가이드</a>
+                        <a href="lotto.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">로또 추천</a>
                     </div>
                 </div>
                 <div id="authContainerMobile" class="p-4 border-t border-slate-100 dark:border-slate-700 text-center"></div>
@@ -168,15 +168,17 @@
         </div>
     </header>
 
-    <main class="py-12 px-4 max-w-4xl mx-auto">
-        <header class="mb-12 text-center">
+    <main class="pt-12 pb-24 px-4 max-w-4xl mx-auto">
+        <header class="mb-12 text-center animate-fade-in-up">
             <h1 class="text-3xl md:text-5xl font-black mb-4 tracking-tight">⏳ 복리의 마법 계산기</h1>
             <p class="text-lg text-slate-500 font-medium">시간이 당신의 돈을 어떻게 기하급수적으로 키우는지 확인하세요.</p>
             <div class="mt-10 flex items-center justify-center gap-2 max-w-xs mx-auto">
                 <div id="step-indicator-1" class="step-dot w-3 h-3 rounded-full bg-blue-600 transition-all"></div>
                 <div class="w-8 h-0.5 bg-slate-200"></div>
                 <div id="step-indicator-2" class="step-dot w-3 h-3 rounded-full bg-slate-200 transition-all"></div>
+                <div class="w-8 h-0.5 bg-slate-200"></div>
                 <div id="step-indicator-3" class="step-dot w-3 h-3 rounded-full bg-slate-200 transition-all"></div>
+                <div class="w-8 h-0.5 bg-slate-200"></div>
                 <div id="step-indicator-4" class="step-dot w-3 h-3 rounded-full bg-slate-200 transition-all"></div>
             </div>
         </header>
@@ -259,16 +261,16 @@
                 </div>
             </div>
         </section>
-        <div class="text-center mt-16 mb-8"><button onclick="import('./core.js').then(m=>m.goToNextStep(6))" class="px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:scale-105 transition-transform text-lg">7단계: 실전 포트폴리오 구축하기 ➔</button></div>
+        <div class="text-center mt-16 mb-8"><button onclick="location.href='step7-dashboard.html'" class="px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:scale-105 transition-transform text-lg">7단계: 실전 포트폴리오 구축하기 ➔</button></div>
     </main>
 
     <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
         <div class="max-w-6xl mx-auto">
-            <div class="flex justify-center space-x-6 font-bold mb-6">
-                <a href="about.html" class="hover:text-blue-600 transition-colors">소개 (About)</a>
-                <a href="tos.html" class="hover:text-blue-600 transition-colors">이용약관</a>
-                <a href="privacy.html" class="hover:text-blue-600 transition-colors">개인정보처리방침</a>
-                <a href="contact-form.html" class="hover:text-blue-600 transition-colors">문의하기</a>
+            <div class="flex justify-center space-x-6 font-bold mb-4">
+                <a href="about.html" class="hover:text-blue-600">소개</a>
+                <a href="tos.html" class="hover:text-blue-600">이용약관</a>
+                <a href="privacy.html" class="hover:text-blue-600">개인정보처리방침</a>
+                <a href="contact-form.html" class="hover:text-blue-600">문의하기</a>
             </div>
             <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
             <p class="opacity-60 text-[10px] max-w-lg mx-auto leading-relaxed mt-2">Hedge Dochi는 데이터 기반의 금융 도구와 가이드를 제공하며, 제공되는 모든 정보는 참고용일 뿐 투자 권유를 구성하지 않습니다.</p>

@@ -44,7 +44,7 @@
     </style>
 </head>
 <body class="min-h-screen">
-        <!-- 헤더 네비게이션 -->
+    <!-- 헤더 네비게이션 -->
     <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <!-- 로고 -->
@@ -144,8 +144,8 @@
                 <div>
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">계산기</p>
                     <div class="flex flex-col space-y-1">
-                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">복리 계산기</a>
-                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">배당 계산기</a>
+                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">복리 계산기</a>
+                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">배당 계산기</a>
                     </div>
                 </div>
                 <!-- 서비스 -->
@@ -161,8 +161,8 @@
         </div>
     </header>
 
-    <main class="py-8 px-4 max-w-5xl mx-auto">
-        <header class="mb-12 text-center">
+    <main class="pt-12 pb-24 px-4 max-w-5xl mx-auto">
+        <header class="mb-12 text-center animate-fade-in-up">
             <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">⚖️ 스마트 리밸런싱 매니저</h1>
             <p class="text-lg text-slate-500 font-medium">실시간 환율과 시장가격을 반영하여 완벽한 비중을 찾습니다.</p>
             <div class="mt-10 flex items-center justify-center gap-2 max-w-xs mx-auto">
@@ -236,7 +236,7 @@
         <div id="step-3" class="step-section hidden space-y-8 animate-fade-in-up">
             <div class="text-center mb-8"><h2 class="text-2xl font-black">🎯 목표 비중 설정</h2><p class="text-slate-500">직접 조정하거나 검증된 모델 비중을 적용하세요.</p></div>
             
-            <!-- Quick Model Presets (신설) -->
+            <!-- Quick Model Presets -->
             <div class="flex flex-wrap justify-center gap-2 mb-10">
                 <button onclick="applyModel('ALL_WEATHER')" class="px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] border border-emerald-100 dark:border-emerald-800">올웨더 모델</button>
                 <button onclick="applyModel('6040')" class="px-4 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold text-[10px] border border-blue-100 dark:border-blue-800">60:40 전략</button>
@@ -275,7 +275,7 @@
             </div>
         </div>
 
-        <!-- Methodology Section (AdSense Boost) -->
+        <!-- Methodology Section -->
         <section class="mt-32 prose prose-slate dark:prose-invert max-w-none border-t border-slate-100 dark:border-slate-800 pt-16">
             <div class="max-w-4xl mx-auto">
                 <h2 class="text-3xl font-black text-blue-600 dark:text-blue-400 mb-8 text-center">스마트 리밸런싱 알고리즘의 원리</h2>
@@ -311,7 +311,7 @@
                 </div>
             </div>
         </section>
-        <div class="text-center mt-16 mb-8"><button onclick="import('./core.js').then(m=>m.goToNextStep(8))" class="px-10 py-5 bg-emerald-600 text-white rounded-2xl font-black shadow-xl hover:scale-105 transition-transform text-lg">모든 과정 완료! 홈으로 돌아가기 ➔</button></div>
+        <div class="text-center mt-16 mb-8"><button onclick="location.href='index.html'" class="px-10 py-5 bg-emerald-600 text-white rounded-2xl font-black shadow-xl hover:scale-105 transition-transform text-lg">모든 과정 완료! 홈으로 돌아가기 ➔</button></div>
     </main>
 
     <!-- Search Modal -->

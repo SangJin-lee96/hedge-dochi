@@ -49,8 +49,7 @@
     </style>
 </head>
 <body class="min-h-screen">
-    <!-- 헤더 네비게이션 (공통 구조) -->
-        <!-- 헤더 네비게이션 -->
+    <!-- 헤더 네비게이션 -->
     <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <!-- 로고 -->
@@ -150,8 +149,8 @@
                 <div>
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">계산기</p>
                     <div class="flex flex-col space-y-1">
-                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">복리 계산기</a>
-                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">배당 계산기</a>
+                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">복리 계산기</a>
+                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">배당 계산기</a>
                     </div>
                 </div>
                 <!-- 서비스 -->
@@ -167,7 +166,7 @@
         </div>
     </header>
 
-    <main class="py-12 px-4 max-w-6xl mx-auto">
+    <main class="pt-12 pb-24 px-4 max-w-6xl mx-auto">
         <header class="mb-12 animate-fade-in-up">
             <div class="flex flex-col md:flex-row items-center gap-6">
                 <img id="dashUserPhoto" src="" class="w-24 h-24 rounded-[2rem] border-4 border-white dark:border-slate-800 shadow-2xl">
@@ -214,6 +213,7 @@
         </div>
 
         <!-- Financial Goal Tracker -->
+        <div class="stat-card mb-12 animate-fade-in-up">
             <div class="flex flex-col md:flex-row justify-between items-center gap-8">
                 <div class="flex-1 w-full">
                     <div class="flex justify-between items-end mb-4 px-2">
@@ -241,7 +241,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
-            <!-- 통합 자산 차트 섹션 (신설) -->
+            <!-- 통합 자산 차트 섹션 -->
             <div class="lg:col-span-2 stat-card flex flex-col md:flex-row items-center gap-8">
                 <div class="relative w-48 h-48 md:w-64 md:h-64 flex-shrink-0">
                     <canvas id="dashTotalChart"></canvas>
@@ -257,7 +257,7 @@
                         <!-- 범례가 여기에 로드됨 -->
                     </div>
                     
-                    <!-- Quick Price Search (신설) -->
+                    <!-- Quick Price Search -->
                     <div class="mt-10 pt-8 border-t dark:border-slate-800">
                         <div class="flex items-center gap-2 mb-4">
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Price Search</span>
@@ -274,7 +274,7 @@
                 </div>
             </div>
 
-            <!-- 투자 성향 (기존 카드를 오른쪽으로 이동 및 축소) -->
+            <!-- 투자 성향 -->
             <div class="stat-card flex flex-col items-center justify-center text-center">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Risk Profile</p>
                 <div id="dashRiskIcon" class="text-6xl mb-4">🧠</div>
@@ -284,8 +284,8 @@
             </div>
         </div>
 
-        <!-- Quick Tools Bar (신설) -->
-        <div class="mb-12 overflow-x-auto no-scrollbar pb-4">
+        <!-- Quick Tools Bar -->
+        <div class="mb-12 overflow-x-auto no-scrollbar pb-4 animate-fade-in-up" style="animation-delay: 0.15s;">
             <div class="flex gap-3 min-w-max">
                 <a href="step1-asset.html" class="px-6 py-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 text-xs font-black hover:border-blue-500 transition-all flex items-center gap-2">📊 시뮬레이터</a>
                 <a href="step6-simulate.html" class="px-6 py-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 text-xs font-black hover:border-indigo-500 transition-all flex items-center gap-2">⏳ 복리계산</a>
@@ -295,9 +295,6 @@
                 <a href="lotto.html" class="px-6 py-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 text-xs font-black hover:border-rose-400 transition-all flex items-center gap-2">🍀 로또추천</a>
             </div>
         </div>
-
-        <!-- Market Sentiment & Financial Goal (기존 유지) -->
-        <!-- ... -->
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-fade-in-up" style="animation-delay: 0.2s;">
             <!-- 1. 자산 등급 -->
@@ -325,7 +322,7 @@
                 <a href="step2-fire.html" class="mt-4 text-blue-600 text-[10px] font-bold hover:underline tracking-widest uppercase">Plan ➔</a>
             </div>
 
-            <!-- 4. Compound Goal (신설) -->
+            <!-- 4. Compound Goal -->
             <div class="stat-card flex flex-col items-center justify-center text-center">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Compounding</p>
                 <div id="dashCompoundIcon" class="text-5xl mb-4">⏳</div>
@@ -346,7 +343,7 @@
                 </div>
             </div>
 
-            <!-- 나의 관심 자산 (Watchlist) (신설) -->
+            <!-- 나의 관심 자산 (Watchlist) -->
             <div class="stat-card animate-fade-in-up" style="animation-delay: 0.35s;">
                 <div class="flex justify-between items-center mb-8">
                     <h3 class="text-xl font-black">⭐ 나의 관심 자산</h3>
@@ -366,18 +363,18 @@
             </div>
         </div>
 
-        <!-- Dashboard Ad Banner (신설) -->
-        <div class="mt-12 p-6 rounded-[2.5rem] bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 shadow-sm text-center animate-fade-in-up" style="animation-delay: 0.5s;">
-            <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-4">Partner Insights</p>
-            <div class="min-h-[90px] flex items-center justify-center text-slate-400 text-sm font-medium italic">
-                당신을 위한 맞춤형 금융 혜택을 확인해보세요.
-            </div>
-        </div>
-        <div class="text-center mt-16 mb-8"><button onclick="import('./core.js').then(m=>m.goToNextStep(7))" class="px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:scale-105 transition-transform text-lg">마지막 단계: 리밸런싱 마스터하기 ➔</button></div>
+        <div class="text-center mt-16 mb-8"><button onclick="location.href='step8-rebalance.html'" class="px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:scale-105 transition-transform text-lg">마지막 단계: 리밸런싱 마스터하기 ➔</button></div>
     </main>
 
     <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
-        <!-- 푸터 내용 생략 (공통) -->
+        <div class="flex justify-center space-x-6 font-bold mb-4">
+            <a href="about.html" class="hover:text-blue-600">소개</a>
+            <a href="tos.html" class="hover:text-blue-600">이용약관</a>
+            <a href="privacy.html" class="hover:text-blue-600">개인정보처리방침</a>
+            <a href="contact-form.html" class="hover:text-blue-600">문의</a>
+        </div>
+        <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
+        <p class="opacity-60 text-[10px] max-w-lg mx-auto leading-relaxed mt-2">Hedge Dochi는 데이터 기반의 금융 도구와 가이드를 제공하며, 제공되는 모든 정보는 참고용일 뿐 투자 권유를 구성하지 않습니다.</p>
     </footer>
 
     <script src="https://cdn.tailwindcss.com"></script>
