@@ -1,49 +1,13 @@
-<!DOCTYPE html>
-<html lang="ko" class="scroll-pt-20">
-<head>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex">
-    <meta name="description" content="Hedge Dochi의 개인정보처리방침입니다. 사용자의 금융 데이터를 어떻게 보호하고 관리하는지 확인하세요.">
-    <title>개인정보처리방침 | Hedge Dochi</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-GFMXESYQFR');
-    </script>
-    <style>
-        @media (max-width: 640px) { h1 { font-size: 2rem !important; } .stat-card { padding: 1.5rem !important; } }
-        :root {
-            --color-primary-text: #1e293b;
-            --color-secondary-text: #64748b;
-            --color-background: #f8fafc;
-            --color-nav-bg: #ffffff;
-            --nav-bg-rgb: 255, 255, 255;
-            --color-nav-border: #f1f5f9;
-            --color-nav-link: #2563eb;
-            --color-toggle-text: #64748b;
-        }
-        html.dark {
-            --color-primary-text: #f8fafc;
-            --color-secondary-text: #94a3b8;
-            --color-background: #0f172a;
-            --color-nav-bg: #1e293b;
-            --nav-bg-rgb: 30, 41, 59;
-            --color-nav-border: #334155;
-            --color-nav-link: #60a5fa;
-            --color-toggle-text: #94a3b8;
-        }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; transition: background-color 0.3s; }
-        .content-card { background: white; border-radius: 2.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
-        html.dark .content-card { background: #1e293b; border: 1px solid #334155; }
-    </style>
-</head>
-<body class="min-h-screen">
-        <!-- 헤더 네비게이션 -->
+import os
+import re
+
+files = [
+    'index.html', 'compound.html', 'dividend.html', 'fire-calc.html',
+    'rebalance.html', 'risk-test.html', 'dashboard.html', 'guides.html',
+    'lotto.html', 'about.html', 'privacy.html', 'tos.html', 'contact-form.html'
+]
+
+new_header = """    <!-- 헤더 네비게이션 -->
     <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <!-- 로고 -->
@@ -158,34 +122,24 @@
                 <div id="authContainerMobile" class="p-4 border-t border-slate-100 dark:border-slate-700 text-center"></div>
             </nav>
         </div>
-    </header>
+    </header>"""
 
-    <main class="py-12 px-4 max-w-4xl mx-auto">
-        <div class="content-card p-8 md:p-12 prose prose-slate dark:prose-invert max-w-none">
-            <h1 class="text-3xl font-black mb-8 text-center">개인정보처리방침</h1>
-            <p class="mb-6"><strong>시행일: 2026년 2월 11일</strong></p>
-            <h2 class="text-xl font-bold mb-4">1. 데이터 수집 원칙</h2>
-            <p class="mb-6">본 사이트는 사용자의 민감한 금융 자산 정보를 서버에 영구적으로 저장하지 않습니다. 모든 계산은 브라우저 내에서 이루어지며, 로그인 시 제공되는 저장 기능은 Firebase의 보안 인프라를 통해 사용자 본인만이 접근할 수 있도록 보호됩니다.</p>
-            <h2 class="text-xl font-bold mb-4">2. 쿠키 및 분석 도구</h2>
-            <p class="mb-6">Google AdSense 및 Analytics를 위해 쿠키를 사용하며, 이는 사용자 맞춤형 광고 제공 및 서비스 품질 향상을 위한 목적으로만 활용됩니다.</p>
-        </div>
-    </main>
-
-    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400">
-        <div class="flex justify-center space-x-6 font-bold mb-4">
-            <a href="about.html" class="hover:text-blue-600">소개</a>
-            <a href="tos.html" class="hover:text-blue-600">이용약관</a>
-            <a href="privacy.html" class="hover:text-blue-600">개인정보처리방침</a>
-            <a href="contact-form.html" class="hover:text-blue-600">문의</a>
-        </div>
-        <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
-            <p class="opacity-60 text-[10px] max-w-lg mx-auto leading-relaxed mt-2">Hedge Dochi는 데이터 기반의 금융 도구와 가이드를 제공하며, 제공되는 모든 정보는 참고용일 뿐 투자 권유를 구성하지 않습니다.</p>
-    </footer>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = { darkMode: 'class' }</script>
-    <script src="dark-mode.js"></script>
-    <script type="module" src="auth-check.js"></script>
+for file_path in files:
+    if not os.path.exists(file_path):
+        continue
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
     
-</body>
-</html>
+    # 1. Replace ONLY the nav header (identified by 'sticky')
+    content = re.sub(r'<header[^>]*sticky[^>]*>.*?</header>', new_header, content, count=1, flags=re.DOTALL)
+    
+    # 2. Remove mobile menu script
+    content = re.sub(r'<script>\s*document\.addEventListener\(\'DOMContentLoaded\', \(\) => \{\s*const btn = document\.getElementById\(\'mobileMenuBtn\'\);\s*const menu = document\.getElementById\(\'mobileMenu\'\);\s*if \(btn && menu\) btn\.addEventListener\(\'click\', \(\) => \{ menu\.classList\.toggle\(\'hidden\'\); \}\);\s*\}\);\s*</script>', '', content)
+    
+    # 3. Ensure dark-mode.js is included
+    if 'dark-mode.js' not in content:
+        content = content.replace('</body>', '<script src="dark-mode.js"></script>\n</body>')
+    
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    print(f"Updated {file_path}")
