@@ -1,0 +1,49 @@
+# Hedge Dochi 연결 플랫폼 및 연동 정보 정리
+
+이 파일은 사이트가 변경되거나 초기화될 때 다시 설정할 수 있도록 프로젝트에 연결된 모든 플랫폼 정보를 담고 있습니다.
+
+## 1. Google Analytics (애널리틱스)
+- **기본 트래킹 ID**: `G-GFMXESYQFR` (index.html 내 삽입)
+- **Firebase 측정 ID**: `G-7Y0G1CVXBR` (Firebase 앱 설정과 연동)
+
+## 2. Google AdSense (애드센스)
+- **게시자 ID (Publisher ID)**: `pub-0000000000000000` (현재 ads.txt에 설정된 임시 ID)
+- **파일**: `ads.txt` (루트 디렉토리에 위치)
+
+## 3. Firebase (데이터베이스 및 인증)
+- **프로젝트 ID**: `hedge-dochi`
+- **주요 서비스**:
+  - **Authentication**: 구글 로그인 연동
+  - **Firestore**: 시뮬레이션 데이터 및 사용자 정보 저장 (`simulations` 컬렉션)
+- **Firebase Config (JavaScript)**:
+  ```javascript
+  {
+    apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
+    authDomain: "hedge-dochi.firebaseapp.com",
+    projectId: "hedge-dochi",
+    storageBucket: "hedge-dochi.firebasestorage.app",
+    messagingSenderId: "157519209721",
+    appId: "1:157519209721:web:d1f196e41dcd579a286e28",
+    measurementId: "G-7Y0G1CVXBR"
+  }
+  ```
+
+## 4. Cloudflare Pages (호스팅 및 백엔드)
+- **도메인**: `https://hedge-dochi-live.pages.dev/`
+- **Functions (백엔드)**: 
+  - `/api/price`: 시장 데이터 및 환율 정보 제공 (Cloudflare Workers 기반)
+  - `/api/search`: 종목 검색 기능 제공
+
+## 5. Yahoo Finance API (시장 데이터 출처)
+- **연동 방식**: Cloudflare Function (`/api/price.js`)에서 Yahoo Finance v8 API 호출
+- **사용 데이터**: S&P 500, NASDAQ, KOSPI, Bitcoin, Gold, USD/KRW 환율
+
+## 6. Google Search Console (검색 최적화)
+- **소유권 인증 파일**: `googlee861789e4d04a6ab.html`
+- **Sitemap**: `/sitemap.xml`
+- **Robots**: `/robots.txt`
+
+## 7. 기타 정적 리소스 및 폰트
+- **폰트**: Pretendard (Google Fonts API 연동)
+- **아이콘**: Favicon.ico
+- **OG 이미지**: `og-image.png`, `og-image-lotto.jpg`
