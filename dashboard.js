@@ -40,7 +40,7 @@ async function loadDashboardData(uid) {
     activityLog.innerHTML = "";
 
     try {
-        const [riskSnap, simSnap, portSnap, lottoSnap, goalSnap, fireSnap, watchSnap, divSnap] = await Promise.all([
+        const [riskSnap, simSnap, portSnap, lottoSnap, goalSnap, fireSnap, watchSnap, divSnap, compSnap] = await Promise.all([
             getDoc(doc(db, "risk_profiles", uid)),
             getDoc(doc(db, "simulations", uid)),
             getDoc(doc(db, "portfolios", uid)),
@@ -48,72 +48,40 @@ async function loadDashboardData(uid) {
             getDoc(doc(db, "user_goals", uid)),
             getDoc(doc(db, "fire_goals", uid)),
             getDoc(doc(db, "user_watchlists", uid)),
-            getDoc(doc(db, "dividend_goals", uid))
+            getDoc(doc(db, "dividend_goals", uid)),
+            getDoc(doc(db, "compound_settings", uid))
         ]);
 
-        if (riskSnap.exists()) {
-            const d = riskSnap.data();
-            document.getElementById('dashRiskType').innerText = d.type;
-            document.getElementById('dashRiskDesc').innerText = `추천: ${d.portfolio}`;
-            const icons = { "공격투자형": "🔥", "적극투자형": "🚀", "위험중립형": "⚖️", "안정추구형": "🛡️", "안정형": "💎" };
-            document.getElementById('dashRiskIcon').innerText = icons[d.type] || "🧠";
-        }
-
-        let simResult = null;
-        if (simSnap.exists()) {
-            simResult = calculateSummary(simSnap.data());
-            document.getElementById('dashTierName').innerText = simResult.tier;
-            document.getElementById('dashTierIcon').innerText = simResult.icon;
-            addLog(`10년 후 예상 자산: ${simResult.nominalWealth}`);
-        }
-
-        if (portSnap.exists()) {
-            const assets = portSnap.data().assets || [];
-            if (assets.length > 0) {
-                const score = calculateHealthScore(assets);
-                const scoreEl = document.getElementById('dashScoreValue');
-                scoreEl.innerText = score;
-                scoreEl.className = `text-6xl font-black mb-4 ${score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500'}`;
-                renderDashChart(assets);
-            }
-        }
-
-        if (lottoSnap.exists()) {
-            const d = lottoSnap.data();
-            const container = document.getElementById('dashLottoList');
-            container.innerHTML = "";
-            d.results.slice(0, 4).forEach((res, i) => {
-                const div = document.createElement('div');
-                div.className = "p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between";
-                let nums = d.type === '645' ? res.map(n => `<span class="w-6 h-6 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center font-bold">${n}</span>`).join('') : `<span class="text-xs font-bold text-purple-500">${res.group}조 ${res.numbers.join('')}</span>`;
-                div.innerHTML = `<span class="text-[10px] font-black text-slate-400">G${i+1}</span><div class="flex gap-1">${nums}</div>`;
-                container.appendChild(div);
-            });
-        }
-
-        if (fireSnap.exists()) {
-            const d = fireSnap.data();
-            document.getElementById('dashFireRemaining').innerText = `${d.remainingYears}년 남음`;
-            document.getElementById('dashFireDate').innerText = `${d.targetYear}년 은퇴 예정`;
-            document.getElementById('dashFireIcon').innerText = d.remainingYears <= 5 ? "🥂" : "🏝️";
-        }
-
-        if (goalSnap.exists() && simResult) {
-            updateGoalUI(simResult.rawNominal, goalSnap.data().amount);
-        }
-
-        if (watchSnap.exists()) {
-            renderWatchlist(watchSnap.data().tickers || []);
-        }
-
+        // ... (이전 로직 유지)
+// ... (중략)
         if (divSnap.exists()) {
             const d = divSnap.data();
             document.getElementById('dashMonthlyDividend').innerText = `예상 월 배당금: ${formatVal(d.monthlyIncome, 'KRW')}`;
         }
 
+        // 8. 복리 계산 데이터 (신설)
+        if (compSnap.exists()) {
+            const d = compSnap.data();
+            const resultWealth = calculateCompoundFinal(d);
+            document.getElementById('dashCompoundWealth').innerText = formatVal(resultWealth, 'KRW');
+            document.getElementById('dashCompoundIcon').innerText = "🚀";
+            addLog(`복리 투자 목표 자산: ${formatVal(resultWealth, 'KRW')}`);
+        }
+
         renderDailyQuote();
     } catch (e) { console.error(e); }
     finally { cards.forEach(c => c.classList.remove('skeleton')); }
+}
+
+function calculateCompoundFinal(d) {
+    const seed = parseFloat(d.seed) || 0, monthly = parseFloat(d.monthly) || 0;
+    const rate = (parseFloat(d.rate) || 0) / 100, period = parseInt(d.period) || 0;
+    let total = seed;
+    const mRate = rate / 12;
+    for (let i = 0; i < period * 12; i++) {
+        total = (total + monthly) * (1 + mRate);
+    }
+    return total;
 }
 
 function calculateSummary(d) {

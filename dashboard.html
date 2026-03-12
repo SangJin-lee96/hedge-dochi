@@ -193,32 +193,52 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 animate-fade-in-up" style="animation-delay: 0.2s;">
+        <!-- Quick Tools Bar (신설) -->
+        <div class="mb-12 overflow-x-auto no-scrollbar pb-4">
+            <div class="flex gap-3 min-w-max">
+                <a href="index.html" class="px-6 py-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 text-xs font-black hover:border-blue-500 transition-all flex items-center gap-2">📊 시뮬레이터</a>
+                <a href="compound.html" class="px-6 py-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 text-xs font-black hover:border-indigo-500 transition-all flex items-center gap-2">⏳ 복리계산</a>
+                <a href="dividend.html" class="px-6 py-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 text-xs font-black hover:border-emerald-500 transition-all flex items-center gap-2">💰 배당계산</a>
+                <a href="fire-calc.html" class="px-6 py-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 text-xs font-black hover:border-orange-500 transition-all flex items-center gap-2">🏁 은퇴설계</a>
+                <a href="rebalance.html" class="px-6 py-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 text-xs font-black hover:border-blue-400 transition-all flex items-center gap-2">⚖️ 리밸런싱</a>
+                <a href="lotto.html" class="px-6 py-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 text-xs font-black hover:border-rose-400 transition-all flex items-center gap-2">🍀 로또추천</a>
+            </div>
+        </div>
+
+        <!-- Market Sentiment & Financial Goal (기존 유지) -->
+        <!-- ... -->
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-fade-in-up" style="animation-delay: 0.2s;">
             <!-- 1. 자산 등급 -->
             <div class="stat-card flex flex-col items-center justify-center text-center">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Wealth Tier</p>
-                <div id="dashTierIcon" class="text-6xl mb-4">❓</div>
-                <h3 id="dashTierName" class="text-2xl font-black">데이터 없음</h3>
-                <p class="text-xs text-slate-500 mt-2">10년 후 예상 자산 등급</p>
-                <a href="index.html" class="mt-6 text-blue-600 text-sm font-bold hover:underline">업데이트 ➔</a>
+                <div id="dashTierIcon" class="text-5xl mb-4">❓</div>
+                <h3 id="dashTierName" class="text-xl font-black">데이터 없음</h3>
+                <a href="index.html" class="mt-4 text-blue-600 text-[10px] font-bold hover:underline tracking-widest uppercase">Update ➔</a>
             </div>
 
             <!-- 2. 리밸런싱 점수 -->
             <div class="stat-card flex flex-col items-center justify-center text-center">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Portfolio Score</p>
-                <div id="dashScoreValue" class="text-6xl font-black text-emerald-500 mb-4">--</div>
-                <h3 class="text-2xl font-black">포트폴리오 상태</h3>
-                <p class="text-xs text-slate-500 mt-2">목표 비중 대비 관리 상태</p>
-                <a href="rebalance.html" class="mt-6 text-blue-600 text-sm font-bold hover:underline">관리하기 ➔</a>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Portfolio</p>
+                <div id="dashScoreValue" class="text-5xl font-black text-emerald-500 mb-4">--</div>
+                <h3 class="text-xl font-black">건강도 점수</h3>
+                <a href="rebalance.html" class="mt-4 text-blue-600 text-[10px] font-bold hover:underline tracking-widest uppercase">Manage ➔</a>
             </div>
 
-            <!-- 3. FIRE Status (신설) -->
-            <div class="stat-card flex flex-col items-center justify-center text-center border-2 border-transparent hover:border-blue-500 transition-all">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">FIRE Status</p>
-                <div id="dashFireIcon" class="text-6xl mb-4">🏝️</div>
-                <h3 id="dashFireRemaining" class="text-2xl font-black">진단 미실시</h3>
-                <p id="dashFireDate" class="text-xs text-slate-500 mt-2">경제적 자유 달성 예정일</p>
-                <a href="fire-calc.html" class="mt-6 text-blue-600 text-sm font-bold hover:underline">분석하기 ➔</a>
+            <!-- 3. FIRE Status -->
+            <div class="stat-card flex flex-col items-center justify-center text-center">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Retirement</p>
+                <div id="dashFireIcon" class="text-5xl mb-4">🏝️</div>
+                <h3 id="dashFireRemaining" class="text-xl font-black">분석 전</h3>
+                <a href="fire-calc.html" class="mt-4 text-blue-600 text-[10px] font-bold hover:underline tracking-widest uppercase">Plan ➔</a>
+            </div>
+
+            <!-- 4. Compound Goal (신설) -->
+            <div class="stat-card flex flex-col items-center justify-center text-center">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Compounding</p>
+                <div id="dashCompoundIcon" class="text-5xl mb-4">⏳</div>
+                <h3 id="dashCompoundWealth" class="text-xl font-black">설정 없음</h3>
+                <a href="compound.html" class="mt-4 text-blue-600 text-[10px] font-bold hover:underline tracking-widest uppercase">Simulate ➔</a>
             </div>
         </div>
 
