@@ -56,12 +56,33 @@
                 <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
+                <div id="authContainer" class="ml-2">
+                    <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-colors">구글 로그인</button>
+                    <div id="userProfile" class="hidden flex items-center gap-2">
+                        <img id="userPhoto" src="" alt="Profile" class="w-8 h-8 rounded-full border border-slate-200">
+                        <button id="logoutBtn" class="text-xs text-slate-500 font-semibold">로그아웃</button>
+                    </div>
+                </div>
+            </nav>
+            <div class="flex items-center gap-2 md:hidden">
+                <button id="darkModeToggleMobile" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
+                <button id="mobileMenuBtn" class="p-2 rounded-lg" style="color: var(--color-primary-text);">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobileMenu" class="hidden md:hidden absolute top-16 left-0 w-full border-b shadow-lg transition-all z-[110]" style="background-color: var(--color-nav-bg); border-color: var(--color-nav-border);">
+            <nav class="flex flex-col p-4 space-y-2">
+                <a href="index.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">금융 가이드</a>
+                <a href="lotto.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">로또 추천</a>
+                <div id="authContainerMobile" class="p-4 border-t border-slate-100 dark:border-slate-700 text-center"></div>
             </nav>
         </div>
     </header>
 
     <main class="animate-fade-in-up">
-        <!-- Hero Section -->
         <section class="py-20 px-4 text-center hero-gradient text-white overflow-hidden relative">
             <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
             <div class="max-w-4xl mx-auto relative z-10">
@@ -70,89 +91,41 @@
             </div>
         </section>
 
-        <!-- Our Philosophy -->
         <section class="py-24 px-4 max-w-6xl mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-3xl font-black mb-4">우리의 3대 원칙</h2>
                 <p class="text-slate-500">우리가 도구를 만들고 정보를 전달할 때 타협하지 않는 기준입니다.</p>
             </div>
-            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="feature-card p-10 hover:-translate-y-2 transition-all">
                     <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-3xl mb-6">📊</div>
-                    <h3 class="text-xl font-bold mb-4">데이터 기반 (Data-Driven)</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">감정이나 주변의 소문이 아닌, 실시간 시장 데이터와 통계적 알고리즘을 바탕으로 최적의 투자 비중을 산출합니다.</p>
+                    <h3 class="text-xl font-bold mb-4">데이터 기반</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">실시간 시장 데이터와 통계적 알고리즘을 바탕으로 최적의 투자 비중을 산출합니다.</p>
                 </div>
                 <div class="feature-card p-10 hover:-translate-y-2 transition-all">
                     <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center text-3xl mb-6">🧠</div>
-                    <h3 class="text-xl font-bold mb-4">직관적 경험 (Intuitive UX)</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">복잡한 금융 공학 이론(MPT, 복리 등)을 초보자도 1분 만에 이해하고 적용할 수 있도록 시각화된 마법사 UI로 제공합니다.</p>
+                    <h3 class="text-xl font-bold mb-4">직관적 경험</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">복잡한 금융 공학 이론을 시각화된 마법사 UI로 제공합니다.</p>
                 </div>
                 <div class="feature-card p-10 hover:-translate-y-2 transition-all">
                     <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-3xl mb-6">⏳</div>
-                    <h3 class="text-xl font-bold mb-4">장기적 관점 (Long-Termism)</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">일시적인 유행을 쫓는 투자가 아닌, 10년 후의 자산 등급을 바꾸기 위한 지속 가능한 자산 배분 전략을 지향합니다.</p>
+                    <h3 class="text-xl font-bold mb-4">장기적 관점</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">10년 후의 자산 등급을 바꾸기 위한 지속 가능한 전략을 지향합니다.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Why Hedge Dochi? -->
-        <section class="py-24 bg-slate-50 dark:bg-slate-900/50 px-4 border-y border-slate-100 dark:border-slate-800">
-            <div class="max-w-4xl mx-auto">
-                <div class="flex flex-col md:flex-row items-center gap-12">
-                    <div class="flex-1">
-                        <h2 class="text-3xl font-black mb-6">왜 'Hedge Dochi' 인가요?</h2>
-                        <div class="space-y-6 text-slate-600 dark:text-slate-300">
-                            <p><strong>Hedge(헤지)</strong>는 위험으로부터 자산을 보호한다는 금융 용어이며, <strong>Dochi(고슴도치)</strong>는 평소엔 작고 귀엽지만 위협을 느끼면 가시를 세워 자신을 철저히 방어하는 영리한 동물을 상징합니다.</p>
-                            <p>우리는 변동성이 큰 자본주의 시장에서 개개인의 투자자들이 고슴도치처럼 자신의 자산을 단단하게 지키고(Defense), 전략적으로 성장(Offense)시키기를 바라는 마음에서 시작되었습니다.</p>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0 w-64 h-64 bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl flex items-center justify-center text-9xl">🦔</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Use Cases -->
-        <section class="py-24 px-4 max-w-4xl mx-auto">
-            <h2 class="text-3xl font-black mb-12 text-center">Hedge Dochi 활용 시나리오</h2>
-            <div class="space-y-6">
-                <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 flex gap-6 items-start">
-                    <span class="text-2xl">1️⃣</span>
-                    <div>
-                        <h4 class="font-bold text-lg mb-2 text-blue-600">자산 시뮬레이터로 미래 설계</h4>
-                        <p class="text-sm text-slate-500">나의 현재 연봉과 생활비, 수익률을 입력하여 10년 후 도달할 수 있는 '자산 등급'을 미리 확인하고 재무 목표를 수정하세요.</p>
-                    </div>
-                </div>
-                <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 flex gap-6 items-start">
-                    <span class="text-2xl">2️⃣</span>
-                    <div>
-                        <h4 class="font-bold text-lg mb-2 text-blue-600">리밸런싱 매니저로 포트폴리오 관리</h4>
-                        <p class="text-sm text-slate-500">보유한 종목들을 입력하고 클릭 한 번으로 내 성향에 맞는 목표 비중을 설정하세요. 매수/매도해야 할 정확한 수량을 알려드립니다.</p>
-                    </div>
-                </div>
-                <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 flex gap-6 items-start">
-                    <span class="text-2xl">3️⃣</span>
-                    <div>
-                        <h4 class="font-bold text-lg mb-2 text-blue-600">금융 가이드로 지식 무장</h4>
-                        <p class="text-sm text-slate-500">MPT 이론, 복리의 마법 등 도구의 배경이 되는 전문 금융 지식을 학습하여 감정에 휘둘리지 않는 투자자가 되세요.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Professional Disclaimer -->
         <section class="py-24 px-4 max-w-4xl mx-auto text-center border-t border-slate-100 dark:border-slate-800">
             <h2 class="text-xl font-bold mb-6 text-slate-400 uppercase tracking-widest">Financial Disclaimer</h2>
             <div class="text-xs md:text-sm text-slate-400 leading-relaxed space-y-4 max-w-2xl mx-auto bg-slate-50 dark:bg-slate-900/50 p-8 rounded-3xl">
-                <p>본 사이트(Hedge Dochi)에서 제공하는 모든 시뮬레이션 결과, 리밸런싱 가이드 및 정보성 콘텐츠는 통계적 데이터와 일반적인 금융 이론을 바탕으로 한 참고용 자료이며, 어떠한 경우에도 투자 권유나 법적 조언으로 간주될 수 없습니다.</p>
-                <p>모든 투자의 책임은 투자자 본인에게 있으며, 과거의 수익률이 미래의 수익률을 보장하지 않습니다. 실전 투자 시에는 반드시 공인된 전문가와의 상담을 권장합니다.</p>
+                <p>본 사이트에서 제공하는 모든 시뮬레이션 결과와 가이드는 통계적 데이터에 기반한 참고용 자료이며, 어떠한 경우에도 투자 권유나 법적 조언으로 간주될 수 없습니다.</p>
             </div>
         </section>
     </main>
 
     <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400">
         <div class="flex justify-center space-x-6 font-bold mb-4">
-            <a href="about.html" class="text-blue-600">소개</a>
+            <a href="about.html" class="hover:text-blue-600">소개</a>
             <a href="privacy.html" class="hover:text-blue-600">약관</a>
             <a href="contact-form.html" class="hover:text-blue-600">문의</a>
         </div>
@@ -162,5 +135,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="dark-mode.js"></script>
+    <script type="module" src="auth-check.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('mobileMenuBtn');
+            const menu = document.getElementById('mobileMenu');
+            if (btn && menu) btn.addEventListener('click', () => { menu.classList.toggle('hidden'); });
+        });
+    </script>
 </body>
 </html>

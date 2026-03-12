@@ -6,10 +6,6 @@
     <meta name="robots" content="noindex">
     <meta name="description" content="Hedge Dochi의 개인정보처리방침입니다. 사용자의 금융 데이터를 어떻게 보호하고 관리하는지 확인하세요.">
     <title>개인정보처리방침 | Hedge Dochi</title>
-    <meta property="og:title" content="개인정보처리방침 | Hedge Dochi">
-    <meta property="og:description" content="Hedge Dochi는 사용자의 데이터를 소중히 다룹니다. 투명한 개인정보 처리 방침을 확인하세요.">
-    <meta property="og:image" content="https://hedge-dochi.com/og-image.png">
-    <meta property="og:url" content="https://hedge-dochi-live.pages.dev/privacy.html">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
     <script>
@@ -19,86 +15,101 @@
       gtag('config', 'G-GFMXESYQFR');
     </script>
     <style>
-        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; color: #1e293b; word-break: keep-all; }
-        .content-card { background: white; border-radius: 2.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+        :root {
+            --color-primary-text: #1e293b;
+            --color-secondary-text: #64748b;
+            --color-background: #f8fafc;
+            --color-nav-bg: #ffffff;
+            --nav-bg-rgb: 255, 255, 255;
+            --color-nav-border: #f1f5f9;
+            --color-nav-link: #2563eb;
+            --color-toggle-text: #64748b;
+        }
+        html.dark {
+            --color-primary-text: #f8fafc;
+            --color-secondary-text: #94a3b8;
+            --color-background: #0f172a;
+            --color-nav-bg: #1e293b;
+            --nav-bg-rgb: 30, 41, 59;
+            --color-nav-border: #334155;
+            --color-nav-link: #60a5fa;
+            --color-toggle-text: #94a3b8;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; transition: background-color 0.3s; }
+        .content-card { background: white; border-radius: 2.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        html.dark .content-card { background: #1e293b; border: 1px solid #334155; }
     </style>
 </head>
-<body class="py-8 px-4 md:py-12">
-    <div class="max-w-4xl mx-auto">
-        <header class="mb-12 text-center relative">
-            <nav class="absolute top-0 right-0 flex items-center bg-white p-2 rounded-full shadow-lg border border-slate-100">
-                <a href="index.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">홈</a>
-                <span class="text-slate-300 mx-2">|</span>
-                <a href="rebalance.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">리밸런싱</a>
-                <span class="text-slate-300 mx-2">|</span>
-                <a href="guides.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">가이드</a>
-                <span class="text-slate-300 mx-2">|</span>
-                <a href="about.html" class="text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200">소개</a>
+<body class="min-h-screen">
+    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
+                <span class="text-xl">💎</span>
+                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-4">
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">금융 가이드</a>
+                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
+                <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
+                <div id="authContainer" class="ml-2">
+                    <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-colors">구글 로그인</button>
+                    <div id="userProfile" class="hidden flex items-center gap-2">
+                        <img id="userPhoto" src="" alt="Profile" class="w-8 h-8 rounded-full border border-slate-200">
+                        <button id="logoutBtn" class="text-xs text-slate-500 font-semibold">로그아웃</button>
+                    </div>
+                </div>
             </nav>
-            <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">개인정보처리방침</h1>
-            <p class="text-slate-500 mt-3 text-lg">Hedge Dochi는 사용자의 프라이버시를 최우선으로 합니다.</p>
-        </header>
-
-        <div class="content-card p-8 md:p-12 prose prose-slate max-w-none mb-12">
-            <p class="mb-6"><strong>시행일: 2026년 2월 11일 (개정)</strong></p>
-
-            <h2 class="text-xl font-bold mb-4">1. 데이터 수집에 대한 원칙</h2>
-            <p class="mb-6 leading-relaxed">본 사이트("Hedge Dochi")는 사용자의 민감한 금융 자산 정보를 서버에 저장하지 않는 것을 원칙으로 합니다. 리밸런싱 계산 및 시뮬레이션에 사용되는 데이터는 오직 사용자의 브라우저 로컬 저장소 또는 Firebase 인증 시스템을 통한 본인 계정에만 귀속됩니다.</p>
-
-            <h2 class="text-xl font-bold mb-4">2. 쿠키 및 광고 관련 안내</h2>
-            <p class="mb-4 leading-relaxed">Hedge Dochi는 서비스 개선 및 Google AdSense 광고 게재를 위해 쿠키를 사용합니다.</p>
-            <ul class="list-disc pl-6 mb-6 space-y-2">
-                <li>Google을 포함한 제3자 제공업체는 사용자의 이전 방문 기록을 바탕으로 맞춤형 광고를 게재하기 위해 쿠키를 활용합니다.</li>
-                <li>사용자는 Google의 광고 설정 페이지에서 맞춤 광고를 해제할 수 있습니다.</li>
-            </ul>
-
-            <h2 class="text-xl font-bold mb-4">3. 보안 준수</h2>
-            <p class="mb-8 leading-relaxed">우리는 Firebase의 보안 규칙(Firestore Rules)을 엄격히 적용하여, 인증된 사용자 본인 외에는 어떠한 데이터도 열람하거나 수정할 수 없도록 설계하였습니다.</p>
-            
-            <div class="text-center mt-12">
-                <a href="index.html" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all">홈으로 돌아가기</a>
+            <div class="flex items-center gap-2 md:hidden">
+                <button id="darkModeToggleMobile" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
+                <button id="mobileMenuBtn" class="p-2 rounded-lg" style="color: var(--color-primary-text);">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
             </div>
         </div>
-    </div>
-
-    <section class="max-w-6xl mx-auto px-4 mt-16 mb-12">
-        <div class="p-8 md:p-12 rounded-3xl bg-slate-50 border border-slate-200">
-            <h3 class="text-xl md:text-2xl font-bold mb-8 flex items-center gap-2"><span>📖</span> 투자 용어 사전 (Glossary)</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 class="font-bold text-blue-600 text-sm mb-2">MPT (현대 포트폴리오 이론)</h4>
-                    <p class="text-xs text-slate-500 leading-relaxed">자산 간의 상관관계를 분석하여 동일한 기대 수익률에서 위험(변동성)을 최소화하거나, 동일한 위험 수준에서 수익을 극대화하는 자산 배분 방식입니다.</p>
-                </div>
-                <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 class="font-bold text-blue-600 text-sm mb-2">Sharpe Ratio (샤프 지수)</h4>
-                    <p class="text-xs text-slate-500 leading-relaxed">위험 한 단위당 얼마나 많은 수익을 올렸는지를 나타내는 지표입니다. 수치가 높을수록 위험 대비 수익률이 우수함을 의미합니다.</p>
-                </div>
-                <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 class="font-bold text-blue-600 text-sm mb-2">Rebalancing (리밸런싱)</h4>
-                    <p class="text-xs text-slate-500 leading-relaxed">가격 변동으로 인해 비중이 변한 포트폴리오를 초기 설정한 목표 비중으로 되돌리는 과정입니다. 기계적인 고점 매도와 저점 매수를 유도합니다.</p>
-                </div>
-                <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 class="font-bold text-blue-600 text-sm mb-2">Volatility (변동성)</h4>
-                    <p class="text-xs text-slate-500 leading-relaxed">자산 가격이 시간에 따라 얼마나 크게 오르내리는지를 나타냅니다. 금융에서는 보통 표준편차로 계산하며, 위험의 척도로 사용됩니다.</p>
-                </div>
-                <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm lg:col-span-2">
-                    <h4 class="font-bold text-blue-600 text-sm mb-2">Asset Allocation (자산 배분)</h4>
-                    <p class="text-xs text-slate-500 leading-relaxed">주식, 채권, 현금, 대체 자산 등 성격이 다른 여러 자산군에 투자 자금을 나누어 배분하는 전략으로, 전체 포트폴리오 수익과 위험의 90% 이상을 결정합니다.</p>
-                </div>
-            </div>
+        <div id="mobileMenu" class="hidden md:hidden absolute top-16 left-0 w-full border-b shadow-lg transition-all z-[110]" style="background-color: var(--color-nav-bg); border-color: var(--color-nav-border);">
+            <nav class="flex flex-col p-4 space-y-2">
+                <a href="index.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">금융 가이드</a>
+                <a href="lotto.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">로또 추천</a>
+                <div id="authContainerMobile" class="p-4 border-t border-slate-100 dark:border-slate-700 text-center"></div>
+            </nav>
         </div>
-    </section>
+    </header>
 
-    <footer class="text-center py-12 border-t border-slate-200">
-        <div class="max-w-6xl mx-auto text-sm text-slate-500 px-4">
-            <div class="flex justify-center space-x-6 mb-6">
-                <a href="about.html" class="hover:text-slate-800">사이트 소개</a>
-                <a href="privacy.html" class="hover:text-slate-800">개인정보처리방침</a>
-                <a href="contact-form.html" class="hover:text-slate-800">문의하기</a>
-            </div>
-            <p class="mb-4 leading-relaxed max-w-2xl mx-auto">Hedge Dochi는 복잡한 금융 데이터를 직관적인 도구로 재해석하여, 모든 투자자가 데이터에 기반한 합리적인 자산 배분을 실천할 수 있도록 돕는 전문 금융 가이드 서비스입니다. 감정에 흔들리지 않는 투자의 표준을 제시합니다.</p>
-            <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
+    <main class="py-12 px-4 max-w-4xl mx-auto">
+        <div class="content-card p-8 md:p-12 prose prose-slate dark:prose-invert max-w-none">
+            <h1 class="text-3xl font-black mb-8 text-center">개인정보처리방침</h1>
+            <p class="mb-6"><strong>시행일: 2026년 2월 11일</strong></p>
+            <h2 class="text-xl font-bold mb-4">1. 데이터 수집 원칙</h2>
+            <p class="mb-6">본 사이트는 사용자의 민감한 금융 자산 정보를 서버에 영구적으로 저장하지 않습니다. 모든 계산은 브라우저 내에서 이루어지며, 로그인 시 제공되는 저장 기능은 Firebase의 보안 인프라를 통해 사용자 본인만이 접근할 수 있도록 보호됩니다.</p>
+            <h2 class="text-xl font-bold mb-4">2. 쿠키 및 분석 도구</h2>
+            <p class="mb-6">Google AdSense 및 Analytics를 위해 쿠키를 사용하며, 이는 사용자 맞춤형 광고 제공 및 서비스 품질 향상을 위한 목적으로만 활용됩니다.</p>
         </div>
+    </main>
+
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400">
+        <div class="flex justify-center space-x-6 font-bold mb-4">
+            <a href="about.html" class="hover:text-blue-600">소개</a>
+            <a href="privacy.html" class="hover:text-blue-600">약관</a>
+            <a href="contact-form.html" class="hover:text-blue-600">문의</a>
+        </div>
+        <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
     </footer>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="dark-mode.js"></script>
+    <script type="module" src="auth-check.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('mobileMenuBtn');
+            const menu = document.getElementById('mobileMenu');
+            if (btn && menu) btn.addEventListener('click', () => { menu.classList.toggle('hidden'); });
+        });
+    </script>
 </body>
 </html>

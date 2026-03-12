@@ -1,7 +1,25 @@
+// Import Firebase SDKs
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
+    authDomain: "hedge-dochi.firebaseapp.com",
+    projectId: "hedge-dochi",
+    storageBucket: "hedge-dochi.firebasestorage.app",
+    messagingSenderId: "157519209721",
+    appId: "1:157519209721:web:d1f196e41dcd579a286e28",
+    measurementId: "G-7Y0G1CVXBR"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
 // --- State Management ---
 let currentStep = 1;
-let selectedType = '645'; // '645' or '720'
+let selectedType = '645'; 
 let numGames = 5;
+let currentUser = null;
 
 // --- Wizard Navigation ---
 window.goToStep = function(step) {
@@ -53,7 +71,6 @@ window.generateAndShowResults = function() {
     
     goToStep(3);
     
-    // 약간의 딜레이 후 번호 생성 (애니메이션 효과)
     setTimeout(() => {
         resultsContainer.innerHTML = '';
         if (selectedType === '645') {
@@ -128,12 +145,38 @@ function generatePension720() {
 }
 
 function getLottoColor(n) {
-    if (n <= 10) return '#facc15'; // Yellow
-    if (n <= 20) return '#3b82f6'; // Blue
-    if (n <= 30) return '#ef4444'; // Red
-    if (n <= 40) return '#94a3b8'; // Grey
-    return '#10b981'; // Green
+    if (n <= 10) return '#facc15'; 
+    if (n <= 20) return '#3b82f6'; 
+    if (n <= 30) return '#ef4444'; 
+    if (n <= 40) return '#94a3b8'; 
+    return '#10b981'; 
 }
+
+// --- Auth & Header UI ---
+onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    const loginBtn = document.getElementById('loginBtn');
+    const userProfile = document.getElementById('userProfile');
+    const authContainerMobile = document.getElementById('authContainerMobile');
+
+    if (user) {
+        if (loginBtn) loginBtn.classList.add('hidden');
+        if (userProfile) userProfile.classList.remove('hidden');
+        if (document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL;
+        
+        if (authContainerMobile) {
+            authContainerMobile.innerHTML = `<div class="flex items-center justify-between"><div class="flex items-center gap-3"><img src="${user.photoURL}" class="w-10 h-10 rounded-full border border-slate-200"><span class="font-bold text-slate-800 dark:text-white">${user.displayName}</span></div><button id="logoutBtnMobile" class="text-sm text-red-500 font-bold">로그아웃</button></div>`;
+            document.getElementById('logoutBtnMobile').addEventListener('click', () => signOut(auth).then(() => location.reload()));
+        }
+    } else {
+        if (loginBtn) loginBtn.classList.remove('hidden');
+        if (userProfile) userProfile.classList.add('hidden');
+        if (authContainerMobile) authContainerMobile.innerHTML = `<button onclick="document.getElementById('loginBtn').click()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">구글 로그인</button>`;
+    }
+});
+
+document.getElementById('loginBtn')?.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
+document.getElementById('logoutBtn')?.addEventListener('click', () => signOut(auth).then(() => location.reload()));
 
 // --- Utilities ---
 window.copyLink = function() {
@@ -145,3 +188,5 @@ window.shareToX = function() {
     const text = "Hedge Dochi에서 AI가 추천하는 행운의 로또 번호를 받았습니다! 🍀 #로또 #복권 #HedgeDochi";
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`);
 };
+
+goToStep(1);
