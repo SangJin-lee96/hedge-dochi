@@ -222,6 +222,48 @@ function renderChart(nominalData, realData) {
     });
 }
 
+// --- Market Pulse ---
+const MARKET_TICKERS = [
+    { symbol: '^GSPC', label: 'S&P 500' },
+    { symbol: '^IXIC', label: 'NASDAQ' },
+    { symbol: '^KS11', label: 'KOSPI' },
+    { symbol: 'BTC-USD', label: 'Bitcoin' },
+    { symbol: 'GC=F', label: 'Gold' },
+    { symbol: 'USDKRW=X', label: 'USD/KRW' }
+];
+
+async function fetchMarketData() {
+    const container = document.getElementById('marketPulse');
+    if (!container) return;
+
+    const items = await Promise.all(MARKET_TICKERS.map(async (t) => {
+        try {
+            const res = await fetch(`/api/price?ticker=${t.symbol}`);
+            const data = await res.json();
+            const meta = data?.chart?.result?.[0]?.meta;
+            const price = meta?.regularMarketPrice;
+            const prevClose = meta?.chartPreviousClose;
+            const change = price - prevClose;
+            const changePercent = (change / prevClose * 100).toFixed(2);
+            
+            const colorClass = change >= 0 ? 'text-red-500' : 'text-blue-500';
+            const sign = change >= 0 ? '+' : '';
+
+            return `
+                <div class="flex items-center gap-2 group cursor-default">
+                    <span class="text-xs font-black text-slate-400 group-hover:text-blue-500 transition-colors uppercase tracking-tighter">${t.label}</span>
+                    <span class="text-sm font-black text-slate-800 dark:text-slate-200">${price.toLocaleString(undefined, { minimumFractionDigits: t.symbol.includes('USD') ? 0 : 2 })}</span>
+                    <span class="text-[10px] font-bold ${colorClass} bg-${change >= 0 ? 'red' : 'blue'}-50 dark:bg-${change >= 0 ? 'red' : 'blue'}-900/20 px-1.5 py-0.5 rounded">
+                        ${sign}${changePercent}%
+                    </span>
+                </div>
+            `;
+        } catch (e) { return ''; }
+    }));
+
+    container.innerHTML = items.filter(Boolean).join('<div class="w-px h-3 bg-slate-200 dark:bg-slate-800"></div>');
+}
+
 // --- Auth & Init ---
 onAuthStateChanged(auth, async (user) => {
     currentUser = user;
@@ -313,6 +355,7 @@ window.toggleYearlyTable = function() {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    fetchMarketData(); // 시장 데이터 로드
     document.getElementById('showStrategyBtn')?.addEventListener('click', () => toggleStrategyModal(true));
     document.getElementById('closeModal')?.addEventListener('click', () => toggleStrategyModal(false));
     const observer = new MutationObserver(() => { if (currentStep === 4) updateCalculation(); });

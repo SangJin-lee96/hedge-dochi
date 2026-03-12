@@ -146,6 +146,16 @@
         </div>
     </header>
 
+    <!-- Market Pulse Ticker -->
+    <div class="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-b border-slate-100 dark:border-slate-800 py-3 overflow-hidden">
+        <div id="marketPulse" class="flex items-center gap-8 px-4 animate-none whitespace-nowrap no-scrollbar overflow-x-auto">
+            <!-- JS에서 실시간 데이터 삽입 -->
+            <div class="flex items-center gap-2 px-4 py-1 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse">
+                <span class="text-xs font-bold text-slate-400">시장을 읽어오는 중...</span>
+            </div>
+        </div>
+    </div>
+
     <main class="py-4 px-4 md:py-12 max-w-6xl mx-auto overflow-x-hidden">
         <header class="mb-12 text-center">
             <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4" style="color: var(--color-primary-text);">2026 현실 자산 시뮬레이터</h1>
