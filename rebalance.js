@@ -155,7 +155,17 @@ window.selectDochi = function(type, skipTransition = false) {
     }
 
     renderRecommendationButtons(type);
-    document.getElementById('nextToStep2')?.classList.remove('hidden');
+    
+    const nextBtn = document.getElementById('nextToStep2');
+    if (nextBtn) {
+        nextBtn.classList.remove('hidden');
+        if (!skipTransition) {
+            // 버튼이 화면 중앙에 오도록 부드럽게 스크롤
+            setTimeout(() => {
+                nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    }
 };
 
 function renderRecommendationButtons(type) {
