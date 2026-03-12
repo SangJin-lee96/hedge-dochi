@@ -22,12 +22,6 @@ try {
     analytics = getAnalytics(app);
 } catch (e) { console.error("Firebase init error:", e); }
 
-const EXCHANGE_PRESETS = {
-    KR: { name: "한국", fee: 0.00015, tax: 0.0015 },
-    US: { name: "미국", fee: 0.001, tax: 0.0000229 },
-    CRYPTO: { name: "가상자산", fee: 0.0005, tax: 0.22 }
-};
-
 const STRATEGY_CONFIG = {
     aggressive: {
         name: "공격도치",
@@ -62,17 +56,18 @@ window.goToStep = async function(step) {
         return;
     }
     
-    // 환율 정보 가져오기
-    try {
-        const res = await fetch('/api/price?ticker=USDKRW=X');
-        const data = await res.json();
-        const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-        if (rate) {
-            exchangeRate = rate;
-            const rateEl = document.getElementById('current-rate-text');
-            if (rateEl) rateEl.innerText = rate.toLocaleString();
-        }
-    } catch (e) { console.error("환율 로드 실패", e); }
+    if (step === 2 || step === 3 || step === 4) {
+        try {
+            const res = await fetch('/api/price?ticker=USDKRW=X');
+            const data = await res.json();
+            const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+            if (rate) {
+                exchangeRate = rate;
+                const rateEl = document.getElementById('current-rate-text');
+                if (rateEl) rateEl.innerText = rate.toLocaleString();
+            }
+        } catch (e) { console.error("환율 로드 실패", e); }
+    }
 
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
     const targetSection = document.getElementById(`step-${step}`);
@@ -114,7 +109,6 @@ window.setCurrency = function(code) {
         rateInfo?.classList.remove('hidden');
     }
     
-    // 통화 변경 시 리스트 다시 그리기
     renderAssetList();
 };
 
@@ -126,18 +120,109 @@ function formatValue(val) {
     return `${symbol}${val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 }
 
-// 자산의 가격을 기준 통화로 환산하는 헬퍼
 function getPriceInBaseCurrency(h) {
     const assetCurrency = h.currency || 'USD';
     if (assetCurrency === baseCurrency) return h.price;
-    
-    if (assetCurrency === 'USD' && baseCurrency === 'KRW') {
-        return h.price * exchangeRate;
-    } else if (assetCurrency === 'KRW' && baseCurrency === 'USD') {
-        return h.price / exchangeRate;
-    }
+    if (assetCurrency === 'USD' && baseCurrency === 'KRW') return h.price * exchangeRate;
+    if (assetCurrency === 'KRW' && baseCurrency === 'USD') return h.price / exchangeRate;
     return h.price;
 }
+
+// --- Step 1: Strategy Selection ---
+window.selectDochi = function(type, skipTransition = false) {
+    selectedStrategyId = type;
+    
+    document.querySelectorAll('.strategy-card').forEach(card => {
+        card.classList.remove('border-rose-500', 'border-blue-500', 'border-emerald-500', 'ring-4', 'ring-opacity-20');
+        card.classList.add('border-transparent');
+    });
+
+    const selectedCard = document.getElementById(`card-${type}`);
+    const colorClass = type === 'aggressive' ? 'border-rose-500' : type === 'balanced' ? 'border-blue-500' : 'border-emerald-500';
+    const ringClass = type === 'aggressive' ? 'ring-rose-500' : type === 'balanced' ? 'ring-blue-500' : 'ring-emerald-500';
+    
+    if (selectedCard) {
+        selectedCard.classList.remove('border-transparent');
+        selectedCard.classList.add(colorClass, 'ring-4', ringClass, 'ring-opacity-20');
+    }
+
+    sectorTargets = { ...STRATEGY_CONFIG[type].weights };
+    
+    const badge = document.getElementById('finalPropensityBadge');
+    if (badge) {
+        const icons = { aggressive: "🦔🔥", balanced: "🦔⚖️", defensive: "🦔🛡️" };
+        badge.innerText = `${icons[type]} ${STRATEGY_CONFIG[type].name}`;
+    }
+
+    renderRecommendationButtons(type);
+    document.getElementById('nextToStep2')?.classList.remove('hidden');
+};
+
+function renderRecommendationButtons(type) {
+    const container = document.getElementById('recommendationButtons');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const recommendations = {
+        aggressive: [
+            { t: 'VOO', n: 'S&P 500 ETF', s: '주식 (Equity)' },
+            { t: 'QQQ', n: 'Nasdaq 100', s: '주식 (Equity)' },
+            { t: 'BTC-USD', n: 'Bitcoin', s: '가상자산 (Digital Asset)' },
+            { t: 'ETH-USD', n: 'Ethereum', s: '가상자산 (Digital Asset)' }
+        ],
+        balanced: [
+            { t: 'VOO', n: 'S&P 500', s: '주식 (Equity)' },
+            { t: 'TLT', n: '20Y+ Treasury', s: '채권 (Fixed Income)' },
+            { t: 'GLD', n: 'Gold', s: '귀금속 (Precious Metals)' },
+            { t: 'IEF', n: '7-10Y Treasury', s: '채권 (Fixed Income)' }
+        ],
+        defensive: [
+            { t: 'BIL', n: '1-3M Treasury', s: '현금 (Liquidity)' },
+            { t: 'SHY', n: '1-3Y Treasury', s: '채권 (Fixed Income)' },
+            { t: 'GLD', n: 'Gold', s: '귀금속 (Precious Metals)' },
+            { t: 'VT', n: 'Total World Stock', s: '주식 (Equity)' }
+        ]
+    };
+
+    recommendations[type].forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = "px-3 py-2 bg-white dark:bg-slate-800 rounded-xl text-xs font-bold shadow-sm border border-slate-100 dark:border-slate-700 hover:border-blue-500 transition-all";
+        btn.innerHTML = `<span class="text-blue-500">${item.t}</span> <span class="opacity-50">${item.n}</span>`;
+        btn.onclick = () => addAssetByTicker(item.t, item.s);
+        container.appendChild(btn);
+    });
+}
+
+async function addAssetByTicker(ticker, sector) {
+    try {
+        const res = await fetch(`/api/price?ticker=${ticker}`);
+        const data = await res.json();
+        const meta = data?.chart?.result?.[0]?.meta;
+        const price = meta?.regularMarketPrice || 0;
+        const currency = meta?.currency || 'USD';
+        
+        if (holdings.some(h => h.ticker === ticker)) {
+            alert("이미 목록에 있는 종목입니다.");
+            return;
+        }
+
+        holdings.push({
+            ticker: ticker,
+            name: meta?.shortName || ticker,
+            qty: 0,
+            price: price,
+            currency: currency,
+            sector: sector || getMappedSector(ticker)
+        });
+        renderAssetList();
+    } catch (e) { console.error(e); }
+}
+
+// --- Step 4: Show Result ---
+window.calculateAndShowResult = function() {
+    updateCalculation();
+    goToStep(4);
+};
 
 // --- Core Logic ---
 function updateCalculation() {
@@ -154,13 +239,11 @@ function updateCalculation() {
     renderSectorDashboard(currentTotal, targetCapital);
     renderActionPlan(currentTotal, targetCapital);
     updateCharts(currentTotal, targetCapital);
-    
-    // 결과 페이지(Step 4)에 보유 자산 목록 렌더링
     renderFinalHoldingsList();
-    
-    // 건강 점수 계산
     calculateHealthScore(currentTotal, targetCapital);
 }
+
+const assetListBody = document.getElementById('assetListBody');
 
 function renderAssetList() {
     if (!assetListBody) return;
@@ -220,7 +303,6 @@ function renderFinalHoldingsList() {
 
 function calculateHealthScore(currentTotal, targetCapital) {
     if (currentTotal === 0) return;
-    
     let totalDeviance = 0;
     PRIMARY_SECTORS.forEach(sector => {
         const actualVal = holdings.filter(h => h.sector === sector).reduce((s, h) => s + (h.qty * getPriceInBaseCurrency(h) || 0), 0);
@@ -228,14 +310,11 @@ function calculateHealthScore(currentTotal, targetCapital) {
         const targetPct = sectorTargets[sector] || 0;
         totalDeviance += Math.abs(actualPct - targetPct);
     });
-
-    // 오차 합계가 적을수록 높은 점수 (0% 오차면 100점, 100% 오차면 0점)
     const score = Math.max(0, 100 - Math.round(totalDeviance));
     const scoreEl = document.getElementById('portfolioHealthScore');
     if (scoreEl) {
         scoreEl.innerText = `${score}점`;
-        // 점수에 따른 색상 변경
-        scoreEl.className = `text-4xl font-black ${score > 80 ? 'text-emerald-400' : score > 50 ? 'text-blue-400' : 'text-rose-400'}`;
+        scoreEl.className = `text-5xl font-black ${score > 80 ? 'text-emerald-400' : score > 50 ? 'text-blue-400' : 'text-rose-400'} mb-2`;
     }
 }
 
@@ -243,231 +322,92 @@ function renderActionPlan(currentTotal, targetCapital) {
     const list = document.getElementById('actionPlanList');
     if (!list) return;
     list.innerHTML = '';
-
     let hasAction = false;
 
     holdings.forEach(h => {
         const sectorHoldings = holdings.filter(item => item.sector === h.sector);
         const sectorTargetPct = sectorTargets[h.sector] || 0;
         const targetPctPerAsset = sectorTargetPct / sectorHoldings.length;
-        
         const targetVal = targetCapital * (targetPctPerAsset / 100);
         const itemPrice = getPriceInBaseCurrency(h);
         const currentVal = h.qty * itemPrice;
         const diffVal = targetVal - currentVal;
 
-        // $10 또는 ₩10,000 이상의 차이가 있을 때만 표시
         if (Math.abs(diffVal) > (targetCapital * 0.01) || Math.abs(diffVal) > (baseCurrency === 'USD' ? 10 : 10000)) {
             hasAction = true;
             const isBuy = diffVal > 0;
             const qtyDiff = itemPrice > 0 ? (isBuy ? Math.floor(diffVal / itemPrice) : Math.ceil(Math.abs(diffVal) / itemPrice)) : 0;
-            
             if (qtyDiff === 0) return;
-
             const div = document.createElement('div');
             div.className = `p-4 rounded-2xl border ${isBuy ? 'bg-rose-50 dark:bg-rose-900/10 border-rose-100 dark:border-rose-800' : 'bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800'} flex justify-between items-center`;
             div.innerHTML = `
                 <div class="flex items-center gap-3">
                     <div class="${isBuy ? 'bg-rose-600' : 'bg-blue-600'} text-white text-[10px] font-black px-2 py-1 rounded-lg">${isBuy ? '매수' : '매도'}</div>
-                    <div>
-                        <div class="font-bold text-sm">${h.name || h.ticker}</div>
-                        <div class="text-xs ${isBuy ? 'text-rose-600' : 'text-blue-600'} font-bold">${qtyDiff.toLocaleString()}주 ${isBuy ? '추가 매수' : '처분'}</div>
-                    </div>
+                    <div><div class="font-bold text-sm">${h.name || h.ticker}</div><div class="text-xs ${isBuy ? 'text-rose-600' : 'text-blue-600'} font-bold">${qtyDiff.toLocaleString()}주 ${isBuy ? '추가 매수' : '처분'}</div></div>
                 </div>
-                <div class="text-right">
-                    <div class="text-[10px] text-slate-400 font-bold uppercase">예상 금액</div>
-                    <div class="font-mono font-black text-lg">${formatValue(Math.abs(diffVal))}</div>
-                </div>
+                <div class="text-right"><div class="text-[10px] text-slate-400 font-bold uppercase">예상 금액</div><div class="font-mono font-black text-lg">${formatValue(Math.abs(diffVal))}</div></div>
             `;
             list.appendChild(div);
         }
     });
+    if (!hasAction && holdings.length > 0) list.innerHTML = '<div class="text-center py-10 text-slate-400 font-bold">이미 최적의 비중을 유지하고 있습니다! 🏆</div>';
+}
 
-    if (!hasAction && holdings.length > 0) {
-        list.innerHTML = '<div class="text-center py-10 text-slate-400 font-bold">이미 최적의 비중을 유지하고 있습니다! 🏆</div>';
-    }
+function renderSectorDashboard(currentTotal, targetCapital) {
+    const dashboard = document.getElementById('sectorDashboard');
+    if (!dashboard) return;
+    dashboard.innerHTML = '';
+    const stats = PRIMARY_SECTORS.map(sector => {
+        const actualVal = holdings.filter(h => h.sector === sector).reduce((s, h) => s + (h.qty * getPriceInBaseCurrency(h) || 0), 0);
+        const actualPct = currentTotal > 0 ? (actualVal / currentTotal * 100) : 0;
+        const targetPct = sectorTargets[sector] || 0;
+        return { sector, actualPct, targetPct };
+    });
+    stats.forEach(s => {
+        const div = document.createElement('div');
+        div.className = "space-y-2";
+        const color = s.actualPct > s.targetPct + 1 ? 'bg-rose-500' : (s.actualPct < s.targetPct - 1 ? 'bg-blue-500' : 'bg-emerald-500');
+        div.innerHTML = `<div class="flex justify-between items-end"><span class="text-sm font-bold text-slate-700 dark:text-slate-300">${s.sector.split(' ')[0]}</span><span class="text-[10px] font-mono font-bold text-slate-400">Tgt: ${s.targetPct}%</span></div><div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex"><div class="h-full ${color} transition-all duration-700" style="width: ${s.actualPct}%"></div></div><div class="flex justify-between text-[10px] font-bold"><span class="text-slate-400">Act: ${s.actualPct.toFixed(1)}%</span><span class="${s.actualPct < s.targetPct ? 'text-blue-500' : 'text-rose-500'}">${(s.actualPct - s.targetPct).toFixed(1)}%</span></div>`;
+        dashboard.appendChild(div);
+    });
 }
 
 function updateCharts(currentTotal, targetCapital) {
     const ctxP = document.getElementById('portfolioChart')?.getContext('2d');
     const ctxS = document.getElementById('simulationChart')?.getContext('2d');
-    
     if (chartInstance) chartInstance.destroy();
     if (simulationChartInstance) simulationChartInstance.destroy();
-
-    const sectorData = PRIMARY_SECTORS.map(s => {
-        return holdings.filter(h => h.sector === s).reduce((sum, h) => sum + (h.qty * getPriceInBaseCurrency(h) || 0), 0);
-    });
-
-    chartInstance = new Chart(ctxP, {
-        type: 'doughnut',
-        data: {
-            labels: PRIMARY_SECTORS.map(s => s.split(' ')[0]),
-            datasets: [{
-                data: sectorData,
-                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#f97316', '#8b5cf6', '#64748b'],
-                borderWidth: 0
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b', font: { size: 10, weight: 'bold' } } } } }
-    });
-
-    const years = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    const rate = 0.08; 
-    simulationChartInstance = new Chart(ctxS, {
-        type: 'line',
-        data: {
-            labels: years.map(y => y + 'y'),
-            datasets: [{
-                label: '예상 성장',
-                data: years.map(y => targetCapital * Math.pow(1 + rate, y)),
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } }
-    });
+    const sectorData = PRIMARY_SECTORS.map(s => holdings.filter(h => h.sector === s).reduce((sum, h) => sum + (h.qty * getPriceInBaseCurrency(h) || 0), 0));
+    chartInstance = new Chart(ctxP, { type: 'doughnut', data: { labels: PRIMARY_SECTORS.map(s => s.split(' ')[0]), datasets: [{ data: sectorData, backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#f97316', '#8b5cf6', '#64748b'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b', font: { size: 10, weight: 'bold' } } } } } });
+    const years = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], rate = 0.08; 
+    simulationChartInstance = new Chart(ctxS, { type: 'line', data: { labels: years.map(y => y + 'y'), datasets: [{ label: '예상 성장', data: years.map(y => targetCapital * Math.pow(1 + rate, y)), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4, pointRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } } });
 }
+
+window.updateHolding = function(idx, field, val) { holdings[idx][field] = parseFloat(val) || 0; renderAssetList(); };
+window.removeAsset = function(idx) { holdings.splice(idx, 1); renderAssetList(); };
 
 // --- Search Implementation ---
 async function performSearch(query) {
     const container = document.getElementById('searchResultsContainer');
     const list = document.getElementById('searchResults');
     if (!container || !list) return;
-    
     container.classList.remove('hidden');
     list.innerHTML = '<li class="text-center py-4 text-slate-400 text-sm">검색 중...</li>';
-    
     try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         const data = await response.json();
         const quotes = data.quotes || [];
-        
         list.innerHTML = quotes.length ? '' : '<li class="text-center py-4 text-slate-400 text-sm">결과 없음</li>';
-        
         quotes.forEach(quote => {
             if (!quote.symbol) return;
             const li = document.createElement('li');
             li.className = "p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-blue-200 flex justify-between items-center";
-            li.innerHTML = `
-                <div class="min-w-0 pr-4">
-                    <div class="font-bold text-blue-600 dark:text-blue-400 truncate">${quote.symbol}</div>
-                    <div class="text-xs text-slate-500 truncate">${quote.shortname || quote.symbol}</div>
-                </div>
-                <button class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">추가</button>
-            `;
+            li.innerHTML = `<div class="min-w-0 pr-4"><div class="font-bold text-blue-600 dark:text-blue-400 truncate">${quote.symbol}</div><div class="text-xs text-slate-500 truncate">${quote.shortname || quote.symbol}</div></div><button class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">추가</button>`;
             li.onclick = async () => {
                 const priceRes = await fetch(`/api/price?ticker=${quote.symbol}`);
                 const priceData = await priceRes.json();
                 const meta = priceData?.chart?.result?.[0]?.meta;
-                const price = meta?.regularMarketPrice || 0;
-                const currency = meta?.currency || 'USD';
-                
-                holdings.push({
-                    ticker: quote.symbol,
-                    name: quote.shortname || quote.symbol,
-                    qty: 0,
-                    price: price,
-                    currency: currency, // 통화 정보 저장
-                    sector: getMappedSector(quote.symbol, quote.quoteType, quote.sector)
-                });
-                
-                document.getElementById('tickerSearchInput').value = '';
-                container.classList.add('hidden');
-                renderAssetList();
-            };
-            list.appendChild(li);
-        });
-    } catch (e) { console.error(e); }
-}
-
-function updateCharts(currentTotal, targetCapital) {
-    const ctxP = document.getElementById('portfolioChart')?.getContext('2d');
-    const ctxS = document.getElementById('simulationChart')?.getContext('2d');
-    
-    if (chartInstance) chartInstance.destroy();
-    if (simulationChartInstance) simulationChartInstance.destroy();
-
-    const sectorData = PRIMARY_SECTORS.map(s => {
-        return holdings.filter(h => h.sector === s).reduce((sum, h) => sum + (h.qty * h.price || 0), 0);
-    });
-
-    chartInstance = new Chart(ctxP, {
-        type: 'doughnut',
-        data: {
-            labels: PRIMARY_SECTORS.map(s => s.split(' ')[0]),
-            datasets: [{
-                data: sectorData,
-                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#f97316', '#8b5cf6', '#64748b'],
-                borderWidth: 0
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } } } }
-    });
-
-    const years = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    const rate = 0.08; 
-    simulationChartInstance = new Chart(ctxS, {
-        type: 'line',
-        data: {
-            labels: years.map(y => y + 'y'),
-            datasets: [{
-                label: '예상 성장',
-                data: years.map(y => targetCapital * Math.pow(1 + rate, y)),
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
-    });
-}
-
-// --- Search Implementation ---
-async function performSearch(query) {
-    const container = document.getElementById('searchResultsContainer');
-    const list = document.getElementById('searchResults');
-    if (!container || !list) return;
-    
-    container.classList.remove('hidden');
-    list.innerHTML = '<li class="text-center py-4 text-slate-400 text-sm">검색 중...</li>';
-    
-    try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        const data = await response.json();
-        const quotes = data.quotes || [];
-        
-        list.innerHTML = quotes.length ? '' : '<li class="text-center py-4 text-slate-400 text-sm">결과 없음</li>';
-        
-        quotes.forEach(quote => {
-            if (!quote.symbol) return;
-            const li = document.createElement('li');
-            li.className = "p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-blue-200 flex justify-between items-center";
-            li.innerHTML = `
-                <div class="min-w-0 pr-4">
-                    <div class="font-bold text-blue-600 dark:text-blue-400 truncate">${quote.symbol}</div>
-                    <div class="text-xs text-slate-500 truncate">${quote.shortname || quote.symbol}</div>
-                </div>
-                <button class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">추가</button>
-            `;
-            li.onclick = async () => {
-                const priceRes = await fetch(`/api/price?ticker=${quote.symbol}`);
-                const priceData = await priceRes.json();
-                const price = priceData?.chart?.result?.[0]?.meta?.regularMarketPrice || 0;
-                
-                holdings.push({
-                    ticker: quote.symbol,
-                    name: quote.shortname || quote.symbol,
-                    qty: 0,
-                    price: price,
-                    sector: getMappedSector(quote.symbol, quote.quoteType, quote.sector)
-                });
-                
+                holdings.push({ ticker: quote.symbol, name: meta?.shortName || quote.symbol, qty: 0, price: meta?.regularMarketPrice || 0, currency: meta?.currency || 'USD', sector: getMappedSector(quote.symbol, quote.quoteType, quote.sector) });
                 document.getElementById('tickerSearchInput').value = '';
                 container.classList.add('hidden');
                 renderAssetList();
@@ -487,27 +427,44 @@ function getMappedSector(ticker, quoteType = "", yahooSector = "") {
     return "주식 (Equity)";
 }
 
+// --- Firebase Save ---
+document.getElementById('saveBtn')?.addEventListener('click', async () => {
+    if (!currentUser) { alert("로그인이 필요합니다."); return; }
+    const btn = document.getElementById('saveBtn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true; btn.innerText = "⏳ 저장 중...";
+    try {
+        const targetCapital = parseFloat(document.getElementById('targetCapitalInputWizard').value) || 0;
+        await setDoc(doc(db, "users", currentUser.uid), { holdings, sectorTargets, selectedStrategyId, targetCapital, baseCurrency, lastUpdated: new Date() }, { merge: true });
+        alert("성공적으로 저장되었습니다! 💾");
+    } catch (e) { console.error(e); alert("저장 실패"); } finally { btn.disabled = false; btn.innerHTML = originalText; }
+});
+
 // --- Auth & Init ---
 onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     if (user) {
-        loginAlert.classList.add('hidden');
-        appContent.classList.remove('hidden');
-        // Load data from DB if needed
+        loginAlert.classList.add('hidden'); appContent.classList.remove('hidden');
+        try {
+            const docSnap = await getDoc(doc(db, "users", user.uid));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.selectedStrategyId) selectDochi(data.selectedStrategyId, true);
+                if (data.holdings) holdings = data.holdings;
+                if (data.baseCurrency) setCurrency(data.baseCurrency);
+                if (data.targetCapital) document.getElementById('targetCapitalInputWizard').value = data.targetCapital;
+                if (holdings.length > 0 && confirm("이전에 저장된 데이터가 있습니다. 바로 진단 결과를 확인하시겠습니까?")) calculateAndShowResult();
+            }
+        } catch (e) { console.error("Load Error:", e); }
         renderAssetList();
     } else {
-        loginAlert.classList.remove('hidden');
-        appContent.classList.add('hidden');
+        loginAlert.classList.remove('hidden'); appContent.classList.add('hidden');
     }
 });
-
-loginBtn.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
-logoutBtn.addEventListener('click', () => signOut(auth).then(() => location.reload()));
 
 document.getElementById('tickerSearchInput')?.addEventListener('input', (e) => {
     const q = e.target.value.trim();
     if (q.length >= 2) performSearch(q);
 });
 
-// Start at step 1
 goToStep(1);

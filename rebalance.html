@@ -255,11 +255,11 @@
             <div id="step-3" class="step-section hidden space-y-8 animate-fade-in-up">
                 <div class="text-center">
                     <h2 class="text-2xl font-black mb-2">STEP 3. 현재 보유 자산을 입력하세요</h2>
-                    <p class="text-slate-500">검색을 통해 종목을 추가하고 현재 보유 수량을 입력하세요.</p>
+                    <p class="text-slate-500">보유 중인 종목을 추가하고 수량을 입력하세요. 무엇을 살지 모르겠다면 추천 종목을 활용해보세요.</p>
                 </div>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <!-- 종목 검색 -->
+                    <!-- 종목 검색 및 추천 -->
                     <div class="lg:col-span-5 space-y-6">
                         <div class="p-6 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-700">
                             <h3 class="font-bold mb-4 flex items-center gap-2"><span>🔍</span> 종목 검색</h3>
@@ -271,7 +271,15 @@
                                 <ul id="searchResults" class="space-y-2 max-h-60 overflow-y-auto no-scrollbar"></ul>
                             </div>
                         </div>
-                        <!-- CSV 업로드 등 추가 도구 -->
+
+                        <!-- 추천 종목 섹션 -->
+                        <div class="p-6 rounded-3xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
+                            <h3 class="text-sm font-bold mb-4 text-blue-600 dark:text-blue-400 flex items-center gap-2"><span>💡</span> 성향별 추천 종목 (Quick Add)</h3>
+                            <div id="recommendationButtons" class="flex flex-wrap gap-2">
+                                <!-- JS에서 성향에 맞는 버튼 생성 -->
+                            </div>
+                        </div>
+
                         <div class="flex flex-wrap gap-2">
                             <label class="cursor-pointer bg-white dark:bg-slate-800 px-4 py-3 rounded-xl text-xs font-bold shadow-sm border border-slate-100 dark:border-slate-700">📤 CSV 불러오기<input type="file" id="csvFileInput" class="hidden" accept=".csv"></label>
                             <button id="refreshPricesBtn" class="bg-white dark:bg-slate-800 px-4 py-3 rounded-xl text-xs font-bold shadow-sm border border-slate-100 dark:border-slate-700">🔄 실시간 시세 갱신</button>
@@ -316,6 +324,7 @@
                         <p class="text-slate-500 mt-1">당신의 현재 포트폴리오 분석 결과입니다.</p>
                     </div>
                     <div class="flex gap-2">
+                        <button id="saveBtn" class="text-sm font-bold text-white bg-emerald-600 px-6 py-2 rounded-xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all">💾 결과 저장</button>
                         <button onclick="goToStep(3)" class="text-sm font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl">자산 수정</button>
                         <button onclick="goToStep(1)" class="text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-xl">⚙️ 설정 다시하기</button>
                     </div>
