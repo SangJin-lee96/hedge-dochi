@@ -83,7 +83,7 @@
             </div>
         </header>
 
-        <!-- Market Sentiment Widget (신설) -->
+        <!-- Market Sentiment Widget -->
         <div class="stat-card mb-12 flex flex-col md:flex-row items-center justify-between gap-8 animate-fade-in-up" style="animation-delay: 0.05s;">
             <div class="text-center md:text-left">
                 <h3 class="text-xl font-black mb-2">시장 심리 온도계</h3>
@@ -103,6 +103,33 @@
             <div class="text-center">
                 <div id="sentimentValue" class="text-3xl font-black text-slate-800 dark:text-white">50</div>
                 <p id="sentimentLabel" class="text-[10px] font-bold text-slate-400 uppercase">NEUTRAL</p>
+            </div>
+        </div>
+
+        <!-- Financial Goal Tracker (신설) -->
+        <div class="stat-card mb-12 animate-fade-in-up" style="animation-delay: 0.08s;">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="flex-1 w-full">
+                    <div class="flex justify-between items-end mb-4 px-2">
+                        <h3 class="text-xl font-black">🎯 재무 목표 달성률</h3>
+                        <span id="goalPercent" class="text-3xl font-black text-blue-600">0%</span>
+                    </div>
+                    <div class="h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 p-1">
+                        <div id="goalProgressBar" class="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-1000 shadow-lg shadow-blue-500/20" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">
+                        <span id="currentWealthLabel">현재 추정 자산: --</span>
+                        <span id="goalTargetText">목표: 설정 필요</span>
+                    </div>
+                </div>
+                <div class="w-full md:w-56 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 text-center">
+                    <p class="text-[10px] font-black text-slate-400 mb-2 uppercase">Set Your 10Y Goal</p>
+                    <div class="flex items-center gap-2 mb-3">
+                        <input type="number" id="goalInput" placeholder="예: 10" class="w-full bg-white dark:bg-slate-900 border-none rounded-xl p-2 text-center font-bold text-sm focus:ring-2 focus:ring-blue-500">
+                        <span class="text-xs font-bold text-slate-400">억</span>
+                    </div>
+                    <button onclick="saveFinancialGoal()" class="w-full py-3 bg-blue-600 text-white rounded-xl text-xs font-black shadow-md hover:bg-blue-700 active:scale-95 transition-all">목표 저장</button>
+                </div>
             </div>
         </div>
 
