@@ -65,6 +65,65 @@ window.setCurrency = function(code) {
     }
 };
 
+// --- Search & Modal ---
+window.toggleSearchModal = function(show) {
+    const modal = document.getElementById('searchModal');
+    const container = document.getElementById('searchModalContainer');
+    if (show) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            container.classList.remove('scale-95', 'opacity-0');
+            container.classList.add('scale-100', 'opacity-100');
+            document.getElementById('assetSearchInput').focus();
+        }, 10);
+    } else {
+        container.classList.remove('scale-100', 'opacity-100');
+        container.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 300);
+    }
+};
+
+window.searchAsset = async function() {
+    const q = document.getElementById('assetSearchInput').value.trim();
+    if (!q) return;
+    
+    const resultsContainer = document.getElementById('searchResults');
+    resultsContainer.innerHTML = '<div class="text-center py-8 animate-pulse text-xs text-slate-400">데이터를 찾는 중...</div>';
+
+    try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        const quotes = data?.quotes || [];
+
+        if (quotes.length === 0) {
+            resultsContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-8">검색 결과가 없습니다.</p>';
+            return;
+        }
+
+        resultsContainer.innerHTML = quotes.map(item => `
+            <div onclick="selectAndAddAsset('${item.symbol}')" class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-transparent hover:border-blue-500 cursor-pointer transition-all flex justify-between items-center group">
+                <div>
+                    <p class="font-black text-slate-800 dark:text-slate-200 group-hover:text-blue-600">${item.symbol}</p>
+                    <p class="text-[10px] text-slate-400 truncate max-w-[200px]">${item.shortname || item.longname || ''}</p>
+                </div>
+                <span class="text-xs font-bold text-blue-500 opacity-0 group-hover:opacity-100">+ 추가</span>
+            </div>
+        `).join('');
+    } catch (e) {
+        resultsContainer.innerHTML = '<p class="text-xs text-red-400 text-center py-8">검색 중 오류가 발생했습니다.</p>';
+    }
+};
+
+window.selectAndAddAsset = async function(ticker) {
+    toggleSearchModal(false);
+    await quickAdd(ticker);
+    document.getElementById('assetSearchInput').value = '';
+};
+
 // --- Asset Management ---
 window.addAsset = function(initialData = { ticker: '', qty: 0, price: 0 }) {
     const id = Date.now() + Math.random();

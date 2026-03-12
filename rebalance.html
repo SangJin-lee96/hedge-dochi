@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="ko" class="scroll-pt-20">
 <head>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="미국 주식, 한국 주식, 코인까지! 실시간 환율을 반영한 스마트 리밸런싱 계산기. 목표 비중을 설정하고 매수/매도 수량을 즉시 확인하세요.">
     <title>스마트 자산 리밸런싱 계산기 | Hedge Dochi</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
     <script>
@@ -43,12 +43,11 @@
     </style>
 </head>
 <body class="min-h-screen">
-    <!-- 헤더 네비게이션 -->
     <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
                 <span class="text-xl">💎</span>
-                <span class="font-bold text-lg tracking-tight whitespace-nowrap" style="word-break: keep-all;">Hedge Dochi</span>
+                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
             </div>
             <nav class="hidden md:flex items-center gap-4">
                 <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
@@ -56,7 +55,6 @@
                 <a href="risk-test.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">성향 진단</a>
                 <a href="dashboard.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">대시보드</a>
                 <a href="guides.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">금융 가이드</a>
-                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">로또 추천</a>
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
                 <div id="authContainer" class="ml-2">
@@ -68,18 +66,15 @@
                 </div>
             </nav>
             <div class="flex items-center gap-2 md:hidden">
-                <button id="darkModeToggleMobile" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
-                <button id="mobileMenuBtn" class="p-2 rounded-lg" style="color: var(--color-primary-text);">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                </button>
+                <button id="mobileMenuBtn" class="p-2 rounded-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg></button>
             </div>
         </div>
-        <div id="mobileMenu" class="hidden md:hidden absolute top-16 left-0 w-full border-b shadow-lg transition-all z-[110]" style="background-color: var(--color-nav-bg); border-color: var(--color-nav-border);">
+        <div id="mobileMenu" class="hidden md:hidden absolute top-16 left-0 w-full border-b shadow-lg z-[110]" style="background-color: var(--color-nav-bg); border-color: var(--color-nav-border);">
             <nav class="flex flex-col p-4 space-y-2">
-                <a href="index.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
-                <a href="rebalance.html" class="text-base font-extrabold p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600">리밸런싱</a>
-                <a href="guides.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">금융 가이드</a>
-                <a href="lotto.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">로또 추천</a>
+                <a href="index.html" class="text-base font-semibold p-4 rounded-xl">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-base font-extrabold p-4 rounded-xl bg-blue-50 text-blue-600">리밸런싱</a>
+                <a href="risk-test.html" class="text-base font-semibold p-4 rounded-xl">성향 진단</a>
+                <a href="dashboard.html" class="text-base font-semibold p-4 rounded-xl">대시보드</a>
                 <div id="authContainerMobile" class="p-4 border-t border-slate-100 dark:border-slate-700 text-center"></div>
             </nav>
         </div>
@@ -89,8 +84,6 @@
         <header class="mb-12 text-center">
             <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">⚖️ 스마트 리밸런싱 매니저</h1>
             <p class="text-lg text-slate-500 font-medium">실시간 환율과 시장가격을 반영하여 완벽한 비중을 찾습니다.</p>
-            
-            <!-- 단계 표시 바 -->
             <div class="mt-10 flex items-center justify-center gap-2 max-w-xs mx-auto">
                 <div id="step-indicator-1" class="step-dot w-3 h-3 rounded-full bg-blue-600 transition-all"></div>
                 <div class="w-8 h-0.5 bg-slate-200"></div>
@@ -118,51 +111,73 @@
 
         <!-- STEP 2: 자산 입력 -->
         <div id="step-2" class="step-section hidden space-y-8 animate-fade-in-up">
-            <div class="flex justify-between items-end mb-6"><h2 class="text-2xl font-black">📝 보유 자산 입력</h2><div class="flex gap-2"><button onclick="quickAdd('VOO')" class="text-xs font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg">+VOO</button><button onclick="quickAdd('QQQ')" class="text-xs font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg">+QQQ</button><button onclick="quickAdd('BTC-USD')" class="text-xs font-bold bg-orange-100 dark:bg-orange-900/30 text-orange-600 px-3 py-1.5 rounded-lg">+BTC</button></div></div>
-            <div id="assetContainer" class="space-y-4"><!-- 동적으로 추가됨 --></div>
-            <button onclick="addAsset()" class="w-full py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 font-bold hover:border-blue-500 hover:text-blue-500 transition-all">+ 자산 추가하기</button>
-            <div class="flex justify-center gap-4 mt-12"><button onclick="goToStep(1)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button><button onclick="goToStep(3)" class="flex-1 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-xl">목표 비중 설정 ➔</button></div>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
+                <h2 class="text-2xl font-black">📝 보유 자산 입력</h2>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="quickAdd('VOO')" class="text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-blue-800">+VOO</button>
+                    <button onclick="quickAdd('QQQ')" class="text-[10px] font-black bg-purple-50 dark:bg-purple-900/30 text-purple-600 px-3 py-1.5 rounded-lg border border-purple-100 dark:border-purple-800">+QQQ</button>
+                    <button onclick="quickAdd('BTC-USD')" class="text-[10px] font-black bg-orange-50 dark:bg-orange-900/30 text-orange-600 px-3 py-1.5 rounded-lg border border-orange-100 dark:border-orange-800">+BTC</button>
+                    <button onclick="quickAdd('005930.KS')" class="text-[10px] font-black bg-slate-50 dark:bg-slate-800 text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">+삼성전자</button>
+                </div>
+            </div>
+            
+            <div id="assetContainer" class="space-y-4"></div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                <button onclick="addAsset()" class="py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 font-bold hover:border-blue-500 hover:text-blue-500 transition-all">+ 직접 추가</button>
+                <button onclick="toggleSearchModal(true)" class="py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all">🔍 종목 검색 후 추가</button>
+            </div>
+
+            <div class="flex justify-center gap-4 mt-12">
+                <button onclick="goToStep(1)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button>
+                <button onclick="goToStep(3)" class="flex-1 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-xl">목표 비중 설정 ➔</button>
+            </div>
         </div>
 
         <!-- STEP 3: 목표 비중 설정 -->
         <div id="step-3" class="step-section hidden space-y-8 animate-fade-in-up">
             <div class="text-center mb-8"><h2 class="text-2xl font-black">🎯 목표 비중 설정</h2><p class="text-slate-500">각 자산의 비중 합계가 100%가 되도록 조정하세요.</p></div>
-            <div id="weightContainer" class="space-y-6 max-w-2xl mx-auto"><!-- 동적으로 추가됨 --></div>
+            <div id="weightContainer" class="space-y-6 max-w-2xl mx-auto"></div>
             <div class="max-w-2xl mx-auto mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex justify-between items-center"><span class="font-bold">합계</span><span id="totalWeight" class="text-2xl font-black text-blue-600">0%</span></div>
-            <div class="flex justify-center gap-4 mt-12"><button onclick="goToStep(2)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button><button id="btn-final-step" onclick="calculateRebalance()" class="flex-1 py-5 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/30">리밸런싱 결과 보기 ➔</button></div>
+            <div class="flex justify-center gap-4 mt-12"><button onclick="goToStep(2)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button><button id="btn-final-step" onclick="calculateRebalance()" class="flex-1 py-5 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/30">결과 보기 ➔</button></div>
         </div>
 
         <!-- STEP 4: 결과 리포트 -->
         <div id="step-4" class="step-section hidden space-y-10 animate-fade-in-up">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="p-10 rounded-[3rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800">
-                    <h3 class="text-lg font-black mb-8">📊 현재 포트폴리오</h3>
+                    <h3 class="text-lg font-black mb-8 text-center">📊 포트폴리오 분석</h3>
                     <div class="relative h-[250px]"><canvas id="currentChart"></canvas></div>
                     <div class="mt-8 text-center"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Portfolio Health</p><div id="healthScore" class="text-4xl font-black text-emerald-500">95</div></div>
                 </div>
                 <div class="p-10 rounded-[3rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800">
-                    <h3 class="text-lg font-black mb-8">💡 추천 리밸런싱 실행</h3>
-                    <div id="rebalanceResults" class="space-y-4"><!-- 동적으로 추가됨 --></div>
+                    <h3 class="text-lg font-black mb-8 text-center">💡 리밸런싱 실행 가이드</h3>
+                    <div id="rebalanceResults" class="space-y-4"></div>
                 </div>
             </div>
             <div class="text-center"><button onclick="goToStep(1)" class="px-12 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">새로 만들기</button></div>
         </div>
     </main>
 
-    <!-- Newsletter Section -->
-    <section class="max-w-4xl mx-auto px-4 mt-32 mb-20">
-        <div class="p-10 md:p-16 rounded-[3rem] bg-gradient-to-br from-slate-800 to-slate-900 text-white text-center shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url("https://www.transparenttextures.com/patterns/cubes.png")]"></div>
-            <div class="relative z-10">
-                <h3 class="text-2xl md:text-3xl font-black mb-4">Hedge Dochi 인사이트 구독하기</h3>
-                <p class="text-slate-400 mb-10 max-w-md mx-auto text-sm md:text-base">매주 변화하는 시장 데이터와 자산 배분 전략을 이메일로 보내드립니다. (비용 0원)</p>
-                <form onsubmit="event.preventDefault(); alert("감사합니다! 구독이 완료되었습니다. 🦔");" class="flex flex-col md:flex-row gap-3 max-w-lg mx-auto">
-                    <input type="email" placeholder="이메일 주소를 입력하세요" required class="flex-1 px-6 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                    <button type="submit" class="px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-xl">지금 구독</button>
-                </form>
+    <!-- Search Modal -->
+    <div id="searchModal" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+        <div id="searchModalContainer" class="bg-white dark:bg-slate-800 w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0">
+            <div class="p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-black">종목 검색</h3>
+                    <button onclick="toggleSearchModal(false)" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700">✕</button>
+                </div>
+                <div class="relative mb-6">
+                    <input type="text" id="assetSearchInput" placeholder="티커 또는 종목명 (예: TSLA, 삼성전자)" class="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-2xl p-5 pr-16 font-bold uppercase focus:ring-4 focus:ring-blue-500 transition-all">
+                    <button onclick="searchAsset()" class="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-600 text-white p-3 rounded-xl">검색</button>
+                </div>
+                <div id="searchResults" class="space-y-2 max-h-60 overflow-y-auto no-scrollbar">
+                    <p class="text-xs text-slate-400 text-center py-10">찾으시는 종목을 검색하세요.</p>
+                </div>
             </div>
         </div>
-    </section>
+    </div>
+
     <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
         <div class="flex justify-center space-x-6 font-bold mb-4">
             <a href="about.html" class="hover:text-blue-600">소개</a>
@@ -171,7 +186,7 @@
             <a href="contact-form.html" class="hover:text-blue-600">문의</a>
         </div>
         <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
-            <p class="opacity-60 text-[10px] max-w-lg mx-auto leading-relaxed mt-2">Hedge Dochi는 데이터 기반의 금융 도구와 가이드를 제공하며, 제공되는 모든 정보는 참고용일 뿐 투자 권유를 구성하지 않습니다.</p>
+        <p class="opacity-60 text-[10px] max-w-lg mx-auto leading-relaxed mt-2">Hedge Dochi는 데이터 기반의 금융 도구와 가이드를 제공하며, 제공되는 모든 정보는 참고용일 뿐 투자 권유를 구성하지 않습니다.</p>
     </footer>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -179,12 +194,5 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="dark-mode.js"></script>
     <script type="module" src="rebalance.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const btn = document.getElementById('mobileMenuBtn');
-            const menu = document.getElementById('mobileMenu');
-            if (btn && menu) btn.addEventListener('click', () => { menu.classList.toggle('hidden'); });
-        });
-    </script>
 </body>
 </html>
