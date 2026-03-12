@@ -30,7 +30,39 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('dashUserPhoto').src = user.photoURL;
         
         loadDashboardData(user.uid);
+        renderMarketSentiment(); // 시장 심리 로드
     } else {
+// ... (생략)
+
+async function renderMarketSentiment() {
+    const indicator = document.getElementById('sentimentIndicator');
+    const valEl = document.getElementById('sentimentValue');
+    const labelEl = document.getElementById('sentimentLabel');
+    if (!indicator) return;
+
+    try {
+        const res = await fetch('/api/price?ticker=^GSPC');
+        const data = await res.json();
+        const meta = data?.chart?.result?.[0]?.meta;
+        if (!meta) return;
+
+        const price = meta.regularMarketPrice;
+        const prevClose = meta.chartPreviousClose;
+        
+        // 간단한 센티먼트 로직 (전일 대비 등락폭 확대 해석)
+        const dayChangePercent = (price - prevClose) / prevClose * 100;
+        let sentiment = 50 + (dayChangePercent * 10); // 기본 50에서 등락폭에 따라 가감
+        sentiment = Math.max(5, Math.min(95, sentiment)); // 5~95 사이로 제한
+
+        indicator.style.left = `${sentiment}%`;
+        valEl.innerText = Math.round(sentiment);
+
+        if (sentiment > 70) { labelEl.innerText = "GREED"; labelEl.className = "text-[10px] font-bold text-red-500 uppercase"; }
+        else if (sentiment < 30) { labelEl.innerText = "FEAR"; labelEl.className = "text-[10px] font-bold text-blue-500 uppercase"; }
+        else { labelEl.innerText = "NEUTRAL"; labelEl.className = "text-[10px] font-bold text-slate-400 uppercase"; }
+
+    } catch (e) {}
+}
         if (loginBtn) loginBtn.classList.remove('hidden');
         if (userProfile) userProfile.classList.add('hidden');
         alert("로그인이 필요한 페이지입니다. 홈으로 이동합니다.");

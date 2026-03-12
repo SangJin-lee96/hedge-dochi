@@ -77,6 +77,29 @@
             </div>
         </header>
 
+        <!-- Market Sentiment Widget (신설) -->
+        <div class="stat-card mb-12 flex flex-col md:flex-row items-center justify-between gap-8 animate-fade-in-up" style="animation-delay: 0.05s;">
+            <div class="text-center md:text-left">
+                <h3 class="text-xl font-black mb-2">시장 심리 온도계</h3>
+                <p class="text-xs text-slate-500">지수 변동성을 바탕으로 산출한 투자 심리 지수입니다.</p>
+            </div>
+            <div class="flex-1 w-full max-w-md">
+                <div class="relative h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                    <div class="h-full bg-gradient-to-r from-blue-500 via-slate-300 to-red-500 w-full opacity-30"></div>
+                    <div id="sentimentIndicator" class="absolute top-0 bottom-0 w-1 bg-slate-800 dark:bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-1000" style="left: 50%;"></div>
+                </div>
+                <div class="flex justify-between mt-3 text-[10px] font-black uppercase tracking-tighter text-slate-400">
+                    <span class="text-blue-500">극도의 공포</span>
+                    <span>중립</span>
+                    <span class="text-red-500">극도의 탐욕</span>
+                </div>
+            </div>
+            <div class="text-center">
+                <div id="sentimentValue" class="text-3xl font-black text-slate-800 dark:text-white">50</div>
+                <p id="sentimentLabel" class="text-[10px] font-bold text-slate-400 uppercase">NEUTRAL</p>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
             <!-- 통합 자산 차트 섹션 (신설) -->
             <div class="lg:col-span-2 stat-card flex flex-col md:flex-row items-center gap-8">
