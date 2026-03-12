@@ -1,7 +1,4 @@
 User-agent: *
 Allow: /
 
-User-agent: Mediapartners-Google
-Allow: /
-
 Sitemap: https://hedge-dochi-live.pages.dev/sitemap.xml
