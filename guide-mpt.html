@@ -6,34 +6,65 @@
     <meta name="description" content="현대 포트폴리오 이론(MPT)과 효율적 투자선. 노벨상을 받은 자산 배분 모델의 핵심을 쉽게 풀어냅니다.">
     <title>현대 포트폴리오 이론(MPT) 쉽게 이해하기 | Hedge Dochi</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-GFMXESYQFR');
+    </script>
     <style>
-        :root { --color-background: #f8fafc; --color-primary-text: #1e293b; --color-nav-bg: #ffffff; --color-nav-border: #f1f5f9; --color-nav-link: #2563eb; }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); line-height: 1.7; word-break: keep-all; }
+        :root {
+            --color-primary-text: #1e293b;
+            --color-secondary-text: #64748b;
+            --color-background: #f8fafc;
+            --color-nav-bg: #ffffff;
+            --nav-bg-rgb: 255, 255, 255;
+            --color-nav-border: #f1f5f9;
+            --color-nav-link: #2563eb;
+            --color-toggle-text: #64748b;
+        }
+        html.dark {
+            --color-primary-text: #f8fafc;
+            --color-secondary-text: #94a3b8;
+            --color-background: #0f172a;
+            --color-nav-bg: #1e293b;
+            --nav-bg-rgb: 30, 41, 59;
+            --color-nav-border: #334155;
+            --color-nav-link: #60a5fa;
+            --color-toggle-text: #94a3b8;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; transition: background-color 0.3s; }
         .article-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
         .article-header { margin-bottom: 60px; text-align: center; }
-        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3rem; margin-bottom: 1.5rem; color: #2563eb; }
-        .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; }
+        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3.5rem; margin-bottom: 1.5rem; color: #2563eb; }
+        html.dark .article-content h2 { color: #60a5fa; }
+        .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; opacity: 0.9; }
     </style>
 </head>
-<body class="transition-colors">
-    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b" style="background-color: rgba(255,255,255,0.7); border-color: var(--color-nav-border);">
+<body>
+    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
-                <span class="text-xl">💎</span><span class="font-bold text-lg">Hedge Dochi</span>
+                <span class="text-xl">💎</span>
+                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
             </div>
             <nav class="hidden md:flex items-center gap-4">
-                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
-                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">리밸런싱</a>
-                <a href="guides.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 text-blue-600">금융 가이드</a>
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">금융 가이드</a>
+                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
+                <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
             </nav>
         </div>
     </header>
 
-    <main class="article-container">
+    <main class="article-container animate-fade-in-up">
         <header class="article-header">
-            <div class="text-blue-600 font-bold mb-4">금융 가이드 #04</div>
+            <div class="text-blue-600 dark:text-blue-400 font-bold mb-4">금융 가이드 #04</div>
             <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">현대 포트폴리오 이론(MPT) 해부</h1>
-            <p class="mt-6 text-slate-500 text-lg">리스크를 측정하고 통제하는 노벨 경제학상의 지혜</p>
+            <p class="mt-6 text-slate-500 dark:text-slate-400 text-lg">리스크를 측정하고 통제하는 노벨 경제학상의 지혜</p>
         </header>
 
         <section class="article-content">
@@ -53,13 +84,25 @@
             <h2>4. 샤프 지수 (Sharpe Ratio)</h2>
             <p>MPT를 바탕으로 윌리엄 샤프가 개발한 지표로, "위험 한 단위당 초과 수익률"을 의미합니다. (수익률 - 무위험 이자율) / 변동성(표준편차)로 계산됩니다. 샤프 지수가 높을수록 해당 포트폴리오가 리스크 대비 우수한 성과를 내고 있음을 뜻합니다.</p>
             
-            <div class="mt-12 p-8 rounded-3xl bg-slate-100 text-center">
+            <div class="mt-12 p-8 rounded-[2.5rem] bg-slate-100 dark:bg-slate-800/50 text-center border border-slate-200 dark:border-slate-700">
                 <h3 class="text-xl font-bold mb-4">내 포트폴리오를 체계적으로 관리하세요</h3>
-                <p class="mb-6">직관이 아닌 데이터에 기반하여 자산 비중을 설정하고 리밸런싱을 실행하세요.</p>
-                <a href="rebalance.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all">리밸런싱 매니저 시작하기</a>
+                <p class="mb-6 opacity-70">직관이 아닌 데이터에 기반하여 자산 비중을 설정하고 리밸런싱을 실행하세요.</p>
+                <a href="rebalance.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">리밸런싱 매니저 시작하기</a>
             </div>
         </section>
     </main>
-    <footer class="text-center py-12 border-t border-slate-100 mt-20 text-slate-400 text-sm"><p>© 2026 Hedge Dochi. All Rights Reserved.</p></footer>
+
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400">
+        <div class="flex justify-center space-x-6 font-bold mb-4">
+            <a href="about.html" class="hover:text-blue-600">소개</a>
+            <a href="privacy.html" class="hover:text-blue-600">약관</a>
+            <a href="contact-form.html" class="hover:text-blue-600">문의</a>
+        </div>
+        <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
+    </footer>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="dark-mode.js"></script>
 </body>
 </html>

@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="리밸런싱이 어떻게 투자 수익률을 높이는지 과학적으로 분석합니다. 섀넌의 도깨비 원리와 복리 효과의 실체.">
     <title>리밸런싱 가이드: 잠자는 수익률을 깨우는 법 | Hedge Dochi</title>
-    <meta property="og:title" content="리밸런싱 가이드: 잠자는 수익률을 깨우는 법 | Hedge Dochi">
-    <meta property="og:description" content="주기적인 비중 조정이 어떻게 '저점 매수, 고점 매도'를 기계적으로 실현하는지 알아봅니다.">
-    <meta property="og:image" content="https://hedge-dochi-live.pages.dev/og-image.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
     <script>
@@ -25,6 +22,7 @@
             --nav-bg-rgb: 255, 255, 255;
             --color-nav-border: #f1f5f9;
             --color-nav-link: #2563eb;
+            --color-toggle-text: #64748b;
         }
         html.dark {
             --color-primary-text: #f8fafc;
@@ -34,39 +32,43 @@
             --nav-bg-rgb: 30, 41, 59;
             --color-nav-border: #334155;
             --color-nav-link: #60a5fa;
+            --color-toggle-text: #94a3b8;
         }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; transition: background-color 0.3s; }
         .article-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
         .article-header { margin-bottom: 60px; text-align: center; }
-        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3rem; margin-bottom: 1.5rem; color: #2563eb; }
-        .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; }
+        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3.5rem; margin-bottom: 1.5rem; color: #2563eb; }
+        html.dark .article-content h2 { color: #60a5fa; }
+        .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; opacity: 0.9; }
         .article-content ul, .article-content ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
-        .article-content li { margin-bottom: 0.5rem; }
+        .article-content li { margin-bottom: 0.5rem; font-size: 1.05rem; }
         .highlight-box { background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 2rem; border-radius: 0 1rem 1rem 0; margin: 2rem 0; }
         html.dark .highlight-box { background-color: #1e293b; border-left-color: #60a5fa; }
     </style>
 </head>
-<body class="transition-colors">
-    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
+<body>
+    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
                 <span class="text-xl">💎</span>
-                <span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
+                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
             </div>
             <nav class="hidden md:flex items-center gap-4">
-                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
-                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">리밸런싱</a>
                 <a href="guides.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">금융 가이드</a>
-                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">로또 추천</a>
+                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
+                <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
             </nav>
         </div>
     </header>
 
-    <main class="article-container">
+    <main class="article-container animate-fade-in-up">
         <header class="article-header">
-            <div class="text-blue-600 font-bold mb-4">금융 가이드 #02</div>
+            <div class="text-blue-600 dark:text-blue-400 font-bold mb-4">금융 가이드 #02</div>
             <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">리밸런싱: 잠자는 수익률을 깨우는 법</h1>
-            <p class="mt-6 text-slate-500 text-lg">기계적인 자산 배분이 감정적 투자를 이기는 이유</p>
+            <p class="mt-6 text-slate-500 dark:text-slate-400 text-lg">기계적인 자산 배분이 감정적 투자를 이기는 이유</p>
         </header>
 
         <section class="article-content">
@@ -99,20 +101,25 @@
             </ol>
             <p>너무 자주 하면 거래 수수료와 세금 부담이 커질 수 있으므로, 보통 6개월~1년 단위나 5~10%의 이격이 발생했을 때 하는 것이 효율적입니다.</p>
 
-            <div class="mt-12 p-8 rounded-3xl bg-slate-100 dark:bg-slate-800 text-center">
+            <div class="mt-12 p-8 rounded-[2.5rem] bg-slate-100 dark:bg-slate-800/50 text-center border border-slate-200 dark:border-slate-700">
                 <h3 class="text-xl font-bold mb-4">지금 내 포트폴리오의 비중을 확인해보세요</h3>
-                <p class="mb-6">Hedge Dochi의 리밸런싱 매니저는 실시간 시세를 반영하여 최적의 매매 수량을 계산해드립니다.</p>
-                <a href="rebalance.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all">리밸런싱 계산기 바로가기</a>
+                <p class="mb-6 opacity-70">Hedge Dochi의 리밸런싱 매니저는 실시간 시세를 반영하여 최적의 매매 수량을 계산해드립니다.</p>
+                <a href="rebalance.html" class="inline-block bg-blue-600 text-white font-bold py-4 px-10 rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">리밸런싱 계산기 바로가기</a>
             </div>
         </section>
     </main>
 
-    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20">
-        <div class="max-w-6xl mx-auto px-4 text-sm text-slate-400">
-            <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400">
+        <div class="flex justify-center space-x-6 font-bold mb-4">
+            <a href="about.html" class="hover:text-blue-600">소개</a>
+            <a href="privacy.html" class="hover:text-blue-600">약관</a>
+            <a href="contact-form.html" class="hover:text-blue-600">문의</a>
         </div>
+        <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
     </footer>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="dark-mode.js"></script>
 </body>
 </html>

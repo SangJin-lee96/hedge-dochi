@@ -6,41 +6,72 @@
     <meta name="description" content="로또 당첨 번호를 선택하는 전략. 기대값을 높이고 심리적 회피 번호를 활용하는 게임 이론.">
     <title>로또의 통계학: 기대값과 게임 이론 | Hedge Dochi</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-GFMXESYQFR');
+    </script>
     <style>
-        :root { --color-background: #f8fafc; --color-primary-text: #1e293b; --color-nav-bg: #ffffff; --color-nav-border: #f1f5f9; --color-nav-link: #2563eb; }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); line-height: 1.7; word-break: keep-all; }
+        :root {
+            --color-primary-text: #1e293b;
+            --color-secondary-text: #64748b;
+            --color-background: #f8fafc;
+            --color-nav-bg: #ffffff;
+            --nav-bg-rgb: 255, 255, 255;
+            --color-nav-border: #f1f5f9;
+            --color-nav-link: #2563eb;
+            --color-toggle-text: #64748b;
+        }
+        html.dark {
+            --color-primary-text: #f8fafc;
+            --color-secondary-text: #94a3b8;
+            --color-background: #0f172a;
+            --color-nav-bg: #1e293b;
+            --nav-bg-rgb: 30, 41, 59;
+            --color-nav-border: #334155;
+            --color-nav-link: #60a5fa;
+            --color-toggle-text: #94a3b8;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; transition: background-color 0.3s; }
         .article-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
         .article-header { margin-bottom: 60px; text-align: center; }
-        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3rem; margin-bottom: 1.5rem; color: #2563eb; }
-        .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; }
+        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3.5rem; margin-bottom: 1.5rem; color: #2563eb; }
+        html.dark .article-content h2 { color: #60a5fa; }
+        .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; opacity: 0.9; }
     </style>
 </head>
-<body class="transition-colors">
-    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b" style="background-color: rgba(255,255,255,0.7); border-color: var(--color-nav-border);">
+<body>
+    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
-                <span class="text-xl">💎</span><span class="font-bold text-lg">Hedge Dochi</span>
+                <span class="text-xl">💎</span>
+                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
             </div>
             <nav class="hidden md:flex items-center gap-4">
-                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
-                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg" style="color: var(--color-nav-link);">로또 추천</a>
-                <a href="guides.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 text-blue-600">금융 가이드</a>
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">금융 가이드</a>
+                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
+                <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
             </nav>
         </div>
     </header>
 
-    <main class="article-container">
+    <main class="article-container animate-fade-in-up">
         <header class="article-header">
-            <div class="text-blue-600 font-bold mb-4">금융 가이드 #05</div>
+            <div class="text-blue-600 dark:text-blue-400 font-bold mb-4">금융 가이드 #05</div>
             <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">로또의 통계학과 게임 이론</h1>
-            <p class="mt-6 text-slate-500 text-lg">기대 수익을 극대화하는 번호 선택의 과학</p>
+            <p class="mt-6 text-slate-500 dark:text-slate-400 text-lg">기대 수익을 극대화하는 번호 선택의 과학</p>
         </header>
 
         <section class="article-content">
             <p>로또 추첨에서 모든 번호 조합이 나올 확률은 수학적으로 완벽하게 동일합니다. 1, 2, 3, 4, 5, 6이 나올 확률과 무작위로 섞인 번호가 나올 확률은 같습니다 (약 814만 분의 1). 그렇다면 로또 번호를 선택하는 전략이라는 것이 존재할 수 있을까요?</p>
 
             <h2>1. 확률과 기대값의 차이</h2>
-            <p>당첨 '확률'을 높일 수는 없지만, 당첨되었을 때 받는 '기대값(수익)'을 극대화하는 전략은 존재합니다. 로또는 총 당첨금을 당첨자 수가 나누어 갖는 <strong>패리뮤추얼(Pari-Mutuel)</strong> 방식입니다. 즉, 나 혼자 1등에 당첨되면 20억을 받지만, 10명이 같은 번호를 적어 내면 2억씩 나눠 가져야 합니다.</p>
+            <p>당첨 '확률'을 높일 수는 없지만, 당첨되었을 때 받는 '기대값(수익)'을 극대화하는 전략은 존재합니다. 로또는 당첨금을 당첨자 수가 나누어 갖는 <strong>패리뮤추얼(Pari-Mutuel)</strong> 방식입니다. 즉, 나 혼자 1등에 당첨되면 20억을 받지만, 10명이 같은 번호를 적어 내면 2억씩 나눠 가져야 합니다.</p>
 
             <h2>2. 대중의 심리와 회피 번호</h2>
             <p>사람들은 번호를 고를 때 무의식적인 패턴을 보입니다. 가장 흔한 것이 생일이나 기념일입니다. 달력의 날짜에 해당하는 1부터 31까지의 숫자는 사람들이 매우 자주 선택합니다. 또한 OMR 카드에 일직선으로 그은 패턴, 행운의 숫자 7 등도 인기가 많습니다.</p>
@@ -49,13 +80,25 @@
             <h2>3. 연금복권과 로또의 구조적 차이</h2>
             <p>로또가 일시금과 높은 변동성을 특징으로 한다면, 연금복권은 당첨 확률(500만 분의 1로 로또보다 높음)과 안정성을 제공합니다. 연금복권은 조별로 나누어져 있어, 같은 번호를 여러 조로 구매하여 1등과 2등에 동시 당첨되는 전략을 구사할 수도 있습니다.</p>
 
-            <div class="mt-12 p-8 rounded-3xl bg-slate-100 text-center">
+            <div class="mt-12 p-8 rounded-[2.5rem] bg-slate-100 dark:bg-slate-800/50 text-center border border-slate-200 dark:border-slate-700">
                 <h3 class="text-xl font-bold mb-4">Hedge Dochi의 AI 로또 생성기</h3>
-                <p class="mb-6">군중 심리를 역이용하여 단독 당첨 확률(기대 수익률)을 높이는 번호 조합을 추출합니다.</p>
-                <a href="lotto.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all">전략적 로또 번호 생성하기</a>
+                <p class="mb-6 opacity-70">군중 심리를 역이용하여 단독 당첨 확률(기대 수익률)을 높이는 번호 조합을 추출합니다.</p>
+                <a href="lotto.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">전략적 로또 번호 생성하기</a>
             </div>
         </section>
     </main>
-    <footer class="text-center py-12 border-t border-slate-100 mt-20 text-slate-400 text-sm"><p>© 2026 Hedge Dochi. All Rights Reserved.</p></footer>
+
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400">
+        <div class="flex justify-center space-x-6 font-bold mb-4">
+            <a href="about.html" class="hover:text-blue-600">소개</a>
+            <a href="privacy.html" class="hover:text-blue-600">약관</a>
+            <a href="contact-form.html" class="hover:text-blue-600">문의</a>
+        </div>
+        <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
+    </footer>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="dark-mode.js"></script>
 </body>
 </html>
