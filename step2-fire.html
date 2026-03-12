@@ -214,19 +214,25 @@
             <!-- STEP 3: 수익률 및 인출률 설정 -->
             <div id="step-3" class="step-section hidden space-y-8">
                 <div class="max-w-md mx-auto bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8 text-center">
-                    <div class="input-group">
-                        <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">기대 투자 수익률 (연)</label>
-                        <div class="relative"><input type="number" id="f-rate" value="7" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 font-black text-2xl text-center text-emerald-500"><span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">%</span></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">기대 수익률 (연)</label>
+                            <div class="relative"><input type="number" id="f-rate" value="7" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-10 font-black text-xl text-center text-emerald-500"><span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">%</span></div>
+                        </div>
+                        <div class="input-group">
+                            <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">물가 상승률 (연)</label>
+                            <div class="relative"><input type="number" id="f-inflation" value="2.5" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-10 font-black text-xl text-center text-amber-500"><span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">%</span></div>
+                        </div>
                     </div>
                     <div class="input-group">
                         <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">
                             <span class="tooltip-trigger" data-tooltip="은퇴 자산의 고갈 없이 매년 인출 가능한 비율입니다.">안전 인출률 (SWR)</span>
                         </label>
-                        <div class="relative"><input type="number" id="f-swr" value="4" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 font-black text-2xl text-center"><span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">%</span></div>
+                        <div class="relative"><input type="number" id="f-withdraw-rate" value="4" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 font-black text-2xl text-center"><span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">%</span></div>
                         <p class="mt-4 text-[10px] text-slate-400 font-bold">미국 트리니티 대학 연구 기준 <span class="tooltip-trigger" data-tooltip="30년 이상 은퇴 자금이 지속될 확률이 95% 이상인 인출 공식">4% 법칙</span> 권장</p>
                     </div>
                 </div>
-                <div class="flex justify-center gap-4"><button onclick="goToStep(2)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button><button onclick="calculateFIRE()" class="px-12 py-5 bg-blue-600 text-white font-black rounded-2xl shadow-xl">결과 보기 🚀</button></div>
+                <div class="flex justify-center gap-4"><button onclick="goToStep(2)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button><button onclick="calculateFire()" class="px-12 py-5 bg-blue-600 text-white font-black rounded-2xl shadow-xl">결과 보기 🚀</button></div>
             </div>
 
             <!-- STEP 4: 결과 리포트 -->

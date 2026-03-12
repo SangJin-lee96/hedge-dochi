@@ -114,6 +114,7 @@ async function syncToMainSimulation() {
             monthlyExpense: document.getElementById('f-expense').value,
             initialSeed: document.getElementById('f-seed').value,
             investmentReturn: document.getElementById('f-rate').value,
+            inflationRate: document.getElementById('f-inflation').value,
             lastUpdated: new Date()
         }, { merge: true });
     } catch (e) {}
