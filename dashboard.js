@@ -260,9 +260,32 @@ function renderDashChart(assets) {
 function calculateHealthScore(assets) {
     const total = assets.reduce((sum, a) => sum + (a.qty * (a.price || 0)), 0);
     if (total === 0) return 0;
+    
     let dev = 0;
-    assets.forEach(a => dev += Math.abs(((a.qty * (a.price || 0)) / total * 100) - (a.targetWeight || 0)));
-    return Math.max(0, 100 - Math.round(dev));
+    let maxDevAsset = { ticker: '', diff: 0 };
+
+    assets.forEach(a => {
+        const curWeight = (a.qty * (a.price || 0) / total) * 100;
+        const diff = Math.abs(curWeight - (a.targetWeight || 0));
+        dev += diff;
+        if (diff > maxDevAsset.diff) {
+            maxDevAsset = { ticker: a.ticker, diff: diff };
+        }
+    });
+
+    const score = Math.max(0, 100 - Math.round(dev));
+    
+    // 이격도가 큰 경우 알림 배너 표시
+    const alertBanner = document.getElementById('rebalanceAlert');
+    const alertReason = document.getElementById('alertReason');
+    if (alertBanner && maxDevAsset.diff >= 10) {
+        alertBanner.classList.remove('hidden');
+        alertReason.innerText = `'${maxDevAsset.ticker}' 종목이 목표 비중보다 약 ${Math.round(maxDevAsset.diff)}%p 이격되었습니다.`;
+    } else if (alertBanner) {
+        alertBanner.classList.add('hidden');
+    }
+
+    return score;
 }
 
 document.getElementById('loginBtn')?.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));

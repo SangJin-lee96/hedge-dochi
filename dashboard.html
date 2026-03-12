@@ -108,8 +108,19 @@
             </div>
         </div>
 
-        <!-- Financial Goal Tracker (신설) -->
-        <div class="stat-card mb-12 animate-fade-in-up" style="animation-delay: 0.08s;">
+        <!-- Rebalance Alert Banner (Conditional) -->
+        <div id="rebalanceAlert" class="hidden mb-8 p-6 rounded-3xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 flex items-center justify-between animate-bounce">
+            <div class="flex items-center gap-4">
+                <span class="text-2xl">⚠️</span>
+                <div>
+                    <h4 class="text-red-800 dark:text-red-300 font-black">리밸런싱이 시급합니다!</h4>
+                    <p id="alertReason" class="text-xs text-red-600 dark:text-red-400 font-medium">자산 비중이 목표치에서 크게 벗어났습니다.</p>
+                </div>
+            </div>
+            <a href="rebalance.html" class="px-6 py-3 bg-red-600 text-white rounded-xl text-xs font-black shadow-lg hover:bg-red-700 transition-all">지금 조정하기</a>
+        </div>
+
+        <!-- Financial Goal Tracker -->
             <div class="flex flex-col md:flex-row justify-between items-center gap-8">
                 <div class="flex-1 w-full">
                     <div class="flex justify-between items-end mb-4 px-2">
