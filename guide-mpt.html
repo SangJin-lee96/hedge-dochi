@@ -139,6 +139,17 @@
         </section>
     </main>
 
+    <!-- Newsletter -->
+    <section class="mt-32 mb-20">
+        <div class="p-10 rounded-[3rem] bg-slate-900 text-white text-center">
+            <h3 class="text-xl font-black mb-4">금융 인사이트를 놓치지 마세요</h3>
+            <p class="text-slate-400 text-sm mb-8">매주 새로운 자산 관리 전략을 보내드립니다.</p>
+            <form onsubmit="event.preventDefault(); alert("구독 감사합니다! 🦔");" class="flex flex-col md:flex-row gap-2 max-w-md mx-auto">
+                <input type="email" placeholder="이메일 입력" required class="flex-1 px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white">
+                <button type="submit" class="px-6 py-3 bg-blue-600 font-bold rounded-xl">구독</button>
+            </form>
+        </div>
+    </section>
     <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
         <div class="flex justify-center space-x-6 font-bold mb-4">
             <a href="about.html" class="hover:text-blue-600">소개</a>
@@ -154,5 +165,16 @@
     <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="dark-mode.js"></script>
     <script type="module" src="auth-check.js"></script>
+    <button id="backToTop" class="fixed bottom-8 right-8 w-14 h-14 bg-white dark:bg-slate-800 shadow-2xl rounded-full flex items-center justify-center text-2xl border border-slate-100 dark:border-slate-700 opacity-0 invisible transition-all duration-300 z-50 hover:-translate-y-1">
+        ↑
+    </button>
+    <script>
+        const btt = document.getElementById("backToTop");
+        window.addEventListener("scroll", () => {
+            if (window.scrollY > 500) { btt.classList.remove("opacity-0", "invisible"); btt.classList.add("opacity-100", "visible"); }
+            else { btt.classList.add("opacity-0", "invisible"); btt.classList.remove("opacity-100", "visible"); }
+        });
+        btt.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    </script>
 </body>
 </html>

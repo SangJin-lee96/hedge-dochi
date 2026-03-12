@@ -100,6 +100,18 @@ window.calculateAndShowResult = function() {
     saveDataToFirebase(); // 결과 볼 때 자동 저장 시도
 };
 
+window.showToast = function(msg) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        document.body.appendChild(toast);
+    }
+    toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+};
+
 async function saveDataToFirebase() {
     if (!currentUser) return;
     try {
@@ -113,6 +125,7 @@ async function saveDataToFirebase() {
             baseCurrency,
             lastUpdated: new Date()
         }, { merge: true });
+        showToast("데이터가 안전하게 저장되었습니다. ☁️");
     } catch (e) { console.error("Save Error:", e); }
 }
 
