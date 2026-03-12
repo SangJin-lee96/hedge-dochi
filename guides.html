@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="ko" class="scroll-pt-20">
 <head>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="금융 투자와 자산 관리의 핵심 원리를 배우는 Hedge Dochi 지식 허브. 데이터 기반 투자의 모든 것을 확인하세요.">
-    <title>금융 인사이트 가이드 | Hedge Dochi</title>
+    <meta name="description" content="금융 투자와 자산 관리의 핵심 원리를 배우는 Hedge Dochi 지식 허브. 데이터 기반 투자 전략과 대가들의 포트폴리오 모델을 확인하세요.">
+    <title>금융 인사이트 지식 허브 | Hedge Dochi</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
     <script>
@@ -15,47 +15,51 @@
       gtag('config', 'G-GFMXESYQFR');
     </script>
     <style>
-        @media (max-width: 640px) { h1 { font-size: 2rem !important; } .stat-card { padding: 1.5rem !important; } }
         :root {
-            --color-primary-text: #1e293b;
-            --color-secondary-text: #64748b;
-            --color-background: #f8fafc; --color-accent: #2563eb;
+            --color-primary-text: #0f172a;
+            --color-secondary-text: #475569;
+            --color-background: #f8fafc;
+            --color-accent: #2563eb;
             --color-nav-bg: #ffffff;
             --nav-bg-rgb: 255, 255, 255;
             --color-nav-border: #f1f5f9;
-            --color-nav-link: #2563eb;
+            --color-nav-link: #334155;
             --color-toggle-text: #64748b;
         }
         html.dark {
             --color-primary-text: #f8fafc;
             --color-secondary-text: #94a3b8;
-            --color-background: #020617; --color-accent: #38bdf8;
+            --color-background: #020617;
+            --color-accent: #38bdf8;
             --color-nav-bg: #0f172a;
-            --nav-bg-rgb: 30, 41, 59;
-            --color-nav-border: #334155;
-            --color-nav-link: #60a5fa;
+            --nav-bg-rgb: 15, 23, 42;
+            --color-nav-border: #1e293b;
+            --color-nav-link: #94a3b8;
             --color-toggle-text: #94a3b8;
         }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; transition: background-color 0.3s; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; transition: background-color 0.3s; }
         .guide-card { background: white; border-radius: 2.5rem; border: 1px solid #f1f5f9; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         html.dark .guide-card { background: #1e293b; border-color: #334155; }
-        .guide-card:hover { transform: translateY(-10px); shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); border-color: #3b82f6; }
+        .guide-card:hover { transform: translateY(-10px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); border-color: var(--color-accent); }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        @media (max-width: 640px) { h1 { font-size: 2.5rem !important; } }
     </style>
 </head>
 <body class="min-h-screen">
+    <!-- 헤더 네비게이션 -->
     <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
                 <span class="text-xl">💎</span>
                 <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
             </div>
-            <nav class="hidden md:flex items-center gap-4">
-                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
-                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">리밸런싱</a>
-                <a href="guides.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">금융 가이드</a>
-                <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
+            <nav class="hidden md:flex items-center gap-4 overflow-x-auto no-scrollbar">
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="compound.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">복리 계산기</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 whitespace-nowrap">금융 가이드</a>
+                <a href="dashboard.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">대시보드</a>
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
                 <div id="authContainer" class="ml-2">
@@ -66,25 +70,6 @@
                     </div>
                 </div>
             </nav>
-            <div class="flex items-center gap-2 md:hidden">
-                <button id="darkModeToggleMobile" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
-                <button id="mobileMenuBtn" class="p-2 rounded-lg" style="color: var(--color-primary-text);">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                </button>
-            </div>
-        </div>
-        <div id="mobileMenu" class="hidden md:hidden absolute top-16 left-0 w-full border-b shadow-lg z-[110]" style="background-color: var(--color-nav-bg); border-color: var(--color-nav-border);">
-            <nav class="flex flex-col p-4 space-y-1 overflow-y-auto max-h-[70vh] no-scrollbar">
-                <a href="index.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
-                <a href="compound.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">복리 계산기</a>
-                <a href="dividend.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">배당 계산기</a>
-                <a href="fire-calc.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">은퇴 계산기</a>
-                <a href="rebalance.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">리밸런싱</a>
-                <a href="risk-test.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">성향 진단</a>
-                <a href="dashboard.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link);">대시보드</a>
-                <div id="authContainerMobile" class="p-4 border-t border-slate-100 dark:border-slate-700 text-center"></div>
-            </nav>
-        </div>
         </div>
     </header>
 
@@ -95,85 +80,72 @@
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            <!-- 가이드 카드 1 -->
-            <a href="guide-asset-allocation.html" class="guide-card p-10 flex flex-col h-full animate-fade-in-up shadow-sm">
+            <!-- 가이드 1: 자산 배분 모델 (신규) -->
+            <a href="guide-models.html" class="guide-card p-10 flex flex-col h-full animate-fade-in-up shadow-sm">
+                <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-3xl mb-8">🏛️</div>
+                <h2 class="text-2xl font-black mb-4">자산 배분 모델:<br>황금 비율 가이드</h2>
+                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-8 flex-grow">레이 달리오의 올웨더부터 영구 포트폴리오까지, 수십 년간 검증된 대가들의 비중 전략을 파헤칩니다.</p>
+                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">Read Guide ➔</div>
+            </a>
+
+            <!-- 가이드 2: 자산 배분 기초 -->
+            <a href="guide-asset-allocation.html" class="guide-card p-10 flex flex-col h-full animate-fade-in-up shadow-sm" style="animation-delay: 0.1s;">
                 <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-3xl mb-8">📈</div>
-                <h2 class="text-2xl font-black mb-4 group-hover:text-blue-600 transition-colors">자산 배분의 기초:<br>분산 투자의 비밀</h2>
-                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-8 flex-grow">"자산 배분은 투자자가 유일하게 얻을 수 있는 공짜 점심이다." 노벨상 수상자 마코위츠의 격언 뒤에 숨겨진 수학적 원리를 분석합니다.</p>
-                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">
-                    Read Guide <span class="text-lg">→</span>
-                </div>
+                <h2 class="text-2xl font-black mb-4">자산 배분의 기초:<br>분산 투자의 비밀</h2>
+                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-8 flex-grow">"자산 배분은 공짜 점심이다." 노벨상 수상자 마코위츠의 격언 뒤에 숨겨진 수학적 분산 효과를 분석합니다.</p>
+                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">Read Guide ➔</div>
             </a>
 
-            <!-- 가이드 카드 2 -->
-            <a href="guide-rebalancing.html" class="guide-card p-10 flex flex-col h-full animate-fade-in-up shadow-sm" style="animation-delay: 0.1s;">
-                <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-3xl mb-8">⚖️</div>
+            <!-- 가이드 3: 리밸런싱 -->
+            <a href="guide-rebalancing.html" class="guide-card p-10 flex flex-col h-full animate-fade-in-up shadow-sm" style="animation-delay: 0.2s;">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-3xl mb-8">⚖️</div>
                 <h2 class="text-2xl font-black mb-4">리밸런싱:<br>수익률을 깨우는 법</h2>
-                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-8 flex-grow">주기적인 비중 조정이 어떻게 기계적인 '저점 매수, 고점 매도'를 실현하는지, 섀넌의 도깨비 원리를 통해 알아봅니다.</p>
-                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">
-                    Read Guide <span class="text-lg">→</span>
-                </div>
+                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-8 flex-grow">주기적인 비중 조정이 어떻게 기계적인 '저점 매수, 고점 매도'를 실현하는지 섀넌의 도깨비 원리로 알아봅니다.</p>
+                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">Read Guide ➔</div>
             </a>
 
-            <!-- 가이드 카드 3 -->
-            <a href="guide-compounding.html" class="guide-card p-10 flex flex-col h-full animate-fade-in-up shadow-sm" style="animation-delay: 0.2s;">
+            <!-- 가이드 4: 복리의 마법 -->
+            <a href="guide-compounding.html" class="guide-card p-10 flex flex-col h-full animate-fade-in-up shadow-sm" style="animation-delay: 0.3s;">
                 <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center text-3xl mb-8">⏳</div>
                 <h2 class="text-2xl font-black mb-4">복리의 마법과<br>10년 장기 투자</h2>
-                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-8 flex-grow">시간이 자산을 어떻게 지수함수적으로 성장시키는지, 그리고 인플레이션이라는 보이지 않는 세금을 어떻게 방어할지 공부합니다.</p>
-                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">
-                    Read Guide <span class="text-lg">→</span>
-                </div>
+                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-8 flex-grow">시간이 자산을 어떻게 지수함수적으로 성장시키는지, 인플레이션 방어를 위한 장기 투자의 정석을 공부합니다.</p>
+                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">Read Guide ➔</div>
             </a>
 
-            <!-- 가이드 카드 4 -->
-            <a href="guide-mpt.html" class="guide-card p-10 flex flex-col h-full animate-fade-in-up shadow-sm" style="animation-delay: 0.3s;">
+            <!-- 가이드 5: MPT 이론 -->
+            <a href="guide-mpt.html" class="guide-card p-10 flex flex-col h-full animate-fade-in-up shadow-sm" style="animation-delay: 0.4s;">
                 <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center text-3xl mb-8">🧬</div>
                 <h2 class="text-2xl font-black mb-4">현대 포트폴리오<br>이론(MPT) 해부</h2>
-                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-8 flex-grow">리스크를 단순히 '운'에 맡기지 않고, 수학적으로 측정하고 통제하는 방법. 효율적 투자선(Efficient Frontier)의 개념을 정복합니다.</p>
-                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">
-                    Read Guide <span class="text-lg">→</span>
-                </div>
+                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-8 flex-grow">리스크를 수학적으로 통제하는 방법. 효율적 투자선(Efficient Frontier)의 개념을 정복하여 스마트한 투자자가 되세요.</p>
+                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">Read Guide ➔</div>
             </a>
 
-            <!-- 가이드 카드 5 -->
-            <a href="guide-lotto-stats.html" class="guide-card p-10 flex flex-col h-full animate-fade-in-up shadow-sm" style="animation-delay: 0.4s;">
+            <!-- 가이드 6: 로또 통계 -->
+            <a href="guide-lotto-stats.html" class="guide-card p-10 flex flex-col h-full animate-fade-in-up shadow-sm" style="animation-delay: 0.5s;">
                 <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 rounded-2xl flex items-center justify-center text-3xl mb-8">🎲</div>
                 <h2 class="text-2xl font-black mb-4">로또의 통계학과<br>게임 이론 전략</h2>
-                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-8 flex-grow">확률은 고정되어 있지만 기대값은 바꿀 수 있습니다. 군중 심리를 역이용하여 당첨 시 수령액을 극대화하는 번호 선택의 과학.</p>
-                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">
-                    Read Guide <span class="text-lg">→</span>
-                </div>
+                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-8 flex-grow">확률은 고정되어 있지만 기대값은 바꿀 수 있습니다. 군중 심리를 역이용하여 당첨 수령액을 높이는 번호 선택의 과학.</p>
+                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">Read Guide ➔</div>
             </a>
         </div>
     </main>
 
-    <!-- Newsletter Section -->
-    <section class="max-w-4xl mx-auto px-4 mt-32 mb-20">
-        <div class="p-10 md:p-16 rounded-[3rem] bg-gradient-to-br from-slate-800 to-slate-900 text-white text-center shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url("https://www.transparenttextures.com/patterns/cubes.png")]"></div>
-            <div class="relative z-10">
-                <h3 class="text-2xl md:text-3xl font-black mb-4">Hedge Dochi 인사이트 구독하기</h3>
-                <p class="text-slate-400 mb-10 max-w-md mx-auto text-sm md:text-base">매주 변화하는 시장 데이터와 자산 배분 전략을 이메일로 보내드립니다. (비용 0원)</p>
-                <form onsubmit="event.preventDefault(); alert("감사합니다! 구독이 완료되었습니다. 🦔");" class="flex flex-col md:flex-row gap-3 max-w-lg mx-auto">
-                    <input type="email" placeholder="이메일 주소를 입력하세요" required class="flex-1 px-6 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                    <button type="submit" class="px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-xl">지금 구독</button>
-                </form>
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-center space-x-6 font-bold mb-6">
+                <a href="about.html" class="hover:text-blue-600 transition-colors">소개 (About)</a>
+                <a href="tos.html" class="hover:text-blue-600 transition-colors">이용약관</a>
+                <a href="privacy.html" class="hover:text-blue-600 transition-colors">개인정보처리방침</a>
+                <a href="contact-form.html" class="hover:text-blue-600 transition-colors">문의하기</a>
             </div>
-        </div>
-    </section>
-    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400">
-        <div class="flex justify-center space-x-6 font-bold mb-4">
-            <a href="about.html" class="hover:text-blue-600">소개</a>
-            <a href="tos.html" class="hover:text-blue-600">이용약관</a>
-            <a href="privacy.html" class="hover:text-blue-600">개인정보처리방침</a>
-            <a href="contact-form.html" class="hover:text-blue-600">문의</a>
-        </div>
-        <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
+            <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
             <p class="opacity-60 text-[10px] max-w-lg mx-auto leading-relaxed mt-2">Hedge Dochi는 데이터 기반의 금융 도구와 가이드를 제공하며, 제공되는 모든 정보는 참고용일 뿐 투자 권유를 구성하지 않습니다.</p>
+        </div>
     </footer>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="dark-mode.js"></script>
+    <script type="module" src="auth-check.js"></script>
 </body>
 </html>
