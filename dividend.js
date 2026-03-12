@@ -1,5 +1,20 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
+    authDomain: "hedge-dochi.firebaseapp.com",
+    projectId: "hedge-dochi",
+    storageBucket: "hedge-dochi.firebasestorage.app",
+    messagingSenderId: "157519209721",
+    appId: "1:157519209721:web:d1f196e41dcd579a286e28",
+    measurementId: "G-7Y0G1CVXBR"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // --- State Management ---
 let currentStep = 1;
@@ -7,8 +22,18 @@ let dividendPeriod = 12;
 let dividendChart = null;
 let currentUser = null;
 
-const auth = getAuth();
-onAuthStateChanged(auth, user => currentUser = user);
+onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+        try {
+            const snap = await getDoc(doc(db, "simulations", user.uid));
+            if (snap.exists()) {
+                const d = snap.data();
+                if (document.getElementById('d-total')) document.getElementById('d-total').value = d.initialSeed || 3000;
+            }
+        } catch (e) {}
+    }
+});
 
 // --- Navigation ---
 window.goToStep = function(step) {
@@ -48,49 +73,60 @@ window.calculateDividend = function() {
 
     for (let year = 1; year <= 10; year++) {
         for (let p = 0; p < periodsPerYear; p++) {
-            const dividend = currentWealth * yieldPerPeriod;
-            if (isReinvest) currentWealth += (dividend * taxFactor);
+            if (isReinvest) {
+                const div = currentWealth * yieldPerPeriod * taxFactor;
+                currentWealth += div;
+            }
         }
         chartData.push(Math.round(currentWealth));
         chartLabels.push(`${year}년`);
     }
 
     document.getElementById('monthlyDividendResult').innerText = formatKorean(monthlyNet);
-    document.getElementById('annualDividendResult').innerText = `연간 총 배당금(세후): ${formatKorean(annualNet)}`;
-    document.getElementById('tenYearResult').innerText = formatKorean(currentWealth);
-    document.getElementById('tenYearGrowth').innerText = `+${((currentWealth - total) / total * 100).toFixed(1)}%`;
+    document.getElementById('annualDividendResult').innerText = formatKorean(annualNet);
+    document.getElementById('growthResultText').innerText = `10년 후 예상 자산: ${formatKorean(currentWealth)}`;
 
-    renderDividendChart(chartLabels, chartData);
-    goToStep(4);
-    if (currentUser) saveDividendData(monthlyNet, annualNet);
+    renderChart(chartLabels, chartData);
+    goToStep(3);
+    if (currentUser) {
+        saveDividendData(total, yieldRate * 100, monthlyNet);
+        syncToGlobalProfile(total);
+    }
 };
 
-function renderDividendChart(labels, data) {
+async function syncToGlobalProfile(seed) {
+    if (!currentUser) return;
+    try {
+        await setDoc(doc(db, "simulations", currentUser.uid), {
+            initialSeed: seed,
+            lastUpdated: new Date()
+        }, { merge: true });
+    } catch (e) {}
+}
+
+async function saveDividendData(total, yieldRate, monthlyIncome) {
+    try {
+        await setDoc(doc(db, "dividend_goals", currentUser.uid), {
+            totalInvested: total,
+            yieldRate: yieldRate,
+            monthlyIncome: monthlyIncome,
+            updatedAt: new Date()
+        }, { merge: true });
+    } catch (e) { console.error(e); }
+}
+
+function renderChart(labels, data) {
     const ctx = document.getElementById('dividendChart').getContext('2d');
     if (dividendChart) dividendChart.destroy();
     dividendChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{ label: '자산 성장', data: data, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4, pointRadius: 0 }]
+            datasets: [{ label: '자산 성장', data: data, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4, pointRadius: 4 }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
     });
 }
-
-async function saveDividendData(monthly, annual) {
-    try {
-        const db = getFirestore();
-        await setDoc(doc(db, "dividend_goals", currentUser.uid), { monthlyIncome: monthly, annualIncome: annual, updatedAt: new Date() }, { merge: true });
-    } catch (e) { console.error(e); }
-}
-
-window.copyDividendResult = function() {
-    const monthly = document.getElementById('monthlyDividendResult').innerText;
-    const annual = document.getElementById('annualDividendResult').innerText;
-    const text = `💰 Hedge Dochi 배당금 리포트 💰\n\n💵 예상 월 세후 배당금: ${monthly}\n📅 ${annual}\n\n📍 나의 꼬박꼬박 들어오는 현금흐름, 지금 확인해보세요!\n👉 https://hedge-dochi-live.pages.dev/dividend.html`;
-    navigator.clipboard.writeText(text).then(() => alert("배당 리포트가 복사되었습니다! 🚀"));
-};
 
 function formatKorean(val) {
     if (val >= 10000) return (val / 10000).toFixed(1) + '억';

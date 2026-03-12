@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
@@ -20,7 +20,24 @@ let currentStep = 1;
 let fireChart = null;
 let currentUser = null;
 
-onAuthStateChanged(auth, user => currentUser = user);
+onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+        try {
+            const snap = await getDoc(doc(db, "simulations", user.uid));
+            if (snap.exists()) {
+                const d = snap.data();
+                if (document.getElementById('f-expense')) document.getElementById('f-expense').value = d.monthlyExpense || 200;
+                if (document.getElementById('f-seed')) document.getElementById('f-seed').value = d.initialSeed || 3000;
+                if (document.getElementById('f-annual-save')) {
+                    const annualSave = (parseFloat(d.annualSalary) || 4500) - (parseFloat(d.monthlyExpense) || 200) * 12;
+                    document.getElementById('f-annual-save').value = Math.max(0, annualSave);
+                }
+                if (document.getElementById('f-rate')) document.getElementById('f-rate').value = d.investmentReturn || 5.0;
+            }
+        } catch (e) { console.error("Data Load Error:", e); }
+    }
+});
 
 window.goToStep = function(step) {
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
@@ -66,10 +83,26 @@ window.calculateFIRE = function() {
 
     renderFireChart(chartLabels, chartData);
     renderAdvice(years);
-    if (currentUser) saveFireData(fireGoal, years, achievementYear);
+    if (currentUser) {
+        saveFireData(fireGoal, years, achievementYear);
+        // 기초 재무 프로필도 함께 업데이트하여 다른 도구와 동기화
+        syncToGlobalProfile();
+    }
     
     goToStep(4);
 };
+
+async function syncToGlobalProfile() {
+    if (!currentUser) return;
+    try {
+        await setDoc(doc(db, "simulations", currentUser.uid), {
+            monthlyExpense: document.getElementById('f-expense').value,
+            initialSeed: document.getElementById('f-seed').value,
+            investmentReturn: document.getElementById('f-rate').value,
+            lastUpdated: new Date()
+        }, { merge: true });
+    } catch (e) {}
+}
 
 function renderFireChart(labels, data) {
     const ctx = document.getElementById('fireChart').getContext('2d');

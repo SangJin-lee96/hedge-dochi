@@ -26,6 +26,32 @@ let assets = [];
 let chart = null;
 let currentUser = null;
 
+onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+        try {
+            // 기초 데이터 로드 및 적용
+            const [simSnap, portSnap] = await Promise.all([
+                getDoc(doc(db, "simulations", user.uid)),
+                getDoc(doc(db, "portfolios", user.uid))
+            ]);
+
+            if (simSnap.exists()) {
+                const d = simSnap.data();
+                const totalInvestInput = document.getElementById('totalInvestment');
+                if (totalInvestInput && !totalInvestInput.value) {
+                    totalInvestInput.value = d.initialSeed || 3000;
+                }
+            }
+
+            if (portSnap.exists()) {
+                assets = portSnap.data().assets || [];
+                renderAssetList();
+            }
+        } catch (e) {}
+    }
+});
+
 // --- Wizard Navigation ---
 window.goToStep = function(step) {
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));

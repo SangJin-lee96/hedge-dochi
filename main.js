@@ -253,12 +253,12 @@ onAuthStateChanged(auth, async (user) => {
             const snap = await getDoc(doc(db, "simulations", user.uid));
             if (snap.exists()) {
                 const d = snap.data();
-                document.getElementById('annualSalary').value = d.annualSalary;
-                document.getElementById('initialSeed').value = d.initialSeed;
-                document.getElementById('monthlyExpense').value = d.monthlyExpense;
-                document.getElementById('salaryGrowth').value = d.salaryGrowth;
-                document.getElementById('investmentReturn').value = d.investmentReturn;
-                document.getElementById('inflationRate').value = d.inflationRate;
+                if (d.annualSalary) document.getElementById('annualSalary').value = d.annualSalary;
+                if (d.initialSeed) document.getElementById('initialSeed').value = d.initialSeed;
+                if (d.monthlyExpense) document.getElementById('monthlyExpense').value = d.monthlyExpense;
+                if (d.salaryGrowth) document.getElementById('salaryGrowth').value = d.salaryGrowth;
+                if (d.investmentReturn) document.getElementById('investmentReturn').value = d.investmentReturn;
+                if (d.inflationRate) document.getElementById('inflationRate').value = d.inflationRate;
                 if (d.baseCurrency) setCurrency(d.baseCurrency);
                 if (confirm("이전에 시뮬레이션한 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) calculateAndShowResult();
             }
