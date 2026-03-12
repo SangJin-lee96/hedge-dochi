@@ -33,13 +33,18 @@ async function loadDashboardData(uid) {
         ]);
 
         let riskType = null;
+        let recommendedPortfolio = null;
         if (riskSnap.exists()) {
             const d = riskSnap.data();
             riskType = d.type;
+            recommendedPortfolio = d.portfolio;
             document.getElementById('dashRiskType').innerText = d.type;
             document.getElementById('dashRiskDesc').innerText = `추천: ${d.portfolio}`;
             const icons = { "공격투자형": "🔥", "적극투자형": "🚀", "위험중립형": "⚖️", "안정추구형": "🛡️", "안정형": "💎" };
             document.getElementById('dashRiskIcon').innerText = icons[d.type] || "🧠";
+        } else {
+            document.getElementById('dashRiskType').innerText = "성향 분석 전";
+            document.getElementById('dashRiskDesc').innerText = "3단계를 먼저 진행해 주세요.";
         }
 
         let simResult = null;
@@ -47,12 +52,13 @@ async function loadDashboardData(uid) {
             simResult = calculateSummary(simSnap.data());
             document.getElementById('dashTierName').innerText = simResult.tier;
             document.getElementById('dashTierIcon').innerText = simResult.icon;
-            addLog(`10년 후 예상 자산: ${simResult.nominalWealth}`);
+            addLog(`나의 10년 후 예상 자산 등급: ${simResult.tier}`);
         }
 
         // 캐릭터 및 뱃지 업데이트
         updateUserAvatar(simResult, riskType);
 
+        const assetLegend = document.getElementById('dashAssetLegend');
         if (portSnap.exists()) {
             const assets = portSnap.data().assets || [];
             if (assets.length > 0) {
@@ -61,8 +67,29 @@ async function loadDashboardData(uid) {
                 scoreEl.innerText = score;
                 scoreEl.className = `text-6xl font-black mb-4 ${score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500'}`;
                 renderDashChart(assets);
+                document.getElementById('dashChartCenterText').innerText = formatVal(assets.reduce((sum, a) => sum + (a.qty * (a.price || 0)), 0), portSnap.data().baseCurrency || 'USD');
+            } else {
+                showEmptyAssetGuide(recommendedPortfolio);
             }
+        } else {
+            showEmptyAssetGuide(recommendedPortfolio);
         }
+
+function showEmptyAssetGuide(recommended) {
+    const centerText = document.getElementById('dashChartCenterText');
+    if (centerText) centerText.innerText = "등록 필요";
+    
+    const legend = document.getElementById('dashAssetLegend');
+    if (legend) {
+        legend.innerHTML = `
+            <div class="col-span-full p-6 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 text-center">
+                <p class="text-blue-600 dark:text-blue-400 font-bold mb-4">아직 등록된 자산이 없습니다.</p>
+                <p class="text-xs text-slate-500 mb-6">${recommended ? `당신의 추천 비중은 <b>${recommended}</b> 입니다.` : '이전 단계의 분석 데이터를 기반으로 포트폴리오를 구성해 드릴 수 있습니다.'}</p>
+                <a href="step8-rebalance.html" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-xl text-xs font-black shadow-lg hover:bg-blue-700 transition-all">실제 자산 등록하러 가기 ➔</a>
+            </div>
+        `;
+    }
+}
 
         if (lottoSnap.exists()) {
             const d = lottoSnap.data();
