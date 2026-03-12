@@ -189,6 +189,32 @@ window.updateWeight = function(id, val) {
     renderWeights();
 };
 
+window.applyModel = function(modelType) {
+    if (assets.length === 0) { alert("먼저 자산을 하나 이상 추가해주세요."); return; }
+
+    let targetWeights = [];
+    if (modelType === 'ALL_WEATHER') {
+        // 올웨더 간소화 (주식 30, 채권 55, 원자재 15)
+        const counts = [0.3, 0.55, 0.15];
+        assets.forEach((a, i) => a.targetWeight = Math.round(counts[i % 3] / Math.ceil(assets.length/3) * 100));
+    } else if (modelType === '6040') {
+        const counts = [0.6, 0.4];
+        assets.forEach((a, i) => a.targetWeight = Math.round(counts[i % 2] / Math.ceil(assets.length/2) * 100));
+    } else if (modelType === 'PERMANENT') {
+        const weight = Math.floor(100 / assets.length);
+        assets.forEach(a => a.targetWeight = weight);
+    }
+
+    // 합계 100% 보정
+    let currentTotal = assets.reduce((sum, a) => sum + (a.targetWeight || 0), 0);
+    if (currentTotal !== 100) {
+        assets[assets.length - 1].targetWeight += (100 - currentTotal);
+    }
+
+    renderWeights();
+    if (window.showToast) window.showToast(`'${modelType}' 모델 비중이 적용되었습니다. 🎯`);
+};
+
 function updateTotalWeight() {
     const total = assets.reduce((sum, a) => sum + (a.targetWeight || 0), 0);
     const display = document.getElementById('totalWeight');
