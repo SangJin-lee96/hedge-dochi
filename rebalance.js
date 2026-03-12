@@ -20,10 +20,20 @@ const db = getFirestore(app);
 // --- State Management ---
 let currentStep = 1;
 let baseCurrency = 'USD';
+let liveExchangeRate = 1350;
 let exchangeRate = 1350;
 let assets = [];
 let chart = null;
 let currentUser = null;
+
+window.resetToLiveExchangeRate = function() {
+    const input = document.getElementById('manualExchangeRate');
+    if (input) {
+        input.value = Math.round(liveExchangeRate);
+        exchangeRate = liveExchangeRate;
+        document.getElementById('exchangeRateDisplay').innerText = `현재 환율: ₩${liveExchangeRate.toLocaleString()}`;
+    }
+};
 
 // --- Wizard Navigation ---
 window.goToStep = function(step) {
@@ -213,6 +223,9 @@ function updateTotalWeight() {
 
 // --- Calculation ---
 window.calculateRebalance = async function() {
+    const manualRate = parseFloat(document.getElementById('manualExchangeRate')?.value);
+    if (manualRate) exchangeRate = manualRate;
+
     const resultsContainer = document.getElementById('rebalanceResults');
     resultsContainer.innerHTML = '<div class="text-center py-8 animate-pulse font-bold text-slate-400">포트폴리오 분석 중...</div>';
 
@@ -337,8 +350,15 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => signOut(au
     try {
         const res = await fetch('/api/price?ticker=USDKRW=X');
         const data = await res.json();
-        exchangeRate = data?.chart?.result?.[0]?.meta?.regularMarketPrice || 1350;
-        document.getElementById('exchangeRateDisplay').innerText = `현재 환율: ₩${exchangeRate.toLocaleString()}`;
+        const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice || 1350;
+        liveExchangeRate = rate;
+        exchangeRate = rate;
+        
+        const display = document.getElementById('exchangeRateDisplay');
+        if (display) display.innerText = `현재 환율: ₩${rate.toLocaleString()}`;
+        
+        const input = document.getElementById('manualExchangeRate');
+        if (input && !input.value) input.value = Math.round(rate);
     } catch (e) {}
     if (assets.length === 0) addAsset();
 })();

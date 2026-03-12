@@ -104,7 +104,20 @@
                     <button onclick="setCurrency('USD')" id="btn-currency-usd" class="relative z-10 flex-1 py-4 font-black transition-colors text-blue-600 dark:text-blue-400">USD ($)</button>
                     <button onclick="setCurrency('KRW')" id="btn-currency-krw" class="relative z-10 flex-1 py-4 font-black transition-colors text-slate-400">KRW (₩)</button>
                 </div>
-                <div class="flex items-center justify-between px-4 text-sm font-bold opacity-60"><span id="exchangeRateDisplay">실시간 환율 로딩 중...</span><span class="text-blue-500">Live</span></div>
+                
+                <!-- 수동 환율 입력 추가 -->
+                <div class="space-y-3 px-2">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">적용 환율 (1 USD)</label>
+                    <div class="relative">
+                        <input type="number" id="manualExchangeRate" value="1350" class="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-2xl p-4 font-bold focus:ring-4 focus:ring-blue-500 transition-all">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">원</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-bold">
+                        <span id="exchangeRateDisplay" class="text-slate-400">실시간 환율 로딩 중...</span>
+                        <button onclick="resetToLiveExchangeRate()" class="text-blue-500 hover:underline">실시간 적용 🔄</button>
+                    </div>
+                </div>
+
                 <button onclick="goToStep(2)" class="w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">자산 입력 시작 ➔</button>
             </div>
         </div>
