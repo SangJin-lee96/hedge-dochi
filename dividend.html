@@ -51,7 +51,6 @@
     </style>
 </head>
 <body class="min-h-screen">
-    <!-- 헤더 네비게이션 -->
     <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
@@ -146,16 +145,19 @@
 
             <!-- STEP 4: 결과 리포트 -->
             <div id="step-4" class="step-section hidden space-y-10 animate-fade-in-up">
-                <div class="p-10 rounded-[3rem] bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-2xl">
+                <div class="p-10 rounded-[3rem] bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-2xl text-center">
                     <p class="text-[10px] font-bold uppercase tracking-[0.3em] mb-4 opacity-80">Estimated Monthly Income</p>
                     <h2 id="monthlyDividendResult" class="text-5xl font-black mb-2">0원</h2>
                     <p id="annualDividendResult" class="text-emerald-100 text-sm font-bold">연간 총 배당금: 0원</p>
                 </div>
+                
                 <div class="stat-card p-8">
-                    <h4 class="text-sm font-black text-slate-400 uppercase mb-6">10년 재투자 시나리오</h4>
+                    <h4 class="text-sm font-black text-slate-400 uppercase mb-6">10년 재투자 시뮬레이션</h4>
+                    <div class="relative h-40 mb-6"><canvas id="dividendChart"></canvas></div>
                     <div class="text-3xl font-black text-blue-600 mb-2" id="tenYearResult">0원</div>
                     <p class="text-xs text-slate-500">원금 대비 <span id="tenYearGrowth" class="text-emerald-500">+0%</span> 성장</p>
                 </div>
+
                 <div class="flex flex-col md:flex-row gap-4">
                     <button onclick="copyDividendResult()" class="flex-1 py-5 bg-indigo-600 text-white font-black rounded-2xl shadow-xl transition-all">📋 결과 복사</button>
                     <button onclick="goToStep(1)" class="flex-1 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">다시 계산</button>
@@ -182,8 +184,8 @@
     </main>
 
     <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
-        <div class="max-w-6xl mx-auto">
-            <div class="flex justify-center space-x-6 font-bold mb-6">
+        <div class="max-w-6xl mx-auto text-xs md:text-sm text-slate-400">
+            <div class="flex justify-center space-x-6 font-bold mb-4">
                 <a href="about.html" class="hover:text-blue-600 transition-colors">소개 (About)</a>
                 <a href="tos.html" class="hover:text-blue-600 transition-colors">이용약관</a>
                 <a href="privacy.html" class="hover:text-blue-600 transition-colors">개인정보처리방침</a>
@@ -196,6 +198,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="dark-mode.js"></script>
     <script type="module" src="auth-check.js"></script>
     <script type="module" src="dividend.js"></script>
