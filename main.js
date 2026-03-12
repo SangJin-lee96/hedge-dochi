@@ -215,8 +215,72 @@ function renderChart(nominalData, realData) {
     });
 }
 
+// --- Strategy Modal ---
+const strategyContent = {
+    "다이아몬드": {
+        icon: "💎",
+        title: "다이아몬드 등급을 위한 공격적 자산 증식",
+        content: "이미 자산 형성의 본 궤도에 오르셨습니다. 이제는 단순한 저축보다는 '베타 가속'에 집중할 때입니다. <br><br>1. 주식 비중을 70% 이상으로 유지하되, 일부를 레버리지 ETF나 가상자산에 배분하여 수익률을 극대화하세요. <br>2. 절세 계좌(ISA, IRP)를 풀 가동하여 복리 효과를 저해하는 세금을 최소화하세요."
+    },
+    "플래티넘": {
+        icon: "💍",
+        title: "플래티넘 등급을 위한 스마트 리밸런싱",
+        content: "상위권 진입이 눈앞입니다. 이제부터는 '잃지 않는 투자'와 '공격'의 균형이 중요합니다. <br><br>1. 60:40 또는 올웨더 포트폴리오를 참고하여 자산 배분을 시작하세요. <br>2. 분기별 리밸런싱을 통해 고점 매도, 저점 매수를 기계적으로 실천하세요."
+    },
+    "골드": {
+        icon: "🥇",
+        title: "골드 등급을 위한 시드 가속화 전략",
+        content: "복리의 마법이 본격적으로 시작되는 지점입니다. 시드의 크기를 키우는 것이 최우선입니다. <br><br>1. 불필요한 지출을 10%만 더 줄여 투자 원금을 늘리세요. <br>2. 시장 지수(S&P500, 나스닥) 위주의 적립식 투자를 추천합니다."
+    },
+    "실버": {
+        icon: "🥈",
+        title: "실버 등급을 위한 기초 체력 다지기",
+        content: "안정적인 자산가로 가는 첫 단추를 잘 끼우셨습니다. <br><br>1. 비상금을 먼저 확보한 뒤 투자를 시작하세요. <br>2. 개별 종목보다는 전세계 주식(VT)이나 국내외 대형 우량주 위주로 경험을 쌓으세요."
+    },
+    "브론즈": {
+        icon: "🥉",
+        title: "브론즈 등급을 위한 탈출 전략",
+        content: "지금은 투자 수익률보다 '저축률'이 압도적으로 중요한 시기입니다. <br><br>1. 몸값을 높여 파이프라인을 늘리는 데 투자하세요. <br>2. 금융 공부를 병행하며 월 10만 원이라도 꾸준히 인덱스 펀드에 넣는 습관을 만드세요."
+    }
+};
+
+window.toggleStrategyModal = function(show) {
+    const modal = document.getElementById('strategyModal');
+    const container = document.getElementById('modalContainer');
+    if (!modal || !container) return;
+
+    if (show) {
+        const tier = document.getElementById('gradeTitle').innerText;
+        const data = strategyContent[tier] || strategyContent["브론즈"];
+        
+        document.getElementById('modalContent').innerHTML = `
+            <div class="text-center mb-6"><div class="text-6xl mb-4">${data.icon}</div><h4 class="text-xl font-bold text-blue-600">${data.title}</h4></div>
+            <div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-2xl leading-relaxed text-slate-600 dark:text-slate-300">${data.content}</div>
+        `;
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            container.classList.remove('scale-95', 'opacity-0');
+            container.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    } else {
+        container.classList.remove('scale-100', 'opacity-100');
+        container.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }, 300);
+    }
+};
+
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
+    // 이벤트 리스너 등록
+    document.getElementById('showStrategyBtn')?.addEventListener('click', () => toggleStrategyModal(true));
+    document.getElementById('closeModal')?.addEventListener('click', () => toggleStrategyModal(false));
+    document.getElementById('closeModalBtn')?.addEventListener('click', () => toggleStrategyModal(false));
+    
     // 다크모드 대응 차트 갱신
     const observer = new MutationObserver(() => {
         if (currentStep === 4) updateCalculation();
