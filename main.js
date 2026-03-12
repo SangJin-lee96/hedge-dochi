@@ -257,6 +257,30 @@ const logoutBtn = document.getElementById('logoutBtn');
 if (loginBtn) loginBtn.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
 if (logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth).then(() => location.reload()));
 
+window.copySimulationResult = function() {
+    const tier = document.getElementById('gradeTitle').innerText;
+    const nominal = document.getElementById('finalWealthText').innerText;
+    const real = document.getElementById('realValueText').innerText;
+    const savings = document.getElementById('netSavingsText').innerText;
+    const currency = baseCurrency === 'KRW' ? '원화' : '달러';
+
+    const text = `💎 Hedge Dochi 자산 등급 리포트 💎\n\n` +
+                 `나의 10년 후 예상 등급: [ ${tier} ]\n` +
+                 `--------------------------\n` +
+                 `💰 10년 후 명목 자산: ${nominal}\n` +
+                 `📉 실질 가치(물가반영): ${real}\n` +
+                 `🏦 월 평균 저축액: ${savings}${baseCurrency === 'KRW' ? '만' : ''}\n` +
+                 `🌍 기준 통화: ${currency}\n\n` +
+                 `📍 당신의 미래 자산 등급을 지금 확인해보세요!\n` +
+                 `👉 https://hedge-dochi-live.pages.dev/`;
+
+    navigator.clipboard.writeText(text).then(() => {
+        alert("결과 리포트가 클립보드에 복사되었습니다! 🚀\n커뮤니티나 SNS에 공유해보세요.");
+    }).catch(err => {
+        console.error('복사 실패:', err);
+    });
+};
+
 window.toggleStrategyModal = function(show) {
     const modal = document.getElementById('strategyModal'), container = document.getElementById('modalContainer');
     if (!modal || !container) return;
