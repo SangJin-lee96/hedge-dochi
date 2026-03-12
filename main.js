@@ -292,6 +292,28 @@ window.showToast = function(msg) {
     setTimeout(() => t.classList.remove('show'), 3000);
 };
 
+window.downloadResultImage = function() {
+    const area = document.querySelector('.capture-area');
+    if (!area) return;
+    showToast("리포트 이미지를 생성하고 있습니다... 🖼️");
+    html2canvas(area, { useCORS: true, backgroundColor: null, scale: 2, logging: false }).then(canvas => {
+        const link = document.createElement('a');
+        const tier = document.getElementById('gradeTitle').innerText;
+        link.download = `HedgeDochi_Report_${tier}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast("이미지 저장이 완료되었습니다! ✨");
+    }).catch(() => showToast("이미지 생성 중 오류가 발생했습니다."));
+};
+
+window.copySimulationResult = function() {
+    const tier = document.getElementById('gradeTitle').innerText;
+    const nominal = document.getElementById('finalWealthText').innerText;
+    const real = document.getElementById('realValueText').innerText;
+    const text = `💎 Hedge Dochi 자산 등급 리포트 💎\n\n나의 10년 후 예상 등급: [ ${tier} ]\n💰 10년 후 명목 자산: ${nominal}\n📉 실질 가치(물가반영): ${real}\n\n📍 당신의 미래 등급을 확인해보세요!\n👉 https://hedge-dochi-live.pages.dev/`;
+    navigator.clipboard.writeText(text).then(() => alert("결과 리포트가 클립보드에 복사되었습니다! 🚀"));
+};
+
 window.toggleStrategyModal = function(show) {
     const m = document.getElementById('strategyModal'), c = document.getElementById('modalContainer');
     if (show) {

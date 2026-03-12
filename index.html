@@ -318,6 +318,9 @@
                         <button onclick="copySimulationResult()" class="px-8 py-4 rounded-2xl bg-indigo-700 text-white font-bold shadow-xl hover:bg-indigo-800 transition-all active:scale-95 flex items-center gap-2">
                             <span>📋 결과 복사</span>
                         </button>
+                        <button onclick="downloadResultImage()" class="px-8 py-4 rounded-2xl bg-emerald-600 text-white font-bold shadow-xl hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-2">
+                            <span>🖼️ 이미지 저장</span>
+                        </button>
                         <button onclick="goToStep(1)" class="px-8 py-4 rounded-2xl bg-white/20 text-white font-bold backdrop-blur-md border border-white/30 hover:bg-white/30 transition-all">🔄 다시 하기</button>
                     </div>
                 </div>
@@ -460,6 +463,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="dark-mode.js"></script>
     <script src="main.js"></script>
     <script>
