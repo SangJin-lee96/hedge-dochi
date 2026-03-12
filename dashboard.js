@@ -51,32 +51,98 @@ async function loadDashboardData(uid) {
             document.getElementById('dashRiskDesc').innerText = `추천: ${data.portfolio}`;
             const icons = { "공격투자형": "🔥", "적극투자형": "🚀", "위험중립형": "⚖️", "안정추구형": "🛡️", "안정형": "💎" };
             document.getElementById('dashRiskIcon').innerText = icons[data.type] || "🧠";
-            addLog(`투자 성향이 '${data.type}'으로 기록되었습니다.`);
+            addLog(`투자 성향이 '${data.type}'으로 분석되었습니다.`);
         }
 
-        // 2. 자산 시뮬레이션 데이터
+        // 2. 자산 시뮬레이션 데이터 분석 및 렌더링
         const simSnap = await getDoc(doc(db, "simulations", uid));
         if (simSnap.exists()) {
-            const data = simSnap.snap ? simSnap.data() : simSnap.data(); // 기본값 처리
-            // 간단 요약 (실제 계산 로직은 main.js에 있으므로 여기서는 데이터 존재 여부만)
-            document.getElementById('dashTierName').innerText = "데이터 분석 완료";
-            document.getElementById('dashTierIcon').innerText = "📈";
-            addLog("자산 시뮬레이션 데이터가 업데이트 되었습니다.");
+            const d = simSnap.data();
+            const result = calculateSummary(d);
+            
+            document.getElementById('dashTierName').innerText = result.tier;
+            document.getElementById('dashTierIcon').innerText = result.icon;
+            
+            // 활동 로그에 상세 수치 추가
+            addLog(`10년 후 예상 자산: ${result.nominalWealth}`);
+            addLog(`물가 반영 실질 가치: ${result.realWealth}`);
         }
 
         // 3. 리밸런싱 포트폴리오 데이터
         const portSnap = await getDoc(doc(db, "portfolios", uid));
         if (portSnap.exists()) {
             const assets = portSnap.data().assets || [];
-            document.getElementById('dashScoreValue').innerText = assets.length > 0 ? "OK" : "--";
-            addLog(`${assets.length}개의 자산이 포트폴리오에 등록되어 있습니다.`);
+            if (assets.length > 0) {
+                document.getElementById('dashScoreValue').innerText = "LIVE";
+                addLog(`${assets.length}개의 종목을 관리 중입니다.`);
+            }
         }
 
         if (activityLog.innerHTML === "") {
             activityLog.innerHTML = "아직 기록된 활동이 없습니다. 도구를 사용하여 자산을 분석해보세요!";
         }
 
+        renderDailyQuote();
+
     } catch (e) { console.error("Load Error:", e); }
+}
+
+// 시뮬레이션 데이터 요약 계산기 (main.js 로직 축약본)
+function calculateSummary(d) {
+    const salary = parseFloat(d.annualSalary) || 0;
+    const seed = parseFloat(d.initialSeed) || 0;
+    const expense = parseFloat(d.monthlyExpense) || 0;
+    const growth = (parseFloat(d.salaryGrowth) || 0) / 100;
+    const returns = (parseFloat(d.investmentReturn) || 0) / 100;
+    const inflation = (parseFloat(d.inflationRate) || 0) / 100;
+
+    let current = seed;
+    let curSalary = salary;
+    let curExpense = expense;
+
+    for (let i = 1; i <= 10; i++) {
+        const surplus = curSalary - (curExpense * 12);
+        current = current + surplus + ((current + surplus / 2) * returns);
+        curSalary *= (1 + growth);
+        curExpense *= (1 + inflation);
+    }
+
+    const realWealth = current / Math.pow(1 + inflation, 10);
+    
+    // 등급 판정
+    let tier = "브론즈", icon = "🥉";
+    const threshold = d.baseCurrency === 'KRW' ? 1 : (1/1350 * 10000); // 환율 가정
+    const val = realWealth / threshold;
+
+    if (val >= 200000) { tier = "다이아몬드"; icon = "💎"; }
+    else if (val >= 100000) { tier = "플래티넘"; icon = "💍"; }
+    else if (val >= 50000) { tier = "골드"; icon = "🥇"; }
+    else if (val >= 20000) { tier = "실버"; icon = "🥈"; }
+
+    return {
+        tier, icon,
+        nominalWealth: formatVal(current, d.baseCurrency),
+        realWealth: formatVal(realWealth, d.baseCurrency)
+    };
+}
+
+function formatVal(v, curr) {
+    if (curr === 'KRW') {
+        return v >= 10000 ? (v / 10000).toFixed(1) + '억' : Math.round(v).toLocaleString() + '만';
+    }
+    return '$' + (v / 1000000).toFixed(2) + 'M';
+}
+
+function renderDailyQuote() {
+    const quotes = [
+        "자산 배분은 투자자가 가질 수 있는 유일한 공짜 점심입니다.",
+        "가장 좋은 투자 시기는 어제였고, 그다음으로 좋은 시기는 바로 오늘입니다.",
+        "시장의 소음이 아닌, 당신만의 비중(Allocation)에 집중하세요.",
+        "복리는 세상의 8번째 불가사의입니다. 시간을 내 편으로 만드세요.",
+        "리밸런싱은 본능을 이기고 기계적으로 수익을 확정하는 기술입니다."
+    ];
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    addLog(`💡 오늘의 팁: ${randomQuote}`);
 }
 
 function addLog(msg) {
