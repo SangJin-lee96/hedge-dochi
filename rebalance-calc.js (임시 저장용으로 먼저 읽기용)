@@ -1,0 +1,68 @@
+// --- Calculation ---
+window.calculateRebalance = async function() {
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+    if (btnText && btnSpinner) {
+        btnText.classList.add('hidden');
+        btnSpinner.classList.remove('hidden');
+    }
+
+    // 수동 입력된 환율로 exchangeRate 동기화
+    const manualRate = parseFloat(document.getElementById('manualExchangeRate')?.value);
+    if (manualRate) exchangeRate = manualRate;
+
+    const resultsContainer = document.getElementById('rebalanceResults');
+    resultsContainer.innerHTML = '<div class="text-center py-8 animate-pulse font-bold text-slate-400">포트폴리오 분석 중...</div>';
+
+    // 1. 총 가산 산출 (환율 적용)
+    let totalValueInBase = 0;
+    const processedAssets = assets.map(a => {
+        const isKRWAsset = a.ticker.endsWith('.KS') || a.ticker.endsWith('.KQ');
+        let currentPriceInBase = a.price;
+
+        if (baseCurrency === 'USD' && isKRWAsset) {
+            currentPriceInBase = a.price / exchangeRate; 
+        } else if (baseCurrency === 'KRW' && !isKRWAsset && a.ticker !== 'CASH') {
+            currentPriceInBase = a.price * exchangeRate; 
+        }
+
+        const valueInBase = a.qty * currentPriceInBase;
+        totalValueInBase += valueInBase;
+        return { ...a, currentPriceInBase, valueInBase };
+    });
+
+    // 2. 결과 도출
+    setTimeout(() => {
+        resultsContainer.innerHTML = '';
+        processedAssets.forEach(a => {
+            const targetValue = totalValueInBase * (a.targetWeight / 100);
+            const diffValue = targetValue - a.valueInBase;
+            const diffQty = a.currentPriceInBase > 0 ? (diffValue / a.currentPriceInBase).toFixed(2) : 0;
+            
+            const div = document.createElement('div');
+            div.className = "p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center animate-fade-in-up";
+            
+            let actionHTML = '';
+            if (parseFloat(diffQty) > 0) {
+                actionHTML = `<div class="text-right"><span class="text-emerald-500 font-black">매수 ${diffQty}주</span><p class="text-[10px] text-slate-400">약 ${formatValue(Math.abs(diffValue))}</p></div>`;
+            } else if (parseFloat(diffQty) < 0) {
+                actionHTML = `<div class="text-right"><span class="text-red-500 font-black">매도 ${Math.abs(diffQty)}주</span><p class="text-[10px] text-slate-400">약 ${formatValue(Math.abs(diffValue))}</p></div>`;
+            } else {
+                actionHTML = `<span class="text-slate-400 font-black">유지</span>`;
+            }
+
+            div.innerHTML = `<div class="flex flex-col"><span class="font-bold text-slate-800 dark:text-slate-200">${a.ticker}</span><span class="text-[10px] font-bold text-slate-400">${((a.valueInBase/totalValueInBase)*100).toFixed(1)}% → ${a.targetWeight}%</span></div>${actionHTML}`;
+            resultsContainer.appendChild(div);
+        });
+
+        renderChart(processedAssets);
+        updateHealthScore(processedAssets, totalValueInBase);
+        goToStep(4);
+        saveDataToFirebase();
+
+        if (btnText && btnSpinner) {
+            btnText.classList.remove('hidden');
+            btnSpinner.classList.add('hidden');
+        }
+    }, 800);
+};

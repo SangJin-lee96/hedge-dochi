@@ -71,11 +71,21 @@ async function renderMarketSentiment() {
 });
 
 async function loadDashboardData(uid) {
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach(c => c.classList.add('skeleton')); // 로딩 시작
+
     const activityLog = document.getElementById('dashActivityLog');
     activityLog.innerHTML = "";
 
     try {
-        // 1. 투자 성향 데이터
+        // ... (데이터 로드 로직 동일)
+// ... (생략)
+        renderDashChart(assets);
+    } catch (e) { console.error("Load Error:", e); }
+    finally {
+        cards.forEach(c => c.classList.remove('skeleton')); // 로딩 종료
+    }
+}
         const riskSnap = await getDoc(doc(db, "risk_profiles", uid));
         if (riskSnap.exists()) {
             const data = riskSnap.data();
