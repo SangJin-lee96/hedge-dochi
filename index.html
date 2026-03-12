@@ -146,24 +146,55 @@
         </div>
     </header>
 
-    <!-- Market Pulse Ticker -->
-    <div class="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-b border-slate-100 dark:border-slate-800 py-3 overflow-hidden">
-        <div class="max-w-6xl mx-auto px-4 flex items-center justify-between gap-4">
-            <div id="marketPulse" class="flex items-center gap-8 animate-none whitespace-nowrap no-scrollbar overflow-x-auto">
-                <!-- JS에서 실시간 데이터 삽입 -->
+    <!-- Market Pulse Ticker (Integrated) -->
+    <div class="sticky top-16 z-[90] w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 overflow-hidden">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <div id="marketPulse" class="flex items-center gap-8 whitespace-nowrap no-scrollbar overflow-x-auto scroll-smooth">
                 <div class="flex items-center gap-2 px-4 py-1 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse">
-                    <span class="text-xs font-bold text-slate-400">시장을 읽어오는 중...</span>
+                    <span class="text-[10px] font-bold text-slate-400">데이터를 동기화하는 중...</span>
                 </div>
             </div>
-            <div class="hidden md:flex items-center gap-2 flex-shrink-0 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-l pl-4 dark:border-slate-800">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Last Update:</span>
-                <span id="lastUpdateTime">--:--:--</span>
+            <div class="hidden md:flex items-center gap-2 flex-shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                <span id="lastUpdateTime" class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">--:--:--</span>
             </div>
         </div>
     </div>
 
-    <main class="py-4 px-4 md:py-12 max-w-6xl mx-auto overflow-x-hidden">
+    <!-- Hero Section -->
+    <section class="relative pt-24 pb-32 overflow-hidden">
+        <!-- 배경 데코 -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30">
+            <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-400 blur-[120px] animate-pulse"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-400 blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
+        </div>
+
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-black uppercase tracking-widest mb-8 animate-fade-in-up">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                Next-Gen Financial Intelligence
+            </div>
+            <h1 class="text-4xl md:text-7xl font-black tracking-tight leading-[1.1] mb-8 animate-fade-in-up">
+                당신의 자산 등급을 바꾸는<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">데이터의 힘</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-500 font-medium max-w-2xl mx-auto mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
+                Hedge Dochi는 복잡한 시장 데이터를 직관적인 도구로 재해석하여,<br class="hidden md:block"> 누구나 합리적인 자산 배분을 실천할 수 있도록 돕습니다.
+            </p>
+            
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 animate-fade-in-up" style="animation-delay: 0.2s;">
+                <button onclick="document.getElementById('step-1').scrollIntoView({behavior:'smooth'})" class="w-full md:w-auto px-10 py-5 bg-blue-600 text-white font-black rounded-2xl shadow-2xl shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all">
+                    10년 자산 시뮬레이션 ➔
+                </button>
+                <a href="rebalance.html" class="w-full md:w-auto px-10 py-5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-black rounded-2xl border border-slate-100 dark:border-slate-700 shadow-xl hover:bg-slate-50 transition-all">
+                    리밸런싱 매니저
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <main class="py-12 px-4 md:py-24 max-w-6xl mx-auto overflow-x-hidden">
         <header class="mb-12 text-center">
             <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4" style="color: var(--color-primary-text);">2026 현실 자산 시뮬레이터</h1>
             <p class="text-lg md:text-xl font-medium text-slate-500">당신의 10년 후, 데이터로 미리 확인해보세요.</p>
