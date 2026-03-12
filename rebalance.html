@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="내 자산의 황금비율을 찾아라! 포트폴리오 리밸런싱 매니저. 감정에 휘둘리지 않는 투자를 도와드립니다.">
+    <meta name="description" content="내 자산의 황금비율을 찾아라! 포트폴리오 리밸런싱 매니저.">
     <title>포트폴리오 리밸런싱 | My Wealth Tier</title>
-    <meta property="og:title" content="포트폴리오 리밸런싱 | My Wealth Tier">
-    <meta property="og:description" content="복잡한 계산은 이제 그만. 내 자산의 현재 비율을 진단하고, 매수/매도 수량을 직관적으로 알려드립니다.">
-    <meta property="og:image" content="https://hedge-dochi-live.pages.dev/og-image.png">
-    <meta property="og:url" content="https://hedge-dochi-live.pages.dev/rebalance.html">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
     <script>
@@ -87,22 +83,21 @@
 
         <div id="loginAlert" class="mb-6 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800 text-center">
             <p class="text-blue-800 dark:text-blue-200 font-bold text-lg mb-2">🔒 로그인이 필요한 기능입니다</p>
-            <button onclick="document.getElementById('loginBtn').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl">구글 로그인 후 시작하기</button>
+            <button onclick="document.getElementById('loginBtn').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg">구글 로그인 후 시작하기</button>
         </div>
 
         <div id="appContent" class="hidden">
-            <!-- STEP 1: 투자 성향 선택 -->
+            <!-- STEP 1: 성향 선택 -->
             <div id="step-1" class="step-section space-y-8 animate-fade-in-up">
                 <div id="strategyContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                    <!-- 공격/중도/수비 카드들 (생략하지 않고 이전 코드 유지) -->
                     <div id="card-aggressive" onclick="selectDochi('aggressive')" class="strategy-card group cursor-pointer p-8 rounded-[2.5rem] bg-white dark:bg-[#1e293b] border-2 border-slate-100 dark:border-slate-800 hover:border-rose-500 transition-all text-center shadow-xl flex flex-col justify-between">
                         <div>
                             <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-2xl flex items-center justify-center text-4xl shadow-lg group-hover:scale-110 transition-transform">🦔🔥</div>
                             <h4 class="text-xl font-black mb-2 text-rose-500">공격도치</h4>
-                            <div class="space-y-2 mb-6 text-left bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
-                                <div class="flex justify-between text-[10px] font-bold"><span>📈 주식</span><span>75%</span></div>
+                            <div class="space-y-2 mb-6 text-left bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl text-xs font-bold">
+                                <div class="flex justify-between"><span>📈 주식</span><span>75%</span></div>
                                 <div class="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-full"><div class="bg-rose-500 h-full" style="width: 75%"></div></div>
-                                <div class="flex justify-between text-[10px] font-bold"><span>₿ 가상자산</span><span>15%</span></div>
+                                <div class="flex justify-between"><span>₿ 가상자산</span><span>15%</span></div>
                                 <div class="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-full"><div class="bg-rose-500 h-full" style="width: 15%"></div></div>
                             </div>
                         </div>
@@ -112,10 +107,10 @@
                         <div>
                             <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-tr from-blue-500 to-indigo-400 rounded-2xl flex items-center justify-center text-4xl shadow-lg group-hover:scale-110 transition-transform">🦔⚖️</div>
                             <h4 class="text-xl font-black mb-2 text-blue-500">중도도치</h4>
-                            <div class="space-y-2 mb-6 text-left bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
-                                <div class="flex justify-between text-[10px] font-bold"><span>📈 주식</span><span>50%</span></div>
+                            <div class="space-y-2 mb-6 text-left bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl text-xs font-bold">
+                                <div class="flex justify-between"><span>📈 주식</span><span>50%</span></div>
                                 <div class="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-full"><div class="bg-blue-500 h-full" style="width: 50%"></div></div>
-                                <div class="flex justify-between text-[10px] font-bold"><span>🛡️ 채권</span><span>30%</span></div>
+                                <div class="flex justify-between"><span>🛡️ 채권</span><span>30%</span></div>
                                 <div class="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-full"><div class="bg-blue-500 h-full" style="width: 30%"></div></div>
                             </div>
                         </div>
@@ -125,10 +120,10 @@
                         <div>
                             <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-4xl shadow-lg group-hover:scale-110 transition-transform">🦔🛡️</div>
                             <h4 class="text-xl font-black mb-2 text-emerald-500">수비도치</h4>
-                            <div class="space-y-2 mb-6 text-left bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
-                                <div class="flex justify-between text-[10px] font-bold"><span>🛡️ 채권</span><span>60%</span></div>
+                            <div class="space-y-2 mb-6 text-left bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl text-xs font-bold">
+                                <div class="flex justify-between"><span>🛡️ 채권</span><span>60%</span></div>
                                 <div class="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-full"><div class="bg-emerald-500 h-full" style="width: 60%"></div></div>
-                                <div class="flex justify-between text-[10px] font-bold"><span>💵 현금</span><span>20%</span></div>
+                                <div class="flex justify-between"><span>💵 현금</span><span>20%</span></div>
                                 <div class="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-full"><div class="bg-emerald-500 h-full" style="width: 20%"></div></div>
                             </div>
                         </div>
@@ -136,33 +131,31 @@
                     </div>
                 </div>
                 <div class="flex justify-center mt-8">
-                    <button onclick="goToStep(2)" id="nextToStep2" class="hidden px-12 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-3xl shadow-2xl hover:scale-105 active:scale-95 transition-all">다음 단계로 이동하기 ➔</button>
+                    <button onclick="goToStep(2)" id="nextToStep2" class="hidden px-12 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-3xl shadow-2xl hover:scale-105 active:scale-95 transition-all">다음 단계로 ➔</button>
                 </div>
             </div>
 
-            <!-- STEP 2: 통화 및 자본 설정 -->
+            <!-- STEP 2: 통화/자본 -->
             <div id="step-2" class="step-section hidden space-y-8 animate-fade-in-up">
                 <div class="max-w-lg mx-auto space-y-8">
                     <div class="relative flex p-1 bg-slate-100 dark:bg-slate-800 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-inner">
                         <div id="currency-glider" class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white dark:bg-slate-600 rounded-[1.8rem] shadow-xl transition-all duration-300"></div>
-                        <button onclick="setCurrency('USD')" id="btn-currency-usd" class="relative z-10 flex-1 py-4 font-black transition-colors text-blue-600 dark:text-blue-400">USD ($)</button>
-                        <button onclick="setCurrency('KRW')" id="btn-currency-krw" class="relative z-10 flex-1 py-4 font-black transition-colors text-slate-400">KRW (₩)</button>
+                        <button onclick="setCurrency('USD')" id="btn-currency-usd" class="relative z-10 flex-1 py-4 font-black transition-colors">USD ($)</button>
+                        <button onclick="setCurrency('KRW')" id="btn-currency-krw" class="relative z-10 flex-1 py-4 font-black transition-colors">KRW (₩)</button>
                     </div>
-                    <div class="p-8 md:p-12 rounded-[3rem] bg-white dark:bg-[#1e293b] shadow-2xl border border-slate-100 dark:border-slate-700 text-center">
+                    <div class="p-8 md:p-12 rounded-[3rem] bg-white dark:bg-[#1e293b] shadow-2xl border border-slate-100 text-center">
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">목표 투자 금액</p>
                         <div class="relative inline-block w-full">
                             <span id="currency-symbol-wizard" class="absolute left-0 top-1/2 -translate-y-1/2 text-4xl font-black text-slate-200">$</span>
                             <input type="number" id="targetCapitalInputWizard" class="w-full bg-transparent border-b-4 border-slate-100 dark:border-slate-800 focus:border-blue-500 outline-none py-4 text-5xl font-black text-center" placeholder="0">
                         </div>
                         <div id="quick-amount-buttons" class="grid grid-cols-3 gap-3 mt-10"></div>
-                        <div id="exchange-rate-info" class="mt-8 pt-6 border-t dark:border-slate-800 hidden">
-                            <span class="text-xs font-bold text-blue-600 dark:text-blue-400">1$ = <span id="current-rate-text">1,350</span>원</span>
-                        </div>
+                        <div id="exchange-rate-info" class="mt-8 pt-6 border-t dark:border-slate-800 hidden text-xs font-bold text-blue-600">1$ = <span id="current-rate-text">1,350</span>원</div>
                     </div>
                 </div>
                 <div class="flex justify-center gap-4 mt-8">
                     <button onclick="goToStep(1)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-3xl text-slate-500">이전</button>
-                    <button onclick="goToStep(3)" class="px-12 py-5 bg-blue-600 text-white font-black rounded-3xl shadow-xl transition-all">다음 ➔</button>
+                    <button onclick="goToStep(3)" class="px-12 py-5 bg-blue-600 text-white font-black rounded-3xl shadow-xl transition-all hover:scale-105">다음 ➔</button>
                 </div>
             </div>
 
@@ -170,24 +163,31 @@
             <div id="step-3" class="step-section hidden space-y-8 animate-fade-in-up">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     <div class="lg:col-span-5 space-y-6">
-                        <div class="p-6 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100">
-                            <h3 class="font-bold mb-4 flex items-center gap-2"><span>🔍</span> 종목 검색</h3>
+                        <div class="p-6 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-700">
+                            <h3 class="font-bold mb-4 flex items-center gap-2">🔍 종목 검색</h3>
                             <input type="text" id="tickerSearchInput" placeholder="티커(AAPL, BTC) 입력" class="w-full bg-slate-50 dark:bg-slate-800 rounded-xl p-4 font-bold focus:ring-2 focus:ring-blue-500">
                             <div id="searchResultsContainer" class="mt-4 hidden"><ul id="searchResults" class="space-y-2 max-h-60 overflow-y-auto"></ul></div>
                         </div>
                         <div class="p-6 rounded-3xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100">
-                            <h3 class="text-sm font-bold mb-4 text-blue-600"><span>💡</span> 추천 종목</h3>
+                            <h3 class="text-sm font-bold mb-4 text-blue-600">💡 성향별 추천 종목</h3>
                             <div id="recommendationButtons" class="flex flex-wrap gap-2"></div>
                         </div>
+                        <div class="flex gap-2">
+                            <label class="cursor-pointer bg-white dark:bg-slate-800 px-4 py-3 rounded-xl text-xs font-bold shadow-sm border border-slate-100 flex-1 text-center">📤 CSV<input type="file" id="csvFileInput" class="hidden" accept=".csv"></label>
+                            <button id="refreshPricesBtn" class="bg-white dark:bg-slate-800 px-4 py-3 rounded-xl text-xs font-bold shadow-sm border border-slate-100 flex-1">🔄 시세 갱신</button>
+                        </div>
                     </div>
-                    <div class="lg:col-span-7 p-6 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100">
-                        <table class="w-full text-left"><tbody id="assetListBody"></tbody></table>
-                        <div id="emptyAssetMsg" class="py-12 text-center text-slate-400">추가된 종목이 없습니다.</div>
+                    <div class="lg:col-span-7">
+                        <div id="assetListBody" class="space-y-4"></div>
+                        <div id="emptyAssetMsg" class="py-20 text-center text-slate-400 bg-white dark:bg-[#1e293b] rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-700 shadow-xl">
+                            <span class="text-5xl block mb-6">📑</span>
+                            <p class="font-bold">아직 추가된 종목이 없습니다.</p>
+                        </div>
                     </div>
                 </div>
                 <div class="flex justify-center gap-4 mt-8">
                     <button onclick="goToStep(2)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-3xl text-slate-500">이전</button>
-                    <button onclick="calculateAndShowResult()" class="px-12 py-5 bg-emerald-600 text-white font-black rounded-3xl shadow-xl transition-all">결과 보기 ➔</button>
+                    <button onclick="calculateAndShowResult()" class="px-12 py-5 bg-emerald-600 text-white font-black rounded-3xl shadow-xl transition-all hover:scale-105">진단 결과 보기 ➔</button>
                 </div>
             </div>
 
@@ -196,14 +196,14 @@
                 <div class="flex justify-between items-end">
                     <h2 class="text-3xl font-black">🚀 자산 진단 보고서</h2>
                     <div class="flex gap-2">
-                        <button id="saveBtn" class="text-sm font-bold text-white bg-emerald-600 px-6 py-2 rounded-xl">💾 저장</button>
+                        <button id="saveBtn" class="text-sm font-bold text-white bg-emerald-600 px-6 py-2 rounded-xl shadow-lg">💾 저장</button>
                         <button onclick="goToStep(1)" class="text-sm font-bold text-blue-600 px-4 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/20">🔄 다시하기</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     <div class="lg:col-span-4 space-y-6">
                         <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl text-center">
-                            <p class="text-[10px] font-bold text-slate-400 mb-2 uppercase">포트폴리오 건강 점수</p>
+                            <p class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest">포트폴리오 건강 점수</p>
                             <div id="portfolioHealthScore" class="text-5xl font-black text-blue-600 mb-2">0점</div>
                         </div>
                         <div class="p-8 rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-700 text-white shadow-2xl">
@@ -214,37 +214,39 @@
                             </div>
                         </div>
                     </div>
-                    <div class="lg:col-span-8 p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl">
+                    <div class="lg:col-span-8 p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100">
                         <div class="flex justify-between items-center mb-8"><h3 class="text-xl font-bold">📊 섹터 분석</h3><div id="sectorTotalStatus" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">100%</div></div>
                         <div id="sectorDashboard" class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6"></div>
                     </div>
-                    <div class="lg:col-span-7 p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl">
+                    <div class="lg:col-span-7 p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-bold">⚡ 실행 가이드</h3>
-                            <div class="flex items-center gap-2"><label class="text-[10px] text-slate-400">정수 단위</label><input type="checkbox" id="integerModeToggle" class="w-4 h-4 rounded" checked></div>
+                            <h3 class="text-xl font-bold flex items-center gap-2">⚡ 리밸런싱 실행 가이드</h3>
+                            <div class="flex items-center gap-2"><label class="text-[10px] font-bold text-slate-400">정수 단위</label><input type="checkbox" id="integerModeToggle" class="w-4 h-4 rounded" checked onchange="updateCalculation()"></div>
                         </div>
                         <div id="actionPlanList" class="space-y-3"></div>
                     </div>
                     <div class="lg:col-span-5 space-y-6">
-                        <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl">
-                            <h3 class="text-xl font-bold mb-6">📋 보유 자산</h3>
+                        <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100">
+                            <h3 class="text-xl font-bold mb-6 flex items-center gap-2">📋 현재 자산 목록</h3>
                             <div id="finalHoldingsList" class="space-y-3"></div>
                         </div>
-                        <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl h-64"><canvas id="portfolioChart"></canvas></div>
+                        <div class="p-8 rounded-3xl bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 h-64"><canvas id="portfolioChart"></canvas></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <section class="mt-20 prose prose-slate dark:prose-invert max-w-none">
+        <section class="mt-20 prose prose-slate dark:prose-invert max-w-none border-t border-slate-100 pt-12">
             <h2 class="text-2xl font-black text-blue-600 mb-6">리밸런싱 매니저 작동 원리</h2>
-            <p>Hedge Dochi의 리밸런싱 도구는 현대 포트폴리오 이론(MPT)을 바탕으로 설계되었습니다...</p>
+            <p>Hedge Dochi의 리밸런싱 도구는 현대 포트폴리오 이론(MPT)을 바탕으로 설계되었습니다. 사용자가 설정한 목표 자본금(Target Capital)을 기준으로 각 자산의 현재 가치를 비교하여 부족한 부분은 매수, 과한 부분은 매도 수량을 산출합니다.</p>
         </section>
     </main>
 
     <footer class="text-center py-12 border-t border-slate-100 text-sm text-slate-400">
         <div class="flex justify-center space-x-6 mb-4 font-bold">
-            <a href="about.html">소개</a><a href="privacy.html">약관</a><a href="contact-form.html">문의</a>
+            <a href="about.html" class="hover:text-blue-600">소개</a>
+            <a href="privacy.html" class="hover:text-blue-600">약관</a>
+            <a href="contact-form.html" class="hover:text-blue-600">문의</a>
         </div>
         <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
     </footer>

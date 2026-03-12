@@ -305,26 +305,45 @@ function renderAssetList() {
     }
 
     holdings.forEach((h, idx) => {
-        const tr = document.createElement('tr');
-        tr.className = "border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors";
         const displayPrice = getPriceInBaseCurrency(h);
+        const card = document.createElement('div');
+        card.className = "p-5 mb-4 rounded-3xl bg-white dark:bg-[#252a3d] border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all animate-fade-in-up";
         
-        tr.innerHTML = `
-            <td class="py-4 px-2">
-                <div class="font-bold text-slate-800 dark:text-white">${h.ticker}</div>
-                <div class="text-[10px] text-slate-400 uppercase">${h.sector}</div>
-            </td>
-            <td class="py-4 px-2 text-right">
-                <input type="number" value="${h.qty}" class="w-20 bg-slate-50 dark:bg-slate-800 border-none rounded-lg p-2 text-right font-mono font-bold" onchange="updateHolding(${idx}, 'qty', this.value)">
-            </td>
-            <td class="py-4 px-2 text-right font-mono text-slate-500">${formatValue(displayPrice)}</td>
-            <td class="py-4 px-2 text-center">
-                <button onclick="removeAsset(${idx})" class="text-slate-300 hover:text-red-500 transition-colors text-lg">✕</button>
-            </td>
+        card.innerHTML = `
+            <div class="flex justify-between items-start mb-4">
+                <div class="min-w-0">
+                    <div class="font-black text-lg text-slate-800 dark:text-white truncate">${h.ticker}</div>
+                    <div class="text-[10px] font-bold text-blue-500 uppercase tracking-wider">${h.sector}</div>
+                </div>
+                <button onclick="removeAsset(${idx})" class="p-2 text-slate-300 hover:text-red-500 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="flex items-end justify-between gap-4">
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase mb-1">현재가</span>
+                    <span class="font-mono font-bold text-slate-600 dark:text-slate-300">${formatValue(displayPrice)}</span>
+                </div>
+                
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase mb-2 text-right">보유 수량</span>
+                    <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
+                        <button onclick="adjustQty(${idx}, -1)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-blue-500 font-bold">-</button>
+                        <input type="number" value="${h.qty}" class="w-16 bg-transparent text-center font-black text-sm focus:outline-none" onchange="updateHolding(${idx}, 'qty', this.value)">
+                        <button onclick="adjustQty(${idx}, 1)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-blue-500 font-bold">+</button>
+                    </div>
+                </div>
+            </div>
         `;
-        assetListBody.appendChild(tr);
+        assetListBody.appendChild(card);
     });
 }
+
+window.adjustQty = function(idx, amount) {
+    holdings[idx].qty = Math.max(0, (holdings[idx].qty || 0) + amount);
+    renderAssetList();
+};
 
 function renderFinalHoldingsList() {
     const listContainer = document.getElementById('finalHoldingsList');
