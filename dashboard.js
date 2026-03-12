@@ -126,15 +126,20 @@ async function loadDashboardData(uid) {
 function updateUserAvatar(sim, riskType) {
     const photoEl = document.getElementById('dashUserPhoto');
     const badgeEl = document.getElementById('userTraitBadge');
-    if (!photoEl || !badgeEl) return;
+    if (!photoEl) return;
 
     const avatars = { "다이아몬드": "👑", "플래티넘": "💎", "골드": "💰", "실버": "🥈", "브론즈": "🦔" };
     const char = avatars[sim?.tier] || "🦔";
     
-    // 캐릭터 이모지 기반 프로필 생성
-    photoEl.parentElement.innerHTML = `<div id="dashUserPhoto" class="w-24 h-24 rounded-[2.5rem] bg-gradient-to-br from-blue-600 to-indigo-700 shadow-2xl flex items-center justify-center text-5xl transform hover:rotate-12 transition-transform duration-500 cursor-pointer" title="나의 금융 캐릭터">${char}</div>`;
+    // 캐릭터 이모지 기반 프로필 생성 (태그 교체)
+    const newAvatar = document.createElement('div');
+    newAvatar.id = 'dashUserPhoto';
+    newAvatar.className = "w-24 h-24 rounded-[2.5rem] bg-gradient-to-br from-blue-600 to-indigo-700 shadow-2xl flex items-center justify-center text-5xl transform hover:rotate-12 transition-transform duration-500 cursor-pointer";
+    newAvatar.title = "나의 금융 캐릭터";
+    newAvatar.innerText = char;
+    photoEl.replaceWith(newAvatar);
     
-    if (riskType) {
+    if (riskType && badgeEl) {
         badgeEl.innerText = riskType;
         badgeEl.classList.remove('opacity-0');
         const colors = { "공격투자형": "bg-red-500", "적극투자형": "bg-orange-500", "위험중립형": "bg-blue-500", "안정추구형": "bg-emerald-500", "안정형": "bg-slate-500" };
