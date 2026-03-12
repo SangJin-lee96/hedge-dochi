@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="현대 포트폴리오 이론(MPT)과 효율적 투자선. 노벨상을 받은 자산 배분 모델의 핵심을 쉽게 풀어냅니다.">
-    <title>현대 포트폴리오 이론(MPT) 쉽게 이해하기 | Hedge Dochi</title>
+    <meta name="description" content="위험을 최소화하면서 수익을 극대화하는 현대 포트폴리오 이론(MPT)의 핵심 원리를 파헤칩니다. 효율적 투자선과 상관관계의 수학적 가치를 이해하세요.">
+    <title>MPT: 현대 포트폴리오 이론과 자산 배분의 과학 | Hedge Dochi</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
     <script>
@@ -34,12 +34,16 @@
             --color-nav-link: #60a5fa;
             --color-toggle-text: #94a3b8;
         }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; transition: background-color 0.3s; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.8; transition: background-color 0.3s; }
         .article-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-        .article-header { margin-bottom: 60px; text-align: center; }
-        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3.5rem; margin-bottom: 1.5rem; color: #2563eb; }
-        html.dark .article-content h2 { color: #60a5fa; }
+        .breadcrumb { display: flex; gap: 8px; font-size: 0.8rem; font-weight: 600; color: var(--color-secondary-text); margin-bottom: 40px; }
+        .article-header { margin-bottom: 60px; }
+        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 4rem; margin-bottom: 1.5rem; color: #2563eb; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem; }
+        html.dark .article-content h2 { color: #60a5fa; border-color: #334155; }
         .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; opacity: 0.9; }
+        .formula-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.5rem; padding: 2rem; font-family: monospace; font-weight: 700; text-align: center; margin: 2rem 0; font-size: 1.2rem; }
+        html.dark .formula-box { background: #1e293b; border-color: #334155; }
+        .tag { font-size: 0.75rem; padding: 4px 12px; background: #eff6ff; color: #2563eb; border-radius: 9999px; font-weight: 800; margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -47,7 +51,7 @@
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
                 <span class="text-xl">💎</span>
-                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
+                <span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
             </div>
             <nav class="hidden md:flex items-center gap-4">
                 <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
@@ -56,43 +60,70 @@
                 <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
+                <div id="authContainer" class="ml-2">
+                    <button id="loginBtn" class="bg-blue-600 text-white text-xs font-bold py-2 px-4 rounded-full">구글 로그인</button>
+                    <div id="userProfile" class="hidden flex items-center gap-2">
+                        <img id="userPhoto" src="" alt="Profile" class="w-8 h-8 rounded-full border border-slate-200">
+                        <button id="logoutBtn" class="text-xs text-slate-500 font-semibold">로그아웃</button>
+                    </div>
+                </div>
             </nav>
         </div>
     </header>
 
-    <main class="article-container animate-fade-in-up">
+    <main class="article-container">
+        <nav class="breadcrumb">
+            <a href="index.html" class="hover:text-blue-600">Home</a>
+            <span>/</span>
+            <a href="guides.html" class="hover:text-blue-600">Guides</a>
+            <span>/</span>
+            <span class="text-blue-600">MPT Analysis</span>
+        </nav>
+
         <header class="article-header">
             <div class="text-blue-600 dark:text-blue-400 font-bold mb-4">금융 가이드 #04</div>
-            <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">현대 포트폴리오 이론(MPT) 해부</h1>
-            <p class="mt-6 text-slate-500 dark:text-slate-400 text-lg">리스크를 측정하고 통제하는 노벨 경제학상의 지혜</p>
+            <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-tight">MPT: 현대 포트폴리오 이론 해부</h1>
+            <p class="mt-8 text-slate-500 dark:text-slate-400 text-xl leading-relaxed">자산 배분의 수학적 기초가 되는 현대 금융 공학의 정수, MPT를 파헤칩니다.</p>
         </header>
 
         <section class="article-content">
-            <p>투자의 세계에서 수익은 불확실하지만, '위험(Risk)'은 어느 정도 측정하고 통제할 수 있습니다. 1952년 해리 마코위츠가 발표한 <strong>현대 포트폴리오 이론(Modern Portfolio Theory, MPT)</strong>은 감이나 직관에 의존하던 투자를 수학과 통계의 영역으로 끌어올린 혁명적인 이론입니다.</p>
+            <p>우리는 보통 고수익을 원합니다. 하지만 고수익에는 필연적으로 고위험(변동성)이 따릅니다. **현대 포트폴리오 이론(Modern Portfolio Theory, MPT)**은 리스크를 무작정 피하는 것이 아니라, 수학적으로 관리함으로써 **'동일한 위험 대비 최고의 수익'**을 내는 조합을 찾아내는 이론입니다.</p>
 
-            <h2>1. MPT의 핵심 가정</h2>
-            <p>이 이론의 가장 기본적인 가정은 "투자자는 합리적이며, 위험을 회피하려 한다(Risk Averse)"는 것입니다. 즉, 기대 수익률이 동일한 두 개의 투자안이 있다면 변동성(위험)이 적은 쪽을 선택하고, 변동성이 동일하다면 기대 수익률이 높은 쪽을 선택한다는 뜻입니다.</p>
+            <h2>1. 위험은 측정 가능하다: 표준편차</h2>
+            <p>금융에서 위험(Risk)은 자산 가격이 평균에서 얼마나 벗어나는지를 나타내는 <strong>변동성(Volatility)</strong>을 의미합니다. MPT는 이 변동성을 표준편차(Standard Deviation)라는 통계적 도구로 수치화했습니다. 이를 통해 우리는 단순히 "이 주식은 위험해"라고 말하는 대신, "이 주식의 리스크는 20%다"라고 정량적으로 표현할 수 있게 되었습니다.</p>
 
-            <h2>2. 분산 투자의 수학적 증명</h2>
-            <p>MPT가 밝혀낸 가장 위대한 사실은, 개별 자산들의 단순한 합보다 '포트폴리오 전체'의 위험이 더 낮아질 수 있다는 점입니다. 이는 자산들 간의 <strong>상관계수(Correlation)</strong> 때문입니다.</p>
-            <p>상관계수가 +1인 두 자산(같이 오르고 같이 내림)을 섞으면 분산 효과가 없습니다. 그러나 상관계수가 0이거나 음수인 자산(하나가 내릴 때 다른 하나는 오르거나 덜 내림)을 섞으면, 포트폴리오의 기대 수익률은 유지하면서 전체적인 변동성(표준편차)은 크게 줄일 수 있습니다. 이것이 맹목적인 종목 늘리기와 과학적 자산 배분의 차이입니다.</p>
+            <h2>2. 효율적 투자선 (Efficient Frontier)</h2>
+            <p>만약 주식, 채권, 금 등 여러 자산을 섞는다면 어떤 비율이 가장 좋을까요? MPT는 가능한 모든 자산 비중 조합을 그래프로 그렸을 때, 최상단에 위치한 경계선을 발견했습니다. 이를 **효율적 투자선**이라고 합니다.</p>
+            <ul>
+                <li>이 선 위에 있는 포트폴리오는 해당 리스크 수준에서 얻을 수 있는 <strong>가장 높은 기대 수익</strong>을 제공합니다.</li>
+                <li>이 선 아래에 있는 포트폴리오는 비효율적입니다. 동일한 위험을 감수하면서 수익은 더 적기 때문입니다.</li>
+            </ul>
 
-            <h2>3. 효율적 투자선 (Efficient Frontier)</h2>
-            <p>다양한 자산 조합의 수많은 포트폴리오를 점으로 찍어보면 하나의 곡선이 만들어집니다. 이 곡선의 맨 위쪽 가장자리를 <strong>효율적 투자선</strong>이라고 부릅니다. 이 선 위에 있는 포트폴리오들은 "특정 위험 수준에서 얻을 수 있는 최대의 수익률" 또는 "특정 수익률을 얻기 위해 감수해야 할 최소의 위험"을 나타냅니다.</p>
-            <p>투자자는 자신의 위험 감수 성향에 따라 효율적 투자선 상의 한 점을 선택해야 하며, 이 선 아래에 있는 포트폴리오는 비효율적인 것으로 간주됩니다.</p>
+            <h2>3. 샤프 지수 (Sharpe Ratio): 투자의 효율성 점수</h2>
+            <p>포트폴리오가 얼마나 잘 구성되었는지 평가하는 핵심 지표입니다.</p>
+            <div class="formula-box">
+                Sharpe Ratio = (Rp - Rf) / σp
+            </div>
+            <p class="text-center text-sm opacity-70">Rp: 포트폴리오 수익률 / Rf: 무위험 수익률 / σp: 포트폴리오 변동성</p>
+            <p>쉽게 말해 **'위험 한 단위당 얻는 초과 수익'**입니다. 샤프 지수가 높을수록 리스크를 적게 지면서 더 많은 돈을 번, 가성비 좋은 투자를 했다는 뜻입니다.</p>
 
-            <h2>4. 샤프 지수 (Sharpe Ratio)</h2>
-            <p>MPT를 바탕으로 윌리엄 샤프가 개발한 지표로, "위험 한 단위당 초과 수익률"을 의미합니다. (수익률 - 무위험 이자율) / 변동성(표준편차)로 계산됩니다. 샤프 지수가 높을수록 해당 포트폴리오가 리스크 대비 우수한 성과를 내고 있음을 뜻합니다.</p>
-            
-            <div class="mt-12 p-8 rounded-[2.5rem] bg-slate-100 dark:bg-slate-800/50 text-center border border-slate-200 dark:border-slate-700">
-                <h3 class="text-xl font-bold mb-4">내 포트폴리오를 체계적으로 관리하세요</h3>
-                <p class="mb-6 opacity-70">직관이 아닌 데이터에 기반하여 자산 비중을 설정하고 리밸런싱을 실행하세요.</p>
-                <a href="rebalance.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">리밸런싱 매니저 시작하기</a>
+            <h2>4. 체계적 위험 vs 비체계적 위험</h2>
+            <p>MPT는 우리가 관리할 수 있는 위험과 관리할 수 없는 위험을 구분합니다.</p>
+            <ul>
+                <li><strong>비체계적 위험 (Specific Risk):</strong> 개별 기업이나 특정 산업의 문제로 발생하는 위험. 이는 <strong>분산 투자로 완벽하게 제거</strong>할 수 있습니다.</li>
+                <li><strong>체계적 위험 (Market Risk):</strong> 인플레이션, 금리 인상, 전쟁 등 시장 전체에 미치는 위험. 분산 투자로도 피할 수 없으며, 오직 자산 배분 비중 조절을 통해서만 통제 가능합니다.</li>
+            </ul>
+
+            <div class="mt-20 p-10 rounded-[3rem] bg-purple-600 text-white text-center shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 translate-x-1/2"></div>
+                <h3 class="text-2xl font-black mb-4">수학적으로 검증된 전략을 실천하세요</h3>
+                <p class="mb-8 opacity-80 leading-relaxed">Hedge Dochi는 MPT의 핵심 원리를 알고리즘에 녹여내어<br>사용자의 성향에 맞는 최적의 자산 배분 솔루션을 제공합니다.</p>
+                <a href="rebalance.html" class="inline-block bg-white text-purple-600 font-black py-4 px-12 rounded-2xl hover:bg-purple-50 transition-all shadow-xl active:scale-95">포트폴리오 진단 시작하기 ➔</a>
             </div>
         </section>
     </main>
 
-    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400">
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
         <div class="flex justify-center space-x-6 font-bold mb-4">
             <a href="about.html" class="hover:text-blue-600">소개</a>
             <a href="privacy.html" class="hover:text-blue-600">약관</a>

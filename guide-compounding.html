@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="복리의 마법과 장기 투자 시뮬레이션의 의미. 시간이 자산을 어떻게 폭발적으로 성장시키는지 알아봅니다.">
-    <title>복리의 마법: 10년 장기 투자의 비밀 | Hedge Dochi</title>
+    <meta name="description" content="복리가 어떻게 자산을 기하급수적으로 성장시키는지 수학적으로 분석합니다. 72의 법칙과 시간의 힘을 활용한 장기 투자 전략을 배우세요.">
+    <title>복리의 마법: 시간과 수익률이 만드는 기적 | Hedge Dochi</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
     <script>
@@ -34,16 +34,20 @@
             --color-nav-link: #60a5fa;
             --color-toggle-text: #94a3b8;
         }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.7; transition: background-color 0.3s; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.8; transition: background-color 0.3s; }
         .article-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-        .article-header { margin-bottom: 60px; text-align: center; }
-        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 3.5rem; margin-bottom: 1.5rem; color: #2563eb; }
-        html.dark .article-content h2 { color: #60a5fa; }
+        .breadcrumb { display: flex; gap: 8px; font-size: 0.8rem; font-weight: 600; color: var(--color-secondary-text); margin-bottom: 40px; }
+        .article-header { margin-bottom: 60px; }
+        .article-content h2 { font-size: 1.8rem; font-weight: 800; margin-top: 4rem; margin-bottom: 1.5rem; color: #2563eb; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem; }
+        html.dark .article-content h2 { color: #60a5fa; border-color: #334155; }
         .article-content p { margin-bottom: 1.5rem; font-size: 1.1rem; opacity: 0.9; }
-        .article-content ul { margin-bottom: 1.5rem; padding-left: 1.5rem; list-style-type: disc; }
-        .article-content li { margin-bottom: 0.5rem; font-size: 1.05rem; }
-        .quote-box { font-style: italic; border-left: 4px solid #e2e8f0; padding: 1rem 2rem; margin: 2rem 0; color: var(--color-secondary-text); }
-        html.dark .quote-box { border-left-color: #334155; }
+        .info-card { background: #f1f5f9; border-radius: 2rem; padding: 2rem; margin: 3rem 0; }
+        html.dark .info-card { background: #1e293b; border: 1px solid #334155; }
+        .data-table { width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: 0.9rem; }
+        .data-table th, .data-table td { padding: 12px; border: 1px solid #e2e8f0; text-align: center; }
+        html.dark .data-table th, html.dark .data-table td { border-color: #334155; }
+        .data-table th { background: #f8fafc; font-weight: 800; }
+        html.dark .data-table th { background: #0f172a; }
     </style>
 </head>
 <body>
@@ -51,7 +55,7 @@
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
                 <span class="text-xl">💎</span>
-                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
+                <span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
             </div>
             <nav class="hidden md:flex items-center gap-4">
                 <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
@@ -60,52 +64,100 @@
                 <a href="lotto.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
+                <div id="authContainer" class="ml-2">
+                    <button id="loginBtn" class="bg-blue-600 text-white text-xs font-bold py-2 px-4 rounded-full">구글 로그인</button>
+                    <div id="userProfile" class="hidden flex items-center gap-2">
+                        <img id="userPhoto" src="" alt="Profile" class="w-8 h-8 rounded-full border border-slate-200">
+                        <button id="logoutBtn" class="text-xs text-slate-500 font-semibold">로그아웃</button>
+                    </div>
+                </div>
             </nav>
         </div>
     </header>
 
-    <main class="article-container animate-fade-in-up">
+    <main class="article-container">
+        <nav class="breadcrumb">
+            <a href="index.html" class="hover:text-blue-600">Home</a>
+            <span>/</span>
+            <a href="guides.html" class="hover:text-blue-600">Guides</a>
+            <span>/</span>
+            <span class="text-blue-600">Compounding</span>
+        </nav>
+
         <header class="article-header">
             <div class="text-blue-600 dark:text-blue-400 font-bold mb-4">금융 가이드 #03</div>
-            <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">복리의 마법과 10년 장기 투자</h1>
-            <p class="mt-6 text-slate-500 dark:text-slate-400 text-lg">시간이 자산을 어떻게 지수함수적으로 성장시키는가</p>
+            <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-tight">복리의 마법:<br>시간이 자산을 지배하는 원리</h1>
+            <p class="mt-8 text-slate-500 dark:text-slate-400 text-xl leading-relaxed">알베르트 아인슈타인이 '세계 8대 불가사의'라고 칭송한 복리의 수학적 힘을 분석합니다.</p>
         </header>
 
         <section class="article-content">
-            <div class="quote-box">
-                "복리는 세계 8대 불가사의다. 이를 이해하는 자는 돈을 벌고, 이해하지 못하는 자는 비용을 지불한다." - 알베르트 아인슈타인
+            <p>복리(Compound Interest)는 단순히 이자에 이자가 붙는 것을 넘어, 자산이 **지수함수적으로 성장(Exponential Growth)**하게 만드는 우주의 법칙입니다. 초기에는 눈에 띄지 않지만, '임계점'을 넘어서는 순간 자산은 수직에 가깝게 상승합니다. 이 글에서는 복리를 내 편으로 만드는 구체적인 방법과 그 위력을 데이터로 살펴봅니다.</p>
+
+            <h2>1. 단리 vs 복리: 30년 후의 차이</h2>
+            <p>1,000만 원을 연 10% 수익률로 30년간 투자한다고 가정해봅시다. 단리와 복리의 차이는 상상을 초월합니다.</p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>기간</th>
+                        <th>단리 (Principal only)</th>
+                        <th>복리 (Reinvested)</th>
+                        <th>격차</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>10년</td>
+                        <td>2,000만 원</td>
+                        <td>2,593만 원</td>
+                        <td>1.3배</td>
+                    </tr>
+                    <tr>
+                        <td>20년</td>
+                        <td>3,000만 원</td>
+                        <td>6,727만 원</td>
+                        <td>2.2배</td>
+                    </tr>
+                    <tr>
+                        <td>30년</td>
+                        <td>4,000만 원</td>
+                        <td>1억 7,449만 원</td>
+                        <td>4.3배</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>단리는 시간이 지나도 수익의 속도가 일정한 반면, 복리는 **시간이 흐를수록 수익의 속도가 가속화**됩니다. 30년 후에는 원금의 17배가 넘는 자산으로 불어납니다.</p>
+
+            <h2>2. 72의 법칙: 내 돈이 두 배가 되는 시간</h2>
+            <p>복리를 이해할 때 가장 유용한 도구는 '72의 법칙'입니다. 내 자산이 두 배가 되는 데 걸리는 시간을 아주 간단하게 계산할 수 있습니다.</p>
+            <div class="info-card text-center">
+                <div class="text-3xl font-black text-blue-600 mb-4">72 ÷ 연수익률 = 자산이 2배 되는 기간</div>
+                <p class="text-sm opacity-70">예: 연수익률 6% → 72 ÷ 6 = 12년 소요<br>예: 연수익률 12% → 72 ÷ 12 = 6년 소요</p>
             </div>
+            <p>수익률이 두 배가 되면 자산이 불어나는 속도는 두 배보다 훨씬 빨라집니다. 이것이 우리가 우량 자산에 장기 투자하여 수익률을 높이려 노력해야 하는 이유입니다.</p>
 
-            <p>우리가 자산을 모을 때 가장 많이 간과하는 변수는 바로 '시간'입니다. 수익률을 1% 높이기 위해 매일 밤잠을 설치며 주식 차트를 보지만, 정작 시장에 머무는 시간을 늘리는 것이 훨씬 더 쉽고 확실한 방법이라는 사실을 놓치곤 합니다.</p>
-
-            <h2>1. 단리와 복리의 차이</h2>
-            <p>단리는 원금에 대해서만 이자가 붙는 방식입니다. 반면 복리는 '원금+이전에 발생한 이자'에 또다시 이자가 붙는 방식입니다. 눈덩이를 굴리는 것과 같습니다. 처음에는 주먹만 한 눈뭉치지만, 언덕을 굴러 내려가면서 표면적이 넓어질수록 붙는 눈의 양은 기하급수적으로 커집니다.</p>
-
-            <h2>2. 시간의 지수함수적 위력</h2>
-            <p>복리 공식은 <strong>A = P(1 + r)^n</strong> 입니다. 여기서 가장 주목해야 할 변수는 수익률(r)이 아니라 시간(n)입니다. 시간이 지수(제곱) 자리에 있기 때문입니다.</p>
-            <p>예를 들어, 매월 100만 원씩 연 8%의 수익률로 투자한다고 가정해 보겠습니다.</p>
-            <ul>
-                <li>5년 후: 약 7,300만 원 (원금 6,000만 원)</li>
-                <li>10년 후: 약 1억 8,000만 원 (원금 1억 2,000만 원)</li>
-                <li>20년 후: 약 5억 9,000만 원 (원금 2억 4,000만 원)</li>
-            </ul>
-            <p>시간이 두 배로 늘어났을 때 자산은 두 배가 아니라 두 배 이상 커집니다. 초반에는 원금의 비중이 높지만, 10년이 넘어가는 시점부터는 '이자가 벌어들이는 이자'가 원금 납입액을 압도하기 시작합니다.</p>
-
-            <h2>3. 인플레이션: 보이지 않는 세금</h2>
-            <p>복리 시뮬레이션을 할 때 반드시 고려해야 할 것이 인플레이션(물가 상승률)입니다. 10년 후의 10억 원은 현재의 10억 원과 가치가 다릅니다. 따라서 명목 수익률에서 물가 상승률을 뺀 '실질 수익률'로 나의 미래 자산을 계산해야 현실적인 목표 설정이 가능합니다.</p>
-
-            <h2>4. 일찍 시작할수록 유리한 게임</h2>
-            <p>25세에 시작하여 35세까지 10년간 매월 50만 원을 투자하고 멈춘 사람과, 35세에 시작하여 65세까지 30년간 매월 50만 원을 투자한 사람이 65세가 되었을 때 얻는 최종 자산은 누가 더 많을까요? 놀랍게도 단 10년만 투자하고 복리로 방치한 앞사람의 자산이 더 큽니다. 이것이 바로 시간의 힘입니다.</p>
+            <h2>3. 복리의 3대 요소</h2>
+            <h3>① 시간 (Time)</h3>
+            <p>복리 공식에서 시간은 '지수(Power)' 자리에 위치합니다. 즉, 수익률보다 시간이 자산 형성에 더 큰 영향을 미칩니다. 20대부터 소액을 저축하는 것이 40대부터 고액을 저축하는 것보다 유리한 이유입니다.</p>
             
-            <div class="mt-12 p-8 rounded-[2.5rem] bg-slate-100 dark:bg-slate-800/50 text-center border border-slate-200 dark:border-slate-700">
-                <h3 class="text-xl font-bold mb-4">나의 10년 후 명목/실질 자산을 확인해보세요</h3>
-                <p class="mb-6 opacity-70">초기 자본, 월 저축액, 기대 수익률을 입력하면 10년 후의 자산 등급을 시뮬레이션 해드립니다.</p>
-                <a href="index.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">현실 자산 시뮬레이터 시작하기</a>
+            <h3>② 수익률 (Rate)</h3>
+            <p>매년 꾸준한 수익을 내는 것이 중요합니다. 특히 마이너스 수익률(손실)은 복리의 흐름을 완전히 끊어놓기 때문에, 리밸런싱과 자산 배분을 통해 큰 손실을 방어하는 것이 필수적입니다.</p>
+
+            <h3>③ 원금 (Principal)</h3>
+            <p>복리의 마법이 본격적으로 체감되기 위해서는 초기 시드의 크기도 중요합니다. 하지만 시간이 충분하다면 소액의 적립식 투자도 충분히 위력을 발휘할 수 있습니다.</p>
+
+            <h2>4. 인플레이션: 복리의 적</h2>
+            <p>우리가 잊지 말아야 할 것은 물가 상승률(Inflation)입니다. 자산이 복리로 늘어날 때, 화폐 가치는 복리로 하락합니다. 따라서 실질적인 부를 쌓으려면 **물가 상승률보다 높은 수익률**을 목표로 해야 하며, 이를 위해 현금보다는 생산적인 자산(주식, 부동산 등)을 보유해야 합니다.</p>
+
+            <div class="mt-20 p-10 rounded-[3rem] bg-amber-500 text-white text-center shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 -translate-x-1/2"></div>
+                <h3 class="text-2xl font-black mb-4">나의 10년 후 복리 궤적을 확인하세요</h3>
+                <p class="mb-8 opacity-80 leading-relaxed">Hedge Dochi 자산 시뮬레이터는 물가 상승률과 연봉 상승률을 모두 반영하여<br>가장 현실적인 미래 자산 등급을 예측해드립니다.</p>
+                <a href="index.html" class="inline-block bg-white text-amber-600 font-black py-4 px-12 rounded-2xl hover:bg-amber-50 transition-all shadow-xl active:scale-95">자산 시뮬레이터 시작하기 ➔</a>
             </div>
         </section>
     </main>
 
-    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400">
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
         <div class="flex justify-center space-x-6 font-bold mb-4">
             <a href="about.html" class="hover:text-blue-600">소개</a>
             <a href="privacy.html" class="hover:text-blue-600">약관</a>
