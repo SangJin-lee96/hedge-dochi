@@ -52,19 +52,27 @@ let selectedStrategyId = null;
 let currentStep = 1;
 let currentUser = null;
 let chartInstance = null, simulationChartInstance = null;
-
-// --- DOM Elements ---
-const assetListBody = document.getElementById('assetListBody');
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const appContent = document.getElementById('appContent');
-const loginAlert = document.getElementById('loginAlert');
+let baseCurrency = 'USD';
+let exchangeRate = 1350; // 기본 환율
 
 // --- Wizard Navigation ---
-window.goToStep = function(step) {
+window.goToStep = async function(step) {
     if (step === 2 && !selectedStrategyId) {
         alert("먼저 투자 성향을 선택해주세요!");
         return;
+    }
+    
+    // 환율 정보 미리 가져오기
+    if (step === 2) {
+        try {
+            const res = await fetch('/api/price?ticker=USDKRW=X');
+            const data = await res.json();
+            const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+            if (rate) {
+                exchangeRate = rate;
+                document.getElementById('current-rate-text').innerText = rate.toLocaleString();
+            }
+        } catch (e) { console.error("환율 로드 실패", e); }
     }
 
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
@@ -85,52 +93,52 @@ window.goToStep = function(step) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// --- Step 1: Strategy Selection ---
-window.selectDochi = function(type, skipTransition = false) {
-    selectedStrategyId = type;
+// --- Currency Management ---
+window.setCurrency = function(code) {
+    baseCurrency = code;
+    const isUSD = code === 'USD';
     
-    document.querySelectorAll('.strategy-card').forEach(card => {
-        card.classList.remove('border-rose-500', 'border-blue-500', 'border-emerald-500', 'ring-4', 'ring-opacity-20');
-        card.classList.add('border-transparent');
-    });
+    // UI 버튼 상태 업데이트
+    const btnUsd = document.getElementById('btn-currency-usd');
+    const btnKrw = document.getElementById('btn-currency-krw');
+    const symbolWizard = document.getElementById('currency-symbol-wizard');
+    const rateInfo = document.getElementById('exchange-rate-info');
 
-    const selectedCard = document.getElementById(`card-${type}`);
-    const colorClass = type === 'aggressive' ? 'border-rose-500' : type === 'balanced' ? 'border-blue-500' : 'border-emerald-500';
-    const ringClass = type === 'aggressive' ? 'ring-rose-500' : type === 'balanced' ? 'ring-blue-500' : 'ring-emerald-500';
-    
-    if (selectedCard) {
-        selectedCard.classList.remove('border-transparent');
-        selectedCard.classList.add(colorClass, 'ring-4', ringClass, 'ring-opacity-20');
-    }
-
-    sectorTargets = { ...STRATEGY_CONFIG[type].weights };
-    
-    const badge = document.getElementById('finalPropensityBadge');
-    if (badge) {
-        const icons = { aggressive: "🦔🔥", balanced: "🦔⚖️", defensive: "🦔🛡️" };
-        badge.innerText = `${icons[type]} ${STRATEGY_CONFIG[type].name}`;
-    }
-
-    document.getElementById('nextToStep2')?.classList.remove('hidden');
-    if (!skipTransition) {
-        // Optional: auto-scroll to button
+    if (isUSD) {
+        btnUsd.className = "flex-1 py-3 rounded-xl font-bold transition-all bg-white dark:bg-slate-700 shadow-md text-blue-600 dark:text-blue-400";
+        btnKrw.className = "flex-1 py-3 rounded-xl font-bold transition-all text-slate-400";
+        symbolWizard.innerText = '$';
+        rateInfo.classList.add('hidden');
+    } else {
+        btnKrw.className = "flex-1 py-3 rounded-xl font-bold transition-all bg-white dark:bg-slate-700 shadow-md text-blue-600 dark:text-blue-400";
+        btnUsd.className = "flex-1 py-3 rounded-xl font-bold transition-all text-slate-400";
+        symbolWizard.innerText = '₩';
+        rateInfo.classList.remove('hidden');
     }
 };
 
-// --- Step 4: Show Result ---
-window.calculateAndShowResult = function() {
-    updateCalculation();
-    goToStep(4);
-};
+function formatValue(val) {
+    const symbol = baseCurrency === 'USD' ? '$' : '₩';
+    if (baseCurrency === 'KRW') {
+        // 원화일 경우 소수점 없이 표현
+        return `${symbol}${Math.round(val).toLocaleString()}`;
+    }
+    return `${symbol}${val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+}
 
 // --- Core Logic ---
 function updateCalculation() {
-    const currentTotal = holdings.reduce((sum, h) => sum + (parseFloat(h.qty) * parseFloat(h.price) || 0), 0);
+    // 자산 총액 계산 (달러 자산은 환율 적용)
+    const currentTotal = holdings.reduce((sum, h) => {
+        const itemPrice = baseCurrency === 'KRW' ? (h.price * exchangeRate) : h.price;
+        return sum + (parseFloat(h.qty) * itemPrice || 0);
+    }, 0);
+
     const targetCapital = parseFloat(document.getElementById('targetCapitalInputWizard').value) || currentTotal;
 
     // UI Summary
-    document.getElementById('totalValueDisplay').innerText = `$${currentTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('targetCapitalDisplay').innerText = `$${targetCapital.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('totalValueDisplay').innerText = formatValue(currentTotal);
+    document.getElementById('targetCapitalDisplay').innerText = formatValue(targetCapital);
 
     renderSectorDashboard(currentTotal, targetCapital);
     renderActionPlan(currentTotal, targetCapital);
@@ -151,6 +159,8 @@ function renderAssetList() {
     holdings.forEach((h, idx) => {
         const tr = document.createElement('tr');
         tr.className = "border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors";
+        const displayPrice = baseCurrency === 'KRW' ? (h.price * exchangeRate) : h.price;
+        
         tr.innerHTML = `
             <td class="py-4 px-2">
                 <div class="font-bold text-slate-800 dark:text-white">${h.ticker}</div>
@@ -159,55 +169,12 @@ function renderAssetList() {
             <td class="py-4 px-2 text-right">
                 <input type="number" value="${h.qty}" class="w-20 bg-slate-50 dark:bg-slate-800 border-none rounded-lg p-2 text-right font-mono font-bold" onchange="updateHolding(${idx}, 'qty', this.value)">
             </td>
-            <td class="py-4 px-2 text-right font-mono text-slate-500">$${parseFloat(h.price).toLocaleString()}</td>
+            <td class="py-4 px-2 text-right font-mono text-slate-500">${formatValue(displayPrice)}</td>
             <td class="py-4 px-2 text-center">
                 <button onclick="removeAsset(${idx})" class="text-slate-300 hover:text-red-500 transition-colors text-lg">✕</button>
             </td>
         `;
         assetListBody.appendChild(tr);
-    });
-}
-
-window.updateHolding = function(idx, field, val) {
-    holdings[idx][field] = parseFloat(val) || 0;
-    renderAssetList();
-};
-
-window.removeAsset = function(idx) {
-    holdings.splice(idx, 1);
-    renderAssetList();
-};
-
-function renderSectorDashboard(currentTotal, targetCapital) {
-    const dashboard = document.getElementById('sectorDashboard');
-    if (!dashboard) return;
-    dashboard.innerHTML = '';
-
-    const stats = PRIMARY_SECTORS.map(sector => {
-        const actualVal = holdings.filter(h => h.sector === sector).reduce((s, h) => s + (h.qty * h.price || 0), 0);
-        const actualPct = currentTotal > 0 ? (actualVal / currentTotal * 100) : 0;
-        const targetPct = sectorTargets[sector] || 0;
-        return { sector, actualPct, targetPct };
-    });
-
-    stats.forEach(s => {
-        const div = document.createElement('div');
-        div.className = "space-y-2";
-        const color = s.actualPct > s.targetPct + 1 ? 'bg-rose-500' : (s.actualPct < s.targetPct - 1 ? 'bg-blue-500' : 'bg-emerald-500');
-        div.innerHTML = `
-            <div class="flex justify-between items-end">
-                <span class="text-sm font-bold text-slate-700 dark:text-slate-300">${s.sector.split(' ')[0]}</span>
-                <span class="text-[10px] font-mono font-bold text-slate-400">Tgt: ${s.targetPct}%</span>
-            </div>
-            <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
-                <div class="h-full ${color} transition-all duration-700" style="width: ${s.actualPct}%"></div>
-            </div>
-            <div class="flex justify-between text-[10px] font-bold">
-                <span class="text-slate-400">Act: ${s.actualPct.toFixed(1)}%</span>
-                <span class="${s.actualPct < s.targetPct ? 'text-blue-500' : 'text-rose-500'}">${(s.actualPct - s.targetPct).toFixed(1)}%</span>
-            </div>
-        `;
-        dashboard.appendChild(div);
     });
 }
 
@@ -217,22 +184,22 @@ function renderActionPlan(currentTotal, targetCapital) {
     list.innerHTML = '';
 
     let hasAction = false;
-    const isIntegerMode = document.getElementById('integerModeToggle').checked;
 
     holdings.forEach(h => {
-        // 간단 리밸런싱 로직: 섹터 타겟 내에서 종목별 균등 배분 가정 (고도화 가능)
         const sectorHoldings = holdings.filter(item => item.sector === h.sector);
         const sectorTargetPct = sectorTargets[h.sector] || 0;
         const targetPctPerAsset = sectorTargetPct / sectorHoldings.length;
         
         const targetVal = targetCapital * (targetPctPerAsset / 100);
-        const currentVal = h.qty * h.price;
+        
+        const itemPrice = baseCurrency === 'KRW' ? (h.price * exchangeRate) : h.price;
+        const currentVal = h.qty * itemPrice;
         const diffVal = targetVal - currentVal;
 
-        if (Math.abs(diffVal) > (targetCapital * 0.01) || Math.abs(diffVal) > 10) {
+        if (Math.abs(diffVal) > (targetCapital * 0.01) || Math.abs(diffVal) > (baseCurrency === 'USD' ? 10 : 10000)) {
             hasAction = true;
             const isBuy = diffVal > 0;
-            const qtyDiff = h.price > 0 ? (isBuy ? Math.floor(diffVal / h.price) : Math.ceil(Math.abs(diffVal) / h.price)) : 0;
+            const qtyDiff = itemPrice > 0 ? (isBuy ? Math.floor(diffVal / itemPrice) : Math.ceil(Math.abs(diffVal) / itemPrice)) : 0;
             
             if (qtyDiff === 0) return;
 
@@ -248,7 +215,7 @@ function renderActionPlan(currentTotal, targetCapital) {
                 </div>
                 <div class="text-right">
                     <div class="text-[10px] text-slate-400 font-bold uppercase">예상 금액</div>
-                    <div class="font-mono font-black text-lg">$${Math.abs(diffVal).toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                    <div class="font-mono font-black text-lg">${formatValue(Math.abs(diffVal))}</div>
                 </div>
             `;
             list.appendChild(div);

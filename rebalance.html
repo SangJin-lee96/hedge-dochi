@@ -223,16 +223,28 @@
             <!-- STEP 2: 목표 투자 금액 설정 -->
             <div id="step-2" class="step-section hidden space-y-8 animate-fade-in-up">
                 <div class="text-center">
-                    <h2 class="text-2xl font-black mb-2">STEP 2. 목표 투자 금액은 얼마인가요?</h2>
-                    <p class="text-slate-500">현재 자산에 추가로 투자할 현금을 포함한 총액을 입력하세요.</p>
+                    <h2 class="text-2xl font-black mb-2">STEP 2. 기준 통화와 목표 자본을 설정하세요</h2>
+                    <p class="text-slate-500">모든 계산의 기준이 될 통화와 총 투자 목표 금액을 입력합니다.</p>
                 </div>
-                <div class="max-w-md mx-auto p-10 rounded-3xl bg-white dark:bg-[#1e293b] shadow-2xl border border-slate-100 dark:border-slate-700">
-                    <div class="relative">
-                        <span class="absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black text-slate-300">$</span>
-                        <input type="number" id="targetCapitalInputWizard" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl py-6 pl-14 pr-6 text-3xl font-black focus:ring-4 focus:ring-blue-500 transition-all" placeholder="0.00">
+                
+                <div class="max-w-md mx-auto space-y-6">
+                    <!-- 통화 선택 스위처 -->
+                    <div class="flex p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+                        <button onclick="setCurrency('USD')" id="btn-currency-usd" class="flex-1 py-3 rounded-xl font-bold transition-all bg-white dark:bg-slate-700 shadow-md text-blue-600 dark:text-blue-400">USD ($)</button>
+                        <button onclick="setCurrency('KRW')" id="btn-currency-krw" class="flex-1 py-3 rounded-xl font-bold transition-all text-slate-400">KRW (₩)</button>
                     </div>
-                    <p class="mt-4 text-xs text-slate-400 text-center font-medium">팁: 목표 자본을 현재 총 자산보다 크게 잡으면<br>부족한 비중을 채우기 위한 '매수 가이드'가 생성됩니다.</p>
+
+                    <div class="p-10 rounded-3xl bg-white dark:bg-[#1e293b] shadow-2xl border border-slate-100 dark:border-slate-700">
+                        <div class="relative">
+                            <span id="currency-symbol-wizard" class="absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black text-slate-300">$</span>
+                            <input type="number" id="targetCapitalInputWizard" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl py-6 pl-14 pr-6 text-3xl font-black focus:ring-4 focus:ring-blue-500 transition-all" placeholder="0.00">
+                        </div>
+                        <div id="exchange-rate-info" class="mt-4 text-center hidden">
+                            <p class="text-[10px] font-bold text-slate-400">실시간 환율 적용: <span id="current-rate-text">1,350</span>원/$</p>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="flex justify-center gap-4 mt-8">
                     <button onclick="goToStep(1)" class="px-8 py-4 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl">이전으로</button>
                     <button onclick="goToStep(3)" class="px-10 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30">다음 단계로 (자산 입력) ➔</button>
