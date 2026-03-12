@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-pt-20">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="매달 꼬박꼬박 들어오는 배당금, 얼마나 될까요? 배당 수익률과 재투자 효과를 분석하는 스마트 배당금 계산기.">
+    <title>스마트 배당금 계산기 | Hedge Dochi</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-GFMXESYQFR');
+    </script>
+    <style>
+        :root {
+            --color-primary-text: #0f172a;
+            --color-secondary-text: #475569;
+            --color-background: #f8fafc;
+            --color-accent: #2563eb;
+            --color-nav-bg: #ffffff;
+            --nav-bg-rgb: 255, 255, 255;
+            --color-nav-border: #f1f5f9;
+            --color-nav-link: #334155;
+            --color-toggle-text: #64748b;
+        }
+        html.dark {
+            --color-primary-text: #f8fafc;
+            --color-secondary-text: #94a3b8;
+            --color-background: #020617;
+            --color-accent: #38bdf8;
+            --color-nav-bg: #0f172a;
+            --nav-bg-rgb: 15, 23, 42;
+            --color-nav-border: #1e293b;
+            --color-nav-link: #94a3b8;
+            --color-toggle-text: #94a3b8;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; transition: background-color 0.3s; }
+        .step-section { animation: fadeInUp 0.5s ease-out forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        @media (max-width: 640px) { h1 { font-size: 2rem !important; } .stat-card { padding: 1.5rem !important; } }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- 헤더 네비게이션 -->
+    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
+                <span class="text-xl">💎</span>
+                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-4 overflow-x-auto no-scrollbar">
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="dividend.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 whitespace-nowrap">배당 계산기</a>
+                <a href="fire-calc.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">은퇴 계산기</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="dashboard.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link);">대시보드</a>
+                <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
+                <div id="authContainer" class="ml-2">
+                    <button id="loginBtn" class="bg-blue-600 text-white text-xs font-bold py-2 px-4 rounded-full">구글 로그인</button>
+                    <div id="userProfile" class="hidden flex items-center gap-2">
+                        <img id="userPhoto" src="" alt="Profile" class="w-8 h-8 rounded-full border border-slate-200">
+                        <button id="logoutBtn" class="text-xs text-slate-500 font-semibold">로그아웃</button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="py-12 px-4 max-w-4xl mx-auto">
+        <header class="mb-12 text-center">
+            <h1 class="text-3xl md:text-5xl font-black mb-4 tracking-tight">💰 월급 외 제2의 월급, 배당금</h1>
+            <p class="text-lg text-slate-500 font-medium">당신의 투자금이 만들어낼 매달의 현금흐름을 시뮬레이션하세요.</p>
+            
+            <div class="mt-10 flex items-center justify-center gap-2 max-w-xs mx-auto">
+                <div id="step-indicator-1" class="step-dot w-3 h-3 rounded-full bg-blue-600 transition-all"></div>
+                <div class="w-8 h-0.5 bg-slate-200"></div>
+                <div id="step-indicator-2" class="step-dot w-3 h-3 rounded-full bg-slate-200 transition-all"></div>
+                <div id="step-indicator-3" class="step-dot w-3 h-3 rounded-full bg-slate-200 transition-all"></div>
+                <div id="step-indicator-4" class="step-dot w-3 h-3 rounded-full bg-slate-200 transition-all"></div>
+            </div>
+        </header>
+
+        <div class="max-w-md mx-auto">
+            <!-- STEP 1: 자산 규모 -->
+            <div id="step-1" class="step-section space-y-8">
+                <div class="bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8">
+                    <div class="input-group">
+                        <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest text-center">총 투자 예정 금액</label>
+                        <div class="relative"><input type="number" id="d-total" value="5000" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 font-black text-2xl text-center"><span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">만원</span></div>
+                    </div>
+                </div>
+                <button onclick="goToStep(2)" class="w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-xl transition-all">다음 단계 ➔</button>
+            </div>
+
+            <!-- STEP 2: 수익률 및 세금 -->
+            <div id="step-2" class="step-section hidden space-y-8">
+                <div class="bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8">
+                    <div class="input-group">
+                        <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest text-center">평균 배당 수익률 (연)</label>
+                        <div class="relative"><input type="number" id="d-yield" value="4.5" step="0.1" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 font-black text-2xl text-center text-emerald-500"><span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">%</span></div>
+                    </div>
+                    <div class="input-group">
+                        <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest text-center">배당 소득세</label>
+                        <select id="d-tax" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 font-bold text-lg text-center appearance-none">
+                            <option value="15.4">국내 일반 (15.4%)</option>
+                            <option value="15">미국 주식 (15.0%)</option>
+                            <option value="0">비과세/ISA (0%)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-4"><button onclick="goToStep(1)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button><button onclick="goToStep(3)" class="flex-1 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-xl">다음 단계 ➔</button></div>
+            </div>
+
+            <!-- STEP 3: 주기 및 재투자 -->
+            <div id="step-3" class="step-section hidden space-y-8">
+                <div class="bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8">
+                    <div class="input-group">
+                        <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest text-center">배당 지급 주기</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setPeriod(12)" class="period-btn p-3 rounded-xl bg-slate-50 dark:bg-slate-800 font-bold text-xs selected border-2 border-blue-500" data-val="12">월배당</button>
+                            <button onclick="setPeriod(4)" class="period-btn p-3 rounded-xl bg-slate-50 dark:bg-slate-800 font-bold text-xs border-2 border-transparent" data-val="4">분기배당</button>
+                            <button onclick="setPeriod(1)" class="period-btn p-3 rounded-xl bg-slate-50 dark:bg-slate-800 font-bold text-xs border-2 border-transparent" data-val="1">연배당</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+                        <span class="font-bold text-sm">배당금 재투자 (DRIP)</span>
+                        <input type="checkbox" id="d-reinvest" checked class="w-6 h-6 rounded-lg accent-blue-600">
+                    </div>
+                </div>
+                <div class="flex gap-4"><button onclick="goToStep(2)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button><button onclick="calculateDividend()" class="flex-1 py-5 bg-blue-600 text-white font-black rounded-2xl shadow-xl">결과 보기 🚀</button></div>
+            </div>
+
+            <!-- STEP 4: 결과 리포트 -->
+            <div id="step-4" class="step-section hidden space-y-10 animate-fade-in-up">
+                <div class="p-10 rounded-[3rem] bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-2xl text-center">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.3em] mb-4 opacity-80">Estimated Monthly Income</p>
+                    <h2 id="monthlyDividendResult" class="text-5xl font-black mb-2">0원</h2>
+                    <p id="annualDividendResult" class="text-emerald-100 text-sm font-bold">연간 총 배당금: 0원</p>
+                </div>
+                
+                <div class="stat-card p-8 text-center">
+                    <h4 class="text-sm font-black text-slate-400 uppercase mb-6">10년 재투자 시나리오</h4>
+                    <div class="text-3xl font-black text-blue-600 mb-2" id="tenYearResult">0원</div>
+                    <p class="text-xs text-slate-500">원금 대비 <span id="tenYearGrowth" class="text-emerald-500">+0%</span> 성장</p>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4">
+                    <button onclick="copyDividendResult()" class="flex-1 py-5 bg-indigo-600 text-white font-black rounded-2xl shadow-xl hover:bg-indigo-700 transition-all">📋 결과 복사</button>
+                    <button onclick="goToStep(1)" class="flex-1 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">다시 계산</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
+        <!-- 푸터 생략 -->
+    </footer>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="dark-mode.js"></script>
+    <script type="module" src="auth-check.js"></script>
+    <script type="module" src="dividend.js"></script>
+</body>
+</html>
