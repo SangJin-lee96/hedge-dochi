@@ -56,18 +56,17 @@ window.goToStep = async function(step) {
         return;
     }
     
-    if (step === 2 || step === 3 || step === 4) {
-        try {
-            const res = await fetch('/api/price?ticker=USDKRW=X');
-            const data = await res.json();
-            const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-            if (rate) {
-                exchangeRate = rate;
-                const rateEl = document.getElementById('current-rate-text');
-                if (rateEl) rateEl.innerText = rate.toLocaleString();
-            }
-        } catch (e) { console.error("환율 로드 실패", e); }
-    }
+    // 환율 정보 가져오기
+    try {
+        const res = await fetch('/api/price?ticker=USDKRW=X');
+        const data = await res.json();
+        const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+        if (rate) {
+            exchangeRate = rate;
+            const rateEl = document.getElementById('current-rate-text');
+            if (rateEl) rateEl.innerText = rate.toLocaleString();
+        }
+    } catch (e) { console.error("환율 로드 실패", e); }
 
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
     const targetSection = document.getElementById(`step-${step}`);
@@ -96,21 +95,61 @@ window.setCurrency = function(code) {
     const btnKrw = document.getElementById('btn-currency-krw');
     const symbolWizard = document.getElementById('currency-symbol-wizard');
     const rateInfo = document.getElementById('exchange-rate-info');
+    const glider = document.getElementById('currency-glider');
 
     if (isUSD) {
-        btnUsd.className = "flex-1 py-3 rounded-xl font-bold transition-all bg-white dark:bg-slate-700 shadow-md text-blue-600 dark:text-blue-400";
-        btnKrw.className = "flex-1 py-3 rounded-xl font-bold transition-all text-slate-400";
-        symbolWizard.innerText = '$';
+        btnUsd?.classList.add('text-blue-600', 'dark:text-blue-400');
+        btnUsd?.classList.remove('text-slate-400');
+        btnKrw?.classList.add('text-slate-400');
+        btnKrw?.classList.remove('text-blue-600', 'dark:text-blue-400');
+        if (glider) glider.style.left = '4px';
+        if (symbolWizard) symbolWizard.innerText = '$';
         rateInfo?.classList.add('hidden');
     } else {
-        btnKrw.className = "flex-1 py-3 rounded-xl font-bold transition-all bg-white dark:bg-slate-700 shadow-md text-blue-600 dark:text-blue-400";
-        btnUsd.className = "flex-1 py-3 rounded-xl font-bold transition-all text-slate-400";
-        symbolWizard.innerText = '₩';
+        btnKrw?.classList.add('text-blue-600', 'dark:text-blue-400');
+        btnKrw?.classList.remove('text-slate-400');
+        btnUsd?.classList.add('text-slate-400');
+        btnUsd?.classList.remove('text-blue-600', 'dark:text-blue-400');
+        if (glider) glider.style.left = '50%';
+        if (symbolWizard) symbolWizard.innerText = '₩';
         rateInfo?.classList.remove('hidden');
     }
     
+    renderQuickAmountButtons();
     renderAssetList();
 };
+
+function renderQuickAmountButtons() {
+    const container = document.getElementById('quick-amount-buttons');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const configs = {
+        USD: [
+            { label: '+$1k', val: 1000 },
+            { label: '+$5k', val: 5000 },
+            { label: '+$10k', val: 10000 }
+        ],
+        KRW: [
+            { label: '+100만', val: 1000000 },
+            { label: '+500만', val: 5000000 },
+            { label: '+1000만', val: 10000000 }
+        ]
+    };
+
+    configs[baseCurrency].forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = "py-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-xs font-black hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all border border-slate-100 dark:border-slate-700 active:scale-95";
+        btn.innerText = item.label;
+        btn.onclick = () => {
+            const input = document.getElementById('targetCapitalInputWizard');
+            const current = parseFloat(input.value) || 0;
+            input.value = current + item.val;
+            updateCalculation();
+        };
+        container.appendChild(btn);
+    });
+}
 
 function formatValue(val) {
     const symbol = baseCurrency === 'USD' ? '$' : '₩';
@@ -160,7 +199,6 @@ window.selectDochi = function(type, skipTransition = false) {
     if (nextBtn) {
         nextBtn.classList.remove('hidden');
         if (!skipTransition) {
-            // 버튼이 화면 중앙에 오도록 부드럽게 스크롤
             setTimeout(() => {
                 nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
@@ -384,19 +422,14 @@ function renderSectorDashboard(currentTotal, targetCapital) {
 
 function updateCharts(currentTotal, targetCapital) {
     const ctxP = document.getElementById('portfolioChart')?.getContext('2d');
-    const ctxS = document.getElementById('simulationChart')?.getContext('2d');
     if (chartInstance) chartInstance.destroy();
-    if (simulationChartInstance) simulationChartInstance.destroy();
     const sectorData = PRIMARY_SECTORS.map(s => holdings.filter(h => h.sector === s).reduce((sum, h) => sum + (h.qty * getPriceInBaseCurrency(h) || 0), 0));
     chartInstance = new Chart(ctxP, { type: 'doughnut', data: { labels: PRIMARY_SECTORS.map(s => s.split(' ')[0]), datasets: [{ data: sectorData, backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#f97316', '#8b5cf6', '#64748b'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b', font: { size: 10, weight: 'bold' } } } } } });
-    const years = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], rate = 0.08; 
-    simulationChartInstance = new Chart(ctxS, { type: 'line', data: { labels: years.map(y => y + 'y'), datasets: [{ label: '예상 성장', data: years.map(y => targetCapital * Math.pow(1 + rate, y)), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4, pointRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } } });
 }
 
 window.updateHolding = function(idx, field, val) { holdings[idx][field] = parseFloat(val) || 0; renderAssetList(); };
 window.removeAsset = function(idx) { holdings.splice(idx, 1); renderAssetList(); };
 
-// --- Search Implementation ---
 async function performSearch(query) {
     const container = document.getElementById('searchResultsContainer');
     const list = document.getElementById('searchResults');
@@ -441,13 +474,12 @@ function getMappedSector(ticker, quoteType = "", yahooSector = "") {
 document.getElementById('saveBtn')?.addEventListener('click', async () => {
     if (!currentUser) { alert("로그인이 필요합니다."); return; }
     const btn = document.getElementById('saveBtn');
-    const originalText = btn.innerHTML;
     btn.disabled = true; btn.innerText = "⏳ 저장 중...";
     try {
         const targetCapital = parseFloat(document.getElementById('targetCapitalInputWizard').value) || 0;
         await setDoc(doc(db, "users", currentUser.uid), { holdings, sectorTargets, selectedStrategyId, targetCapital, baseCurrency, lastUpdated: new Date() }, { merge: true });
         alert("성공적으로 저장되었습니다! 💾");
-    } catch (e) { console.error(e); alert("저장 실패"); } finally { btn.disabled = false; btn.innerHTML = originalText; }
+    } catch (e) { alert("저장 실패"); } finally { btn.disabled = false; btn.innerText = "💾 저장"; }
 });
 
 // --- Auth & Init ---
@@ -478,3 +510,4 @@ document.getElementById('tickerSearchInput')?.addEventListener('input', (e) => {
 });
 
 goToStep(1);
+renderQuickAmountButtons();
