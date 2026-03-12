@@ -113,7 +113,11 @@
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">원</span>
                     </div>
                     <div class="flex items-center justify-between text-[10px] font-bold">
-                        <span id="exchangeRateDisplay" class="text-slate-400">실시간 환율 로딩 중...</span>
+                        <div class="flex items-center gap-2">
+                            <span id="exchangeRateDisplay" class="text-slate-400">실시간 환율 로딩 중...</span>
+                            <span class="text-slate-300">|</span>
+                            <span class="text-slate-400">Update: <span id="lastUpdateRebalance">--:--</span></span>
+                        </div>
                         <button onclick="resetToLiveExchangeRate()" class="text-blue-500 hover:underline">실시간 적용 🔄</button>
                     </div>
                 </div>

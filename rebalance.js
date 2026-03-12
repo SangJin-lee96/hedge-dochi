@@ -359,6 +359,12 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => signOut(au
         
         const input = document.getElementById('manualExchangeRate');
         if (input && !input.value) input.value = Math.round(rate);
+
+        // 업데이트 시각 표시
+        const now = new Date();
+        const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        const updateEl = document.getElementById('lastUpdateRebalance');
+        if (updateEl) updateEl.innerText = timeStr;
     } catch (e) {}
     if (assets.length === 0) addAsset();
 })();

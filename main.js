@@ -278,6 +278,14 @@ async function fetchMarketData() {
     }));
 
     container.innerHTML = items.filter(Boolean).join('<div class="w-px h-3 bg-slate-200 dark:bg-slate-800"></div>');
+    
+    // 업데이트 시각 갱신
+    const now = new Date();
+    const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                    now.getMinutes().toString().padStart(2, '0') + ':' + 
+                    now.getSeconds().toString().padStart(2, '0');
+    const updateEl = document.getElementById('lastUpdateTime');
+    if (updateEl) updateEl.innerText = timeStr;
 }
 
 // --- Auth & Init ---
