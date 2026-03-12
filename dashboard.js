@@ -73,13 +73,32 @@ async function loadDashboardData(uid) {
         if (portSnap.exists()) {
             const assets = portSnap.data().assets || [];
             if (assets.length > 0) {
-                document.getElementById('dashScoreValue').innerText = "LIVE";
-                addLog(`${assets.length}개의 종목을 관리 중입니다.`);
+                // 실시간 건강 점수 계산
+                const score = calculateHealthScore(assets);
+                const scoreEl = document.getElementById('dashScoreValue');
+                scoreEl.innerText = score;
+                scoreEl.className = `text-6xl font-black mb-4 ${score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500'}`;
+                
+                addLog(`${assets.length}개의 종목을 관리 중입니다. (건강도: ${score}점)`);
                 renderDashChart(assets);
             }
         }
 
-        // 4. 로또 행운 번호 데이터
+        // 4. 로또 행운 번호 데이터 (기존 로직 유지)
+// ... (생략)
+
+function calculateHealthScore(assets) {
+    const totalValue = assets.reduce((sum, a) => sum + (a.qty * (a.price || 0)), 0);
+    if (totalValue === 0) return 0;
+    
+    let totalDeviance = 0;
+    assets.forEach(a => {
+        const currentWeight = (a.qty * (a.price || 0) / totalValue) * 100;
+        totalDeviance += Math.abs(currentWeight - (a.targetWeight || 0));
+    });
+    
+    return Math.max(0, 100 - Math.round(totalDeviance));
+}
         const lottoSnap = await getDoc(doc(db, "lotto_history", uid));
         const lottoContainer = document.getElementById('dashLottoList');
         if (lottoSnap.exists()) {
