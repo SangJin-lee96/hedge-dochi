@@ -212,6 +212,37 @@ function renderDailyQuote() {
     addLog(`💡 오늘의 팁: ${randomQuote}`);
 }
 
+window.quickPriceSearch = async function() {
+    const ticker = document.getElementById('quickSearchInput').value.trim().toUpperCase();
+    const resultEl = document.getElementById('quickSearchResult');
+    if (!ticker) return;
+
+    resultEl.innerHTML = '<div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>';
+
+    try {
+        const res = await fetch(`/api/price?ticker=${ticker}`);
+        const data = await res.json();
+        const meta = data?.chart?.result?.[0]?.meta;
+        if (!meta) throw new Error();
+
+        const price = meta.regularMarketPrice;
+        const prevClose = meta.chartPreviousClose;
+        const change = price - prevClose;
+        const changePercent = (change / prevClose * 100).toFixed(2);
+        const color = change >= 0 ? 'text-red-500' : 'text-blue-500';
+
+        resultEl.innerHTML = `
+            <div class="flex items-baseline gap-2 animate-fade-in-up">
+                <span class="text-lg font-black text-slate-800 dark:text-slate-200">${ticker}</span>
+                <span class="text-base font-bold">${price.toLocaleString()}</span>
+                <span class="text-xs font-bold ${color}">${change >= 0 ? '+' : ''}${changePercent}%</span>
+            </div>
+        `;
+    } catch (e) {
+        resultEl.innerHTML = '<p class="text-[10px] text-red-400">종목을 찾을 수 없습니다. (예: TSLA, AAPL)</p>';
+    }
+};
+
 function addLog(msg) {
     const log = document.getElementById('dashActivityLog');
     const div = document.createElement('div');

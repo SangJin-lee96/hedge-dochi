@@ -93,6 +93,21 @@
                     <div id="dashAssetLegend" class="grid grid-cols-2 gap-3 text-xs font-bold">
                         <!-- 범례가 여기에 로드됨 -->
                     </div>
+                    
+                    <!-- Quick Price Search (신설) -->
+                    <div class="mt-10 pt-8 border-t dark:border-slate-800">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Price Search</span>
+                            <span class="w-1 h-1 rounded-full bg-blue-500 animate-pulse"></span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="quickSearchInput" placeholder="Ticker (TSLA...)" class="flex-1 bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm font-bold uppercase focus:ring-2 focus:ring-blue-500">
+                            <button onclick="quickPriceSearch()" class="bg-blue-600 text-white px-5 rounded-xl text-xs font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all">조회</button>
+                        </div>
+                        <div id="quickSearchResult" class="mt-4 min-h-[40px] flex items-center">
+                            <p class="text-[10px] text-slate-400">궁금한 종목의 실시간 가격을 즉시 확인하세요.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 

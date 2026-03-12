@@ -138,6 +138,9 @@ function showResult() {
             <div class="text-2xl font-black text-center text-blue-600 mb-8">${result.portfolio}</div>
             <div class="flex flex-col md:flex-row gap-4 mt-10">
                 <a href="rebalance.html" class="flex-1 py-5 bg-blue-600 text-white font-black rounded-2xl text-center shadow-xl hover:scale-105 transition-all">이 비중으로 리밸런싱하기 ➔</a>
+                <button onclick="copyRiskTestResult()" class="px-8 py-5 bg-indigo-700 text-white font-bold rounded-2xl shadow-lg hover:bg-indigo-800 transition-all flex items-center justify-center gap-2">
+                    <span>📋 결과 공유</span>
+                </button>
                 <button onclick="location.reload()" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">다시 테스트</button>
             </div>
         </div>
@@ -151,6 +154,21 @@ function showResult() {
         saveRiskProfile(result.type, result.portfolio);
     }
 }
+
+window.copyRiskTestResult = function() {
+    const type = document.querySelector('#result-container h2 span').innerText;
+    const portfolio = document.querySelector('#result-container .text-2xl').innerText;
+    
+    const text = `🧠 Hedge Dochi 투자 성향 진단 결과 🧠\n\n` +
+                 `나의 투자 스타일은: [ ${type} ]\n` +
+                 `📊 추천 포트폴리오: ${portfolio}\n\n` +
+                 `📍 당신의 투자 성향을 지금 진단해보세요!\n` +
+                 `👉 https://hedge-dochi-live.pages.dev/risk-test.html`;
+
+    navigator.clipboard.writeText(text).then(() => {
+        alert("진단 결과가 클립보드에 복사되었습니다! 🚀\n당신의 투자 스타일을 공유해보세요.");
+    });
+};
 
 async function saveRiskProfile(type, portfolio) {
     try {
