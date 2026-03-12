@@ -75,6 +75,7 @@ async function loadDashboardData(uid) {
             if (assets.length > 0) {
                 document.getElementById('dashScoreValue').innerText = "LIVE";
                 addLog(`${assets.length}개의 종목을 관리 중입니다.`);
+                renderDashChart(assets);
             }
         }
 
@@ -85,6 +86,49 @@ async function loadDashboardData(uid) {
         renderDailyQuote();
 
     } catch (e) { console.error("Load Error:", e); }
+}
+
+function renderDashChart(assets) {
+    const ctx = document.getElementById('dashTotalChart').getContext('2d');
+    const totalValue = assets.reduce((sum, a) => sum + (a.qty * (a.price || 0)), 0);
+    const centerText = document.getElementById('dashChartCenterText');
+    const legend = document.getElementById('dashAssetLegend');
+    
+    centerText.innerText = assets.length + " 종목";
+    legend.innerHTML = "";
+
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f43f5e'];
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: assets.map(a => a.ticker),
+            datasets: [{
+                data: assets.map(a => a.qty * (a.price || 0)),
+                backgroundColor: colors,
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            cutout: '80%',
+            plugins: { legend: { display: false } },
+            animation: { animateScale: true }
+        }
+    });
+
+    // 커스텀 범례 생성
+    assets.forEach((a, i) => {
+        const weight = totalValue > 0 ? ((a.qty * a.price) / totalValue * 100).toFixed(1) : 0;
+        const item = document.createElement('div');
+        item.className = "flex items-center gap-2";
+        item.innerHTML = `
+            <div class="w-2 h-2 rounded-full" style="background-color: ${colors[i % colors.length]}"></div>
+            <span class="text-slate-600 dark:text-slate-400">${a.ticker}</span>
+            <span class="ml-auto text-slate-400">${weight}%</span>
+        `;
+        legend.appendChild(item);
+    });
 }
 
 // 시뮬레이션 데이터 요약 계산기 (main.js 로직 축약본)

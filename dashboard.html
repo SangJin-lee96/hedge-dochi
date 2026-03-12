@@ -77,7 +77,36 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
+            <!-- 통합 자산 차트 섹션 (신설) -->
+            <div class="lg:col-span-2 stat-card flex flex-col md:flex-row items-center gap-8">
+                <div class="relative w-48 h-48 md:w-64 md:h-64 flex-shrink-0">
+                    <canvas id="dashTotalChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Portfolio</span>
+                        <span id="dashChartCenterText" class="text-xl font-black">---</span>
+                    </div>
+                </div>
+                <div class="flex-1 w-full">
+                    <h3 class="text-xl font-black mb-4">나의 자산 구성</h3>
+                    <p class="text-sm text-slate-500 mb-6 leading-relaxed">리밸런싱 매니저에 등록된 실시간 포트폴리오 비중입니다. 목표 비중에 맞춰 자산을 관리하세요.</p>
+                    <div id="dashAssetLegend" class="grid grid-cols-2 gap-3 text-xs font-bold">
+                        <!-- 범례가 여기에 로드됨 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 투자 성향 (기존 카드를 오른쪽으로 이동 및 축소) -->
+            <div class="stat-card flex flex-col items-center justify-center text-center">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Risk Profile</p>
+                <div id="dashRiskIcon" class="text-6xl mb-4">🧠</div>
+                <h3 id="dashRiskType" class="text-2xl font-black">진단 미실시</h3>
+                <p id="dashRiskDesc" class="text-xs text-slate-500 mt-2">당신에게 맞는 추천 비중</p>
+                <a href="risk-test.html" class="mt-6 text-blue-600 text-sm font-bold hover:underline">테스트 시작 ➔</a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 animate-fade-in-up" style="animation-delay: 0.2s;">
             <!-- 1. 자산 등급 -->
             <div class="stat-card flex flex-col items-center justify-center text-center">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Wealth Tier</p>
@@ -94,15 +123,6 @@
                 <h3 class="text-2xl font-black">포트폴리오 상태</h3>
                 <p class="text-xs text-slate-500 mt-2">목표 비중 대비 관리 상태</p>
                 <a href="rebalance.html" class="mt-6 text-blue-600 text-sm font-bold hover:underline">관리하기 ➔</a>
-            </div>
-
-            <!-- 3. 투자 성향 -->
-            <div class="stat-card flex flex-col items-center justify-center text-center">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Risk Profile</p>
-                <div id="dashRiskIcon" class="text-6xl mb-4">🧠</div>
-                <h3 id="dashRiskType" class="text-2xl font-black">진단 미실시</h3>
-                <p id="dashRiskDesc" class="text-xs text-slate-500 mt-2">당신에게 맞는 추천 비중</p>
-                <a href="risk-test.html" class="mt-6 text-blue-600 text-sm font-bold hover:underline">테스트 시작 ➔</a>
             </div>
         </div>
 
@@ -121,6 +141,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="dark-mode.js"></script>
     <script type="module" src="dashboard.js"></script>
 </body>
