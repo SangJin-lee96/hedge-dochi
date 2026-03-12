@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, goToNextStep } from './core.js';
+import { db, currentUser, goToNextStep, showToast } from './core.js';
 
 let currentStep = 1;
 let fireChart = null;
@@ -166,7 +166,7 @@ window.copyFireResult = function() {
                  `👉 https://hedge-dochi-live.pages.dev/step2-fire.html`;
 
     navigator.clipboard.writeText(text).then(() => {
-        alert("은퇴 리포트가 클립보드에 복사되었습니다! 🚀");
+        showToast("은퇴 리포트가 클립보드에 복사되었습니다! 🚀");
     });
 };
 

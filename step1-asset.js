@@ -1,5 +1,5 @@
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, goToNextStep } from './core.js';
+import { db, currentUser, goToNextStep, showToast } from './core.js';
 
 let currentStep = 1;
 let wealthChart = null;
@@ -274,13 +274,6 @@ async function saveDataToFirebase() {
     } catch (e) {}
 }
 
-window.showToast = function(msg) {
-    let t = document.getElementById('toast');
-    if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
-    t.innerText = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-};
-
 window.downloadResultImage = function() {
     const area = document.querySelector('.capture-area');
     if (!area) return;
@@ -299,7 +292,7 @@ window.copySimulationResult = function() {
     const nominal = document.getElementById('finalWealthText').innerText;
     const real = document.getElementById('realValueText').innerText;
     const text = `💎 Hedge Dochi 자산 등급 리포트 💎\n\n나의 10년 후 예상 등급: [ ${tier} ]\n💰 10년 후 명목 자산: ${nominal}\n📉 실질 가치: ${real}\n\n📍 나의 미래 등급 확인하기\n👉 https://hedge-dochi-live.pages.dev/`;
-    navigator.clipboard.writeText(text).then(() => alert("클립보드에 복사되었습니다!"));
+    navigator.clipboard.writeText(text).then(() => showToast("클립보드에 복사되었습니다!"));
 };
 
 window.toggleYearlyTable = function() {

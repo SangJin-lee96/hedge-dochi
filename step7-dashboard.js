@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser } from './core.js';
+import { db, currentUser, showToast } from './core.js';
 
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
@@ -9,7 +9,7 @@ document.addEventListener('coreDataReady', async (e) => {
         loadDashboardData(user.uid);
         renderMarketSentiment();
     } else {
-        alert("로그인이 필요한 서비스입니다."); location.href = "index.html";
+        showToast("로그인이 필요한 서비스입니다."); location.href = "index.html";
     }
 });
 
@@ -159,7 +159,7 @@ window.saveFinancialGoal = async function() {
     const amount = parseFloat(document.getElementById('goalInput').value);
     if (!amount || !currentUser) return;
     await setDoc(doc(db, "user_goals", currentUser.uid), { amount, updatedAt: new Date() });
-    alert("목표가 저장되었습니다! 🎯"); location.reload();
+    showToast("목표가 저장되었습니다! 🎯"); location.reload();
 };
 
 function formatVal(v, curr) {

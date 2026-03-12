@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser } from './core.js';
+import { db, currentUser, showToast } from './core.js';
 
 // --- State Management ---
 let currentStep = 1;
@@ -113,7 +113,7 @@ window.copyCompoundResult = function() {
     const text = `⏳ Hedge Dochi 복리의 마법 리포트 ⏳\n\n💰 최종 자산: ${total}\n📈 ${profit}\n🚀 복리 가속도: ${accel}\n\n📍 당신의 적립식 투자 미래를 지금 확인해보세요!\n👉 https://hedge-dochi-live.pages.dev/compound.html`;
 
     navigator.clipboard.writeText(text).then(() => {
-        alert("결과 리포트가 클립보드에 복사되었습니다! 🚀");
+        showToast("결과 리포트가 클립보드에 복사되었습니다! 🚀");
     });
 };
 

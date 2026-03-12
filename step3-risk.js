@@ -1,5 +1,5 @@
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, goToNextStep } from './core.js';
+import { db, currentUser, goToNextStep, showToast } from './core.js';
 
 // --- Risk Test Questions Data ---
 const questions = [
@@ -194,7 +194,7 @@ window.copyRiskTestResult = function() {
                  `👉 https://hedge-dochi-live.pages.dev/step3-risk.html`;
 
     navigator.clipboard.writeText(text).then(() => {
-        alert("진단 결과가 클립보드에 복사되었습니다! 🚀\n당신의 투자 스타일을 공유해보세요.");
+        showToast("진단 결과가 클립보드에 복사되었습니다! 🚀\n당신의 투자 스타일을 공유해보세요.");
     });
 };
 

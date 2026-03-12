@@ -112,9 +112,40 @@ export function goToNextStep(currentId) {
         saveProgress(nextStep.id);
         window.location.href = nextStep.path;
     } else {
-        alert("모든 교육 과정을 완수하셨습니다! 당신은 이제 스마트한 투자자입니다. ✨");
+        showToast("모든 교육 과정을 완수하셨습니다! 당신은 이제 스마트한 투자자입니다. ✨");
         window.location.href = 'index.html';
     }
+}
+
+// --- Common UI Utilities ---
+export function showToast(msg, type = 'info') {
+    let t = document.getElementById('hedge-toast');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'hedge-toast';
+        document.body.appendChild(t);
+        
+        const style = document.createElement('style');
+        style.innerHTML = `
+            #hedge-toast {
+                position: fixed; bottom: 3rem; left: 50%; transform: translateX(-50%) translateY(100px);
+                background: rgba(15, 23, 42, 0.95); color: white; padding: 1rem 2.5rem;
+                border-radius: 9999px; font-weight: 800; font-size: 0.9rem; z-index: 9999;
+                transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                opacity: 0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+                border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+                display: flex; align-items: center; gap: 0.75rem; pointer-events: none;
+            }
+            #hedge-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+            #hedge-toast.success { border-color: rgba(16, 185, 129, 0.4); }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    const icon = type === 'success' ? '✅' : 'ℹ️';
+    t.innerHTML = `<span>${icon}</span> ${msg}`;
+    t.className = `show ${type}`;
+    setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 // Auto-setup Auth UI on load

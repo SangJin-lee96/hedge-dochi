@@ -1,5 +1,5 @@
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser } from './core.js';
+import { db, currentUser, showToast } from './core.js';
 
 // --- State Management ---
 let currentStep = 1;
@@ -199,7 +199,7 @@ window.updateWeight = function(id, val) {
 };
 
 window.applyModel = function(modelType) {
-    if (assets.length === 0) { alert("먼저 자산을 하나 이상 추가해주세요."); return; }
+    if (assets.length === 0) { showToast("먼저 자산을 하나 이상 추가해주세요."); return; }
 
     let targetWeights = [];
     if (modelType === 'ALL_WEATHER') {

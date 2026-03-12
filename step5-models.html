@@ -232,12 +232,28 @@
         </section>
     </main>
 
-    <script>
+    <script type="module">
+        import { showToast } from './core.js';
+
         window.selectStrategy = function(name) {
-            alert(name + " 전략이 선택되었습니다! 이제 하단의 '6단계' 버튼을 눌러 수익률을 예측해보세요. ✨");
-            // 선택 효과
+            // Remove previous selections
+            document.querySelectorAll('.model-card').forEach(c => {
+                c.classList.remove('ring-4', 'ring-blue-500', 'border-blue-500');
+                const btn = c.querySelector('button');
+                if (btn) {
+                    btn.innerText = "이 전략 선택하기";
+                    btn.className = btn.className.replace('bg-slate-900 text-white', 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400');
+                }
+            });
+
+            // Apply new selection
+            const card = event.target.closest('.model-card');
+            card.classList.add('ring-4', 'ring-blue-500', 'border-blue-500');
+            
             event.target.innerText = "선택 완료 ✓";
             event.target.classList.add('bg-slate-900', 'text-white');
+
+            showToast(`${name} 전략이 선택되었습니다! 하단의 6단계 버튼을 클릭하세요.`, 'success');
         };
     </script>
 

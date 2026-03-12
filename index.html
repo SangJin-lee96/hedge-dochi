@@ -127,7 +127,7 @@
     <!-- Scripts -->
     <script src="dark-mode.js"></script>
     <script type="module">
-        import { ROADMAP_STEPS, currentUser, userProgress, checkAuthAndGo } from './core.js';
+        import { ROADMAP_STEPS, currentUser, userProgress, checkAuthAndGo, showToast } from './core.js';
 
         let globalProgress = 1;
 
@@ -163,7 +163,7 @@
                 if (el && step.id <= progress) {
                     el.onclick = () => checkAuthAndGo(step.path, step.id);
                 } else if (el) {
-                    el.onclick = () => alert('이전 단계를 먼저 완료해주세요!');
+                    el.onclick = () => showToast('이전 단계를 먼저 완료해주세요!');
                 }
             });
             
