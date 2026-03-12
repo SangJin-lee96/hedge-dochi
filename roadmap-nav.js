@@ -35,9 +35,18 @@ let userProgress = 1;
 
 function getCurrentStep() {
     const path = window.location.pathname;
+    // Normalize path: remove extension and trailing slash
+    const normalizedPath = path.replace('.html', '').replace(/\/$/, '');
+    
     // Default to first step if at root
-    if (path === '/' || path === '/index.html') return ROADMAP_STEPS[0];
-    return ROADMAP_STEPS.find(s => path.includes(s.path)) || ROADMAP_STEPS[0];
+    if (!normalizedPath || normalizedPath === '' || normalizedPath === '/index') return ROADMAP_STEPS[0];
+    
+    const step = ROADMAP_STEPS.find(s => {
+        const stepName = s.path.replace('.html', '');
+        return normalizedPath.includes(stepName);
+    });
+    
+    return step || ROADMAP_STEPS[0];
 }
 
 async function initRoadmapTracker() {
