@@ -1,7 +1,7 @@
 // Import Firebase SDKs
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
@@ -23,6 +23,76 @@ let wealthChart = null;
 let baseCurrency = 'KRW';
 let exchangeRate = 1350;
 let currentUser = null;
+
+// --- Roadmap Data ---
+const ROADMAP_STEPS = [
+    { id: 1, title: "내 자산 알아보기", desc: "10년 후 내 자산 등급 시뮬레이션", path: "index.html" },
+    { id: 2, title: "은퇴 목표 설정", desc: "내가 꿈꾸는 노후를 위한 자산 설계", path: "fire-calc.html" },
+    { id: 3, title: "투자 성향 확인", desc: "하락장을 견디는 나의 심리 상태 테스트", path: "risk-test.html" },
+    { id: 4, title: "기초 금융 학습", desc: "복리와 자산 배분의 기본 원리 이해", path: "guides.html" },
+    { id: 5, title: "투자 모델 탐색", desc: "올웨더, 영구 포트폴리오 등 전략 선택", path: "guide-models.html" },
+    { id: 6, title: "수익 시뮬레이션", desc: "배당 및 복리 수익 구체적 계산", path: "dividend.html" },
+    { id: 7, title: "포트폴리오 구축", desc: "실제 자산 등록 및 실시간 관리 시작", path: "dashboard.html" },
+    { id: 8, title: "주기적 리밸런싱", desc: "시장 변화에 따른 자산 비중 최적화", path: "rebalance.html" }
+];
+
+let userRoadmapProgress = 1;
+
+// --- Roadmap UI Logic ---
+function renderRoadmap() {
+    const container = document.getElementById('roadmapSteps');
+    if (!container) return;
+    
+    container.innerHTML = ROADMAP_STEPS.map(step => {
+        const isCompleted = step.id < userRoadmapProgress;
+        const isCurrent = step.id === userRoadmapProgress;
+        const isLocked = step.id > userRoadmapProgress;
+        
+        return `
+            <div class="roadmap-step flex items-center gap-4 p-5 rounded-2xl border transition-all ${isCurrent ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20 shadow-lg' : 'border-slate-100 dark:border-slate-800'} ${isLocked ? 'opacity-50 grayscale' : ''}">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-black ${isCompleted ? 'bg-emerald-500 text-white' : isCurrent ? 'bg-indigo-600 text-white animate-pulse' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}">
+                    ${isCompleted ? '✓' : step.id}
+                </div>
+                <div class="flex-1">
+                    <h5 class="font-bold text-slate-800 dark:text-white">${step.title}</h5>
+                    <p class="text-xs text-slate-500">${step.desc}</p>
+                </div>
+                ${isCurrent ? '<span class="text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded-lg">진행 중</span>' : ''}
+            </div>
+        `;
+    }).join('');
+
+    const progressPercent = Math.round(((userRoadmapProgress - 1) / ROADMAP_STEPS.length) * 100);
+    document.getElementById('roadmapProgressText').innerText = `${progressPercent}% 완료`;
+}
+
+async function updateRoadmapProgress(stepId) {
+    if (!currentUser) return;
+    if (stepId <= userRoadmapProgress) return;
+    
+    userRoadmapProgress = stepId;
+    try {
+        await updateDoc(doc(db, "simulations", currentUser.uid), {
+            roadmapProgress: userRoadmapProgress,
+            lastRoadmapUpdate: new Date()
+        });
+    } catch (e) {
+        console.error("로드맵 저장 실패", e);
+    }
+}
+
+window.toggleRoadmapModal = function(show) {
+    const m = document.getElementById('roadmapModal'), c = document.getElementById('roadmapContainer');
+    if (!m || !c) return;
+    if (show) {
+        renderRoadmap();
+        m.classList.remove('hidden'); m.classList.add('flex');
+        setTimeout(() => c.classList.remove('scale-95', 'opacity-0'), 10);
+    } else {
+        c.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300);
+    }
+};
 
 // --- Wizard Navigation ---
 window.goToStep = async function(step) {
@@ -54,6 +124,14 @@ window.goToStep = async function(step) {
 
     currentStep = step;
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // 로드맵 Step 1 완료 조건 (결과 보기 진입 시)
+    if (step === 4) {
+        if (userRoadmapProgress === 1) {
+            updateRoadmapProgress(2);
+            showToast("축하합니다! 로드맵 1단계를 완료했습니다. 🚀");
+        }
+    }
 };
 
 window.resetToLiveExchangeRate = function() {
@@ -191,6 +269,7 @@ function updateWealthTier(realWealth, rate) {
 
 function renderChart(nominalData, realData, consData, optData) {
     const ctx = document.getElementById('wealthChart').getContext('2d');
+    if (!ctx) return;
     if (wealthChart) wealthChart.destroy();
     const isDark = document.documentElement.classList.contains('dark');
     const col = isDark ? '#94a3b8' : '#64748b';
@@ -253,6 +332,10 @@ onAuthStateChanged(auth, async (user) => {
             const snap = await getDoc(doc(db, "simulations", user.uid));
             if (snap.exists()) {
                 const d = snap.data();
+                if (d.roadmapProgress) {
+                    userRoadmapProgress = d.roadmapProgress;
+                    renderRoadmap();
+                }
                 if (d.annualSalary) document.getElementById('annualSalary').value = d.annualSalary;
                 if (d.initialSeed) document.getElementById('initialSeed').value = d.initialSeed;
                 if (d.monthlyExpense) document.getElementById('monthlyExpense').value = d.monthlyExpense;
@@ -260,7 +343,7 @@ onAuthStateChanged(auth, async (user) => {
                 if (d.investmentReturn) document.getElementById('investmentReturn').value = d.investmentReturn;
                 if (d.inflationRate) document.getElementById('inflationRate').value = d.inflationRate;
                 if (d.baseCurrency) setCurrency(d.baseCurrency);
-                if (confirm("이전에 시뮬레이션한 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) calculateAndShowResult();
+                if (currentStep !== 4 && confirm("이전에 시뮬레이션한 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) calculateAndShowResult();
             }
         } catch (e) {}
     } else {
@@ -279,7 +362,9 @@ async function saveDataToFirebase() {
             salaryGrowth: document.getElementById('salaryGrowth').value,
             investmentReturn: document.getElementById('investmentReturn').value,
             inflationRate: document.getElementById('inflationRate').value,
-            baseCurrency, lastUpdated: new Date()
+            baseCurrency, 
+            roadmapProgress: userRoadmapProgress,
+            lastUpdated: new Date()
         }, { merge: true });
         showToast("데이터가 안전하게 저장되었습니다. ☁️");
     } catch (e) {}
@@ -316,6 +401,7 @@ window.copySimulationResult = function() {
 
 window.toggleStrategyModal = function(show) {
     const m = document.getElementById('strategyModal'), c = document.getElementById('modalContainer');
+    if (!m || !c) return;
     if (show) {
         m.classList.remove('hidden'); m.classList.add('flex');
         setTimeout(() => c.classList.remove('scale-95', 'opacity-0'), 10);
@@ -333,6 +419,32 @@ window.toggleYearlyTable = function() {
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchMarketData();
+    document.getElementById('startRoadmapBtn')?.addEventListener('click', () => {
+        if (!currentUser) {
+            if (confirm("진행 상황을 저장하려면 로그인이 필요합니다. 로그인하시겠습니까?")) {
+                signInWithPopup(auth, new GoogleAuthProvider());
+            } else {
+                toggleRoadmapModal(true);
+            }
+        } else {
+            toggleRoadmapModal(true);
+        }
+    });
+    document.getElementById('closeRoadmap')?.addEventListener('click', () => toggleRoadmapModal(false));
+    document.getElementById('continueRoadmapBtn')?.addEventListener('click', () => {
+        const nextStep = ROADMAP_STEPS.find(s => s.id === userRoadmapProgress);
+        if (nextStep) {
+            if (nextStep.path === 'index.html') {
+                toggleRoadmapModal(false);
+                document.getElementById('step-1').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                location.href = nextStep.path;
+            }
+        } else {
+            showToast("모든 로드맵 단계를 완료했습니다! 🏆");
+        }
+    });
+    
     document.getElementById('showStrategyBtn')?.addEventListener('click', () => toggleStrategyModal(true));
     document.getElementById('closeModal')?.addEventListener('click', () => toggleStrategyModal(false));
     document.getElementById('loginBtn')?.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
