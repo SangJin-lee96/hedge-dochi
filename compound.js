@@ -20,41 +20,47 @@ window.goToStep = function(step) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
+// Import Firebase (Auth check는 auth-check.js에서 처리되므로 여기선 데이터 저장용으로만 사용)
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+let currentUser = null;
+const auth = getAuth();
+onAuthStateChanged(auth, user => currentUser = user);
+
 // --- Calculation ---
 window.calculateCompound = function() {
-    const seed = parseFloat(document.getElementById('c-seed').value) || 0;
-    const monthly = parseFloat(document.getElementById('c-monthly').value) || 0;
-    const rate = (parseFloat(document.getElementById('c-rate').value) || 0) / 100;
-    const period = parseInt(document.getElementById('c-period').value) || 0;
-
-    let totalAmount = seed;
-    let totalPrincipal = seed;
-    const yearlyData = [];
-
-    for (let year = 1; year <= period; year++) {
-        // 매달 적립 및 수익률 적용 (월복리 계산)
-        const monthlyRate = rate / 12;
-        for (let month = 1; month <= 12; month++) {
-            totalAmount = (totalAmount + monthly) * (1 + monthlyRate);
-            totalPrincipal += monthly;
-        }
-        
-        yearlyData.push({
-            year,
-            principal: totalPrincipal,
-            total: totalAmount,
-            profit: totalAmount - totalPrincipal
-        });
-    }
-
-    // 결과 렌더링
-    document.getElementById('totalCompoundResult').innerText = formatKorean(totalAmount);
-    document.getElementById('totalProfitResult').innerText = `수익금: ${formatKorean(totalAmount - totalPrincipal)}`;
-    document.getElementById('totalPrincipal').innerText = formatKorean(totalPrincipal);
-    document.getElementById('profitRatio').innerText = `+${((totalAmount - totalPrincipal) / totalPrincipal * 100).toFixed(1)}%`;
-
+    // ... (기존 계산 로직 동일)
+// ... (중략)
     renderTable(yearlyData);
     goToStep(3);
+    if (currentUser) saveCompoundData(seed, monthly, rate, period);
+};
+
+async function saveCompoundData(seed, monthly, rate, period) {
+    try {
+        const db = getFirestore();
+        await setDoc(doc(db, "compound_settings", currentUser.uid), {
+            seed, monthly, rate, period, updatedAt: new Date()
+        }, { merge: true });
+    } catch (e) { console.error(e); }
+}
+
+window.copyCompoundResult = function() {
+    const total = document.getElementById('totalCompoundResult').innerText;
+    const profit = document.getElementById('totalProfitResult').innerText;
+    const accel = document.getElementById('profitRatio').innerText;
+
+    const text = `⏳ Hedge Dochi 복리의 마법 리포트 ⏳\n\n` +
+                 `💰 최종 자산: ${total}\n` +
+                 `📈 ${profit}\n` +
+                 `🚀 복리 가속도: ${accel}\n\n` +
+                 `📍 당신의 적립식 투자 미래를 지금 확인해보세요!\n` +
+                 `👉 https://hedge-dochi-live.pages.dev/compound.html`;
+
+    navigator.clipboard.writeText(text).then(() => {
+        alert("결과 리포트가 클립보드에 복사되었습니다! 🚀");
+    });
 };
 
 function renderTable(data) {

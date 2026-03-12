@@ -102,6 +102,25 @@ function renderAdvice(years) {
     else el.innerText = "긴 여정이지만 복리의 힘은 마지막에 폭발합니다. 꾸준함이 정답입니다.";
 }
 
+window.copyFireResult = function() {
+    const years = document.getElementById('fireYearsResult').innerText;
+    const date = document.getElementById('fireDateResult').innerText;
+    const goal = document.getElementById('fireGoalAmount').innerText;
+    const income = document.getElementById('fireMonthlyIncome').innerText;
+
+    const text = `🏁 Hedge Dochi 경제적 자유(FIRE) 리포트 🏁\n\n` +
+                 `🏝️ 은퇴까지 남은 기간: ${years}\n` +
+                 `📅 은퇴 가능 예상 시점: ${date}\n` +
+                 `💰 목표 은퇴 자산: ${goal}\n` +
+                 `💵 은퇴 후 월 예상 수입: ${income}\n\n` +
+                 `📍 당신은 언제 은퇴할 수 있을까요? 지금 확인해보세요!\n` +
+                 `👉 https://hedge-dochi-live.pages.dev/fire-calc.html`;
+
+    navigator.clipboard.writeText(text).then(() => {
+        alert("은퇴 리포트가 클립보드에 복사되었습니다! 🚀");
+    });
+};
+
 function formatKorean(val) {
     return val >= 10000 ? (val / 10000).toFixed(1) + '억' : Math.round(val).toLocaleString() + '만';
 }
