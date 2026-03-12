@@ -33,7 +33,13 @@ const ROADMAP_STEPS = [
 let currentUser = null;
 let userProgress = 1;
 
-// Initialize Roadmap Widget
+function getCurrentStep() {
+    const path = window.location.pathname;
+    // Default to first step if at root
+    if (path === '/' || path === '/index.html') return ROADMAP_STEPS[0];
+    return ROADMAP_STEPS.find(s => path.includes(s.path)) || ROADMAP_STEPS[0];
+}
+
 async function initRoadmapTracker() {
     // Inject CSS
     const style = document.createElement('style');
@@ -77,10 +83,6 @@ async function initRoadmapTracker() {
     `;
     document.body.appendChild(tracker);
 
-    // Initial sync
-    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-    const isMain = currentPath === 'index.html';
-    
     onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         if (user) {
@@ -101,11 +103,9 @@ function updateTrackerUI() {
     const tracker = document.getElementById('roadmap-tracker');
     if (!tracker) return;
 
-    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-    const currentStep = ROADMAP_STEPS.find(s => s.path === currentPath);
+    const currentStep = getCurrentStep();
     
     if (currentStep) {
-        // Show tracker on any roadmap related page
         setTimeout(() => tracker.classList.add('show'), 500);
         
         document.getElementById('rt-title').innerText = `${currentStep.id}단계: ${currentStep.title}`;
@@ -118,10 +118,11 @@ function updateTrackerUI() {
             nextBtn.innerText = "다음 단계로 ➔";
             nextBtn.onclick = async () => {
                 const newProgress = Math.max(userProgress, nextStep.id);
+                // Save progress (Don't wait for it to move to next page for better UX)
                 if (currentUser) {
-                    await setDoc(doc(db, "simulations", currentUser.uid), {
+                    setDoc(doc(db, "simulations", currentUser.uid), {
                         roadmapProgress: newProgress
-                    }, { merge: true });
+                    }, { merge: true }).catch(console.error);
                 } else {
                     sessionStorage.setItem('roadmapProgress', newProgress);
                 }
@@ -134,9 +135,4 @@ function updateTrackerUI() {
     }
 }
 
-// Ensure execution
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initRoadmapTracker);
-} else {
-    initRoadmapTracker();
-}
+initRoadmapTracker();
