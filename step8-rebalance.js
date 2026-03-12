@@ -1,5 +1,5 @@
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, showToast } from './core.js';
+import { db, currentUser, showToast, saveProgress, goToNextStep } from './core.js';
 
 // --- State Management ---
 let currentStep = 1;
@@ -328,6 +328,24 @@ function updateHealthScore(processedAssets, totalValueInBase) {
         scoreEl.className = `text-4xl font-black ${score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500'}`;
     }
 }
+
+window.proceedToCurriculumStepHub = function() {
+    goToNextStep(8);
+};
+
+window.fetchPrice = async function(ticker) {
+    return quickAdd(ticker);
+};
+
+window.savePortfolio = async function() {
+    return saveDataToFirebase();
+};
+
+window.copyRebalanceResult = function() {
+    const score = document.getElementById('healthScore').innerText;
+    const text = `⚖️ Hedge Dochi 리밸런싱 리포트 ⚖️\n📊 포트폴리오 건강 점수: ${score}점\n\n📍 실시간 환율 반영, 나의 포트폴리오 진단하기\n👉 https://hedge-dochi-live.pages.dev/step8-rebalance.html`;
+    navigator.clipboard.writeText(text).then(() => showToast("결과가 복사되었습니다! 🚀"));
+};
 
 // --- Firebase Saving ---
 async function saveDataToFirebase() {

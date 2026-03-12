@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, goToNextStep, showToast } from './core.js';
+import { db, currentUser, goToNextStep, saveProgress, showToast } from './core.js';
 
 let currentStep = 1;
 let fireChart = null;
@@ -18,6 +18,7 @@ document.addEventListener('coreDataReady', async (e) => {
                     document.getElementById('f-annual-save').value = Math.max(0, annualSave);
                 }
                 if (document.getElementById('f-rate')) document.getElementById('f-rate').value = d.investmentReturn || 5.0;
+                if (document.getElementById('f-inflation')) document.getElementById('f-inflation').value = d.inflationRate || 2.5;
             }
         } catch (e) { console.error("Data Load Error:", e); }
     }
@@ -41,9 +42,9 @@ window.calculateFire = async function() {
     const returnRate = (parseFloat(document.getElementById('f-rate').value) || 0) / 100;
     const inflRate = (parseFloat(document.getElementById('f-inflation').value) || 0) / 100;
 
-    // ... (calculation logic) ...
     const realRate = returnRate - inflRate;
     const fireGoal = (targetIncome * 12) / (withdrawRate / 100);
+
     let currentWealth = seed;
     let years = 0;
     const chartLabels = [];
@@ -59,69 +60,45 @@ window.calculateFire = async function() {
         chartData.push(Math.round(currentWealth));
     }
 
-    if (years >= 50) {
-        document.getElementById('fireYearsResult').innerText = '50년+ (불가)';
-        document.getElementById('fireDateResult').innerText = '목표 하향 필요';
-        document.getElementById('fireDateResult').classList.add('text-red-500');
-    } else {
-        const targetYear = new Date().getFullYear() + years;
-        document.getElementById('fireYearsResult').innerText = `${years}년`;
-        document.getElementById('fireDateResult').innerText = `${targetYear}년`;
-        document.getElementById('fireDateResult').classList.remove('text-red-500');
-    }
-
+    const targetYear = new Date().getFullYear() + years;
+    document.getElementById('fireYearsResult').innerText = years >= 50 ? '50년+ (불가)' : `${years}년`;
+    document.getElementById('fireDateResult').innerText = years >= 50 ? '목표 하향 필요' : `${targetYear}년`;
     document.getElementById('fireGoalAmount').innerText = formatKorean(fireGoal);
     document.getElementById('fireMonthlyIncome').innerText = `${formatKorean(targetIncome)}/월`;
     
     renderAdvice(years);
     renderFireChart(chartLabels, chartData);
     
-    // 즉시 저장 및 진행률 업데이트 (3단계로)
+    // Save data immediately
     const fireData = {
         monthlyExpense: targetIncome,
         initialSeed: seed,
         annualSave: annualSave,
         investmentReturn: returnRate * 100,
-        inflationRate: inflRate * 100,
-        fireGoalAmount: fireGoal,
-        fireTargetYear: new Date().getFullYear() + years
+        inflationRate: inflRate * 100
     };
     await saveProgress(3, fireData);
-    showToast("은퇴 설계 데이터가 저장되었습니다. 🏖️", "success");
+    showToast("은퇴 설계 결과가 저장되었습니다. 🏝️", "success");
 
-    // UI 업데이트
     const actionContainer = document.querySelector('#step-4 .flex.flex-col') || document.querySelector('#step-4 .flex.flex-row');
     if (actionContainer) {
         actionContainer.innerHTML = `
-            <button onclick="proceedToCurriculumStep3()" class="flex-[2] py-5 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black shadow-2xl hover:scale-105 transition-all active:scale-95 text-lg">
+            <button onclick="window.proceedToCurriculumStep3()" class="flex-[2] py-5 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black shadow-2xl hover:scale-105 transition-all active:scale-95 text-lg">
                 3단계: 투자 성향 파악하기 ➔
             </button>
-            <button onclick="copyFireResult()" class="flex-1 py-5 bg-indigo-600 text-white font-bold rounded-2xl shadow-xl hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2">
+            <button onclick="window.copyFireResult()" class="flex-1 py-5 bg-indigo-600 text-white font-bold rounded-2xl shadow-xl hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2">
                 <span>📋 복사</span>
             </button>
-            <button onclick="goToStep(1)" class="flex-1 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">다시 계산</button>
+            <button onclick="window.goToStep(1)" class="flex-1 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">다시 계산</button>
         `;
     }
 
-    goToStep(4);
+    window.goToStep(4);
 };
 
 window.proceedToCurriculumStep3 = function() {
-    goToNextStep(2); // Go to Step 3
+    goToNextStep(2); 
 };
-
-async function syncToMainSimulation() {
-    if (!currentUser) return;
-    try {
-        await setDoc(doc(db, "simulations", currentUser.uid), {
-            monthlyExpense: document.getElementById('f-expense').value,
-            initialSeed: document.getElementById('f-seed').value,
-            investmentReturn: document.getElementById('f-rate').value,
-            inflationRate: document.getElementById('f-inflation').value,
-            lastUpdated: new Date()
-        }, { merge: true });
-    } catch (e) {}
-}
 
 function renderFireChart(labels, data) {
     const ctx = document.getElementById('fireChart').getContext('2d');
@@ -134,17 +111,6 @@ function renderFireChart(labels, data) {
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
     });
-}
-
-async function saveFireData(goal, years, targetYear) {
-    try {
-        await setDoc(doc(db, "fire_goals", currentUser.uid), {
-            goalAmount: goal,
-            remainingYears: years,
-            targetYear: targetYear,
-            updatedAt: new Date()
-        }, { merge: true });
-    } catch (e) { console.error(e); }
 }
 
 function renderAdvice(years) {
@@ -160,22 +126,12 @@ window.copyFireResult = function() {
     const date = document.getElementById('fireDateResult').innerText;
     const goal = document.getElementById('fireGoalAmount').innerText;
     const income = document.getElementById('fireMonthlyIncome').innerText;
-
-    const text = `🏁 Hedge Dochi 경제적 자유(FIRE) 리포트 🏁\n\n` +
-                 `🏝️ 은퇴까지 남은 기간: ${years}\n` +
-                 `📅 은퇴 가능 예상 시점: ${date}\n` +
-                 `💰 목표 은퇴 자산: ${goal}\n` +
-                 `💵 은퇴 후 월 예상 수입: ${income}\n\n` +
-                 `📍 당신은 언제 은퇴할 수 있을까요? 지금 확인해보세요!\n` +
-                 `👉 https://hedge-dochi-live.pages.dev/step2-fire.html`;
-
-    navigator.clipboard.writeText(text).then(() => {
-        showToast("은퇴 리포트가 클립보드에 복사되었습니다! 🚀");
-    });
+    const text = `🏁 Hedge Dochi FIRE 리포트 🏁\n🏝️ 은퇴까지: ${years}\n📅 예상 시점: ${date}\n💰 목표 자산: ${goal}\n💵 월 예상 수입: ${income}\n👉 https://hedge-dochi-live.pages.dev/`;
+    navigator.clipboard.writeText(text).then(() => showToast("결과가 복사되었습니다! 🚀"));
 };
 
 function formatKorean(val) {
     return val >= 10000 ? (val / 10000).toFixed(1) + '억' : Math.round(val).toLocaleString() + '만';
 }
 
-goToStep(1);
+window.goToStep(1);

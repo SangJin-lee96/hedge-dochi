@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, showToast } from './core.js';
+import { db, currentUser, showToast, saveProgress, goToNextStep } from './core.js';
 
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;

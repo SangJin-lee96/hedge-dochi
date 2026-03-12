@@ -1,5 +1,5 @@
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, goToNextStep, showToast } from './core.js';
+import { db, currentUser, goToNextStep, saveProgress, showToast } from './core.js';
 
 // --- Risk Test Questions Data ---
 const questions = [
@@ -147,10 +147,8 @@ function showResult() {
     }
 
     // Save progress and risk data immediately
-    import('./core.js').then(async m => {
-        await m.saveProgress(4, { riskType: result.type, recommendedPortfolio: result.portfolio });
-        m.showToast("투자 성향 데이터가 계정에 저장되었습니다. 🧠", "success");
-    });
+    saveProgress(4, { riskType: result.type, recommendedPortfolio: result.portfolio });
+    showToast("투자 성향 데이터가 계정에 저장되었습니다. 🧠", "success");
 
     resultContainer.innerHTML = `
         <div class="text-center space-y-6">

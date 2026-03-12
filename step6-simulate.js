@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, showToast } from './core.js';
+import { db, currentUser, showToast, saveProgress, goToNextStep } from './core.js';
 
 // --- State Management ---
 let currentStep = 1;
@@ -70,10 +70,8 @@ window.calculateCompound = async function() {
         finalProjectedWealth: currentWealth
     };
     
-    import('./core.js').then(async m => {
-        await m.saveProgress(7, compoundData);
-        m.showToast("복리 시뮬레이션 결과가 저장되었습니다. ⏳", "success");
-    });
+    saveProgress(7, compoundData);
+    showToast("복리 시뮬레이션 결과가 저장되었습니다. ⏳", "success");
 
     // Set up the Next Step button for the curriculum
     const actionContainer = document.querySelector('#step-3 .flex.flex-col') || document.querySelector('#step-3 .flex.justify-center');
@@ -93,7 +91,7 @@ window.calculateCompound = async function() {
 };
 
 window.proceedToCurriculumStep7 = function() {
-    import('./core.js').then(m => m.goToNextStep(6));
+    goToNextStep(6);
 };
 
 async function syncToGlobalProfile(seed, rate) {
