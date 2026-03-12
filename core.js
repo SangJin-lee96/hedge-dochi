@@ -18,7 +18,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 
 export let currentUser = null;
-export let userProgress = 1; // Default starting point
+export let userProgress = 1;
 
 export const ROADMAP_STEPS = [
     { id: 1, title: "나의 현재 위치 파악", path: "step1-asset.html", desc: "10년 후 내 자산 등급 시뮬레이션", icon: "📊" },
@@ -56,17 +56,25 @@ export function setupAuthUI() {
         } else {
             if (loginBtn) loginBtn.classList.remove('hidden');
             if (userProfile) userProfile.classList.add('hidden');
-            
-            // Fallback to sessionStorage for guests
             userProgress = parseInt(sessionStorage.getItem('roadmapProgress')) || 1;
         }
         
-        // Dispatch event so other pages know auth/progress is ready
         document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress } }));
     });
 
-    document.getElementById('loginBtn')?.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
+    document.getElementById('loginBtn')?.addEventListener('click', loginWithGoogle);
     document.getElementById('logoutBtn')?.addEventListener('click', () => signOut(auth).then(() => location.reload()));
+}
+
+export async function loginWithGoogle() {
+    try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        return result.user;
+    } catch (e) {
+        console.error("Login failed:", e);
+        return null;
+    }
 }
 
 // --- Roadmap Progress API ---
@@ -81,6 +89,20 @@ export async function saveProgress(stepId) {
         } catch (e) { console.error("Save progress failed", e); }
     } else {
         sessionStorage.setItem('roadmapProgress', userProgress);
+    }
+}
+
+export async function checkAuthAndGo(path, stepId) {
+    if (!currentUser) {
+        if (confirm("진행 상황을 저장하고 이어서 하시려면 로그인이 필요합니다. 로그인하시겠습니까?")) {
+            const user = await loginWithGoogle();
+            if (user) window.location.href = path;
+        } else {
+            // Allow guest access but warn
+            window.location.href = path;
+        }
+    } else {
+        window.location.href = path;
     }
 }
 

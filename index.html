@@ -127,7 +127,7 @@
     <!-- Scripts -->
     <script src="dark-mode.js"></script>
     <script type="module">
-        import { ROADMAP_STEPS, currentUser, userProgress } from './core.js';
+        import { ROADMAP_STEPS, currentUser, userProgress, checkAuthAndGo } from './core.js';
 
         let globalProgress = 1;
 
@@ -145,7 +145,7 @@
 
                 return `
                     <div class="step-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 rounded-3xl ${isLocked ? 'locked' : 'cursor-pointer hover:border-blue-500 dark:hover:border-blue-500'}" 
-                         onclick="${isLocked ? 'alert(\'이전 단계를 먼저 완료해주세요!\')' : `location.href='${step.path}'`}">
+                         id="step-card-${step.id}">
                         ${statusBadge}
                         <div class="w-12 h-12 bg-slate-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner">
                             ${step.icon}
@@ -156,6 +156,16 @@
                     </div>
                 `;
             }).join('');
+
+            // Add click events manually to avoid inline script issues with modules
+            ROADMAP_STEPS.forEach(step => {
+                const el = document.getElementById(`step-card-${step.id}`);
+                if (el && step.id <= progress) {
+                    el.onclick = () => checkAuthAndGo(step.path, step.id);
+                } else if (el) {
+                    el.onclick = () => alert('이전 단계를 먼저 완료해주세요!');
+                }
+            });
             
             const percent = Math.round(((progress - 1) / ROADMAP_STEPS.length) * 100);
             document.getElementById('progress-text').innerText = `${percent}% 완료`;
@@ -163,7 +173,7 @@
             
             const resumeBtn = document.getElementById('resumeBtn');
             const targetStep = ROADMAP_STEPS.find(s => s.id === progress) || ROADMAP_STEPS[ROADMAP_STEPS.length-1];
-            resumeBtn.onclick = () => location.href = targetStep.path;
+            resumeBtn.onclick = () => checkAuthAndGo(targetStep.path, targetStep.id);
             resumeBtn.innerText = progress > 1 ? `${targetStep.id}단계 이어서 하기 ➔` : '1단계 시작하기 ➔';
         }
 
