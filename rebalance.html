@@ -170,7 +170,7 @@
         <!-- STEP 4: 결과 리포트 -->
         <div id="step-4" class="step-section hidden space-y-10 animate-fade-in-up">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="p-10 rounded-[3rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800">
+                <div class="capture-area p-10 rounded-[3rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800 relative overflow-hidden">
                     <h3 class="text-lg font-black mb-8 text-center">📊 포트폴리오 분석</h3>
                     <div class="relative h-[250px]"><canvas id="currentChart"></canvas></div>
                     <div class="mt-8 text-center"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Portfolio Health</p><div id="healthScore" class="text-4xl font-black text-emerald-500">95</div></div>
@@ -180,7 +180,12 @@
                     <div id="rebalanceResults" class="space-y-4"></div>
                 </div>
             </div>
-            <div class="text-center"><button onclick="goToStep(1)" class="px-12 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">새로 만들기</button></div>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="downloadRebalanceImage()" class="px-10 py-5 bg-emerald-600 text-white font-black rounded-2xl shadow-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-2">
+                    <span>🖼️ 진단 리포트 저장</span>
+                </button>
+                <button onclick="goToStep(1)" class="px-10 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">새로 만들기</button>
+            </div>
         </div>
 
         <!-- Methodology Section (AdSense Boost) -->
@@ -254,6 +259,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="dark-mode.js"></script>
     <script type="module" src="rebalance.js"></script>
 </body>

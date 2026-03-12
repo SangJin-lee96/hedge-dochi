@@ -250,6 +250,23 @@ function formatValue(val) {
     return '$' + Math.round(val).toLocaleString();
 }
 
+window.downloadRebalanceImage = function() {
+    const area = document.querySelector('.capture-area');
+    if (!area) return;
+    
+    if (window.showToast) window.showToast("진단 리포트 이미지를 생성하고 있습니다... 🖼️");
+
+    html2canvas(area, { useCORS: true, backgroundColor: null, scale: 2, logging: false }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `HedgeDochi_Portfolio_Report.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        if (window.showToast) window.showToast("이미지 저장이 완료되었습니다! ✨");
+    }).catch(() => {
+        if (window.showToast) window.showToast("이미지 생성 중 오류가 발생했습니다.");
+    });
+};
+
 function renderChart(processedAssets) {
     const ctx = document.getElementById('currentChart').getContext('2d');
     if (chart) chart.destroy();
@@ -306,6 +323,13 @@ async function saveDataToFirebase() {
 
 document.getElementById('loginBtn')?.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
 document.getElementById('logoutBtn')?.addEventListener('click', () => signOut(auth).then(() => location.reload()));
+
+window.showToast = function(msg) {
+    let t = document.getElementById('toast');
+    if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
+    t.innerText = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+};
 
 // --- Init ---
 (async () => {
