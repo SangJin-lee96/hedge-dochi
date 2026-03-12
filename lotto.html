@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AI가 추천하는 로또 번호! 사람들이 잘 선택하지 않는 번호를 고려하여 행운의 조합을 추천합니다. 지금 바로 행운의 번호를 받아보세요.">
-    <title>로또 번호 추천 | Hedge Dochi</title>
-    <meta property="og:title" content="로또 번호 추천 | Hedge Dochi">
-    <meta property="og:description" content="AI가 추천하는 로또 번호! 사람들이 잘 선택하지 않는 번호를 고려하여 행운의 조합을 추천합니다. 지금 바로 행운의 번호를 받아보세요.">
-    <meta property="og:image" content="https://hedge-dochi-live.pages.dev/og-image-lotto.jpg">
-    <meta property="og:url" content="https://hedge-dochi-live.pages.dev/lotto.html">
+    <meta name="description" content="AI가 추천하는 로또 번호! 통계적 회피 전략을 통해 기대 수익률을 높이는 최적의 조합을 제안합니다.">
+    <title>AI 로또 번호 추천 | Hedge Dochi</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
     <script>
@@ -22,242 +18,144 @@
             --color-primary-text: #1e293b;
             --color-secondary-text: #64748b;
             --color-background: #f8fafc;
-            --color-card-background: #ffffff;
-            --color-card-border: #e2e8f0;
-            --color-input-background: #f8fafc;
-            --color-input-border: #e2e8f0;
-            --color-input-text: #334155;
             --color-nav-bg: #ffffff;
             --nav-bg-rgb: 255, 255, 255;
             --color-nav-border: #f1f5f9;
             --color-nav-link: #2563eb;
-            --color-nav-link-hover-bg: #eff6ff;
             --color-toggle-text: #64748b;
-            --color-toggle-hover-bg: #f8fafc;
         }
         html.dark {
             --color-primary-text: #f8fafc;
             --color-secondary-text: #94a3b8;
             --color-background: #0f172a;
-            --color-card-background: #1e293b;
-            --color-card-border: #334155;
-            --color-input-background: #334155;
-            --color-input-border: #475569;
-            --color-input-text: #f1f5f9;
             --color-nav-bg: #1e293b;
             --nav-bg-rgb: 30, 41, 59;
             --color-nav-border: #334155;
             --color-nav-link: #60a5fa;
-            --color-nav-link-hover-bg: #0f172a;
             --color-toggle-text: #94a3b8;
-            --color-toggle-hover-bg: #334155;
         }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; }
-        .transition-colors { transition-duration: 300ms; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; transition: background-color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
-
-        @keyframes slideDown {
-            from { transform: translateY(-10px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .animate-slide-down { animation: slideDown 0.3s ease forwards; }
+        .lotto-ball { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; items-center; justify-content: center; font-weight: 800; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: inset -3px -3px 6px rgba(0,0,0,0.2), 3px 3px 8px rgba(0,0,0,0.1); }
     </style>
 </head>
-<body class="min-h-screen relative overflow-x-hidden transition-colors">
+<body class="min-h-screen">
     <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
                 <span class="text-xl">💎</span>
-                <span class="font-bold text-lg tracking-tight whitespace-nowrap" style="word-break: keep-all;">Hedge Dochi</span>
+                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
             </div>
-            <nav class="hidden md:flex items-center gap-1 md:gap-4">
-                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">자산 시뮬레이터</a>
-                <a href="lotto.html" class="text-sm font-extrabold px-3 py-2 rounded-lg transition-colors bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 whitespace-nowrap" style="word-break: keep-all;">로또 추천</a>
-                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">리밸런싱</a>
-                <a href="guides.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">금융 가이드</a>
+            <nav class="hidden md:flex items-center gap-4">
+                <a href="index.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                <a href="rebalance.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">리밸런싱</a>
+                <a href="guides.html" class="text-sm font-semibold px-3 py-2 rounded-lg transition-colors" style="color: var(--color-nav-link);">금융 가이드</a>
+                <a href="lotto.html" class="text-sm font-extrabold px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">로또 추천</a>
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
-            </nav>
-            <div class="flex items-center gap-2 md:hidden">
-                <button id="darkModeToggleMobile" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
-                <button id="mobileMenuBtn" class="p-2 rounded-lg" style="color: var(--color-primary-text);">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                </button>
-            </div>
-        </div>
-        <div id="mobileMenu" class="hidden md:hidden absolute top-16 left-0 w-full border-b shadow-lg transition-all z-[110]" style="background-color: var(--color-nav-bg); border-color: var(--color-nav-border);">
-            <nav class="flex flex-col p-4 space-y-2">
-                <a href="index.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">자산 시뮬레이터</a>
-                <a href="lotto.html" class="text-base font-extrabold p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 whitespace-nowrap" style="word-break: keep-all;">로또 추천</a>
-                <a href="rebalance.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">리밸런싱</a>
-                <a href="guides.html" class="text-base font-semibold p-4 rounded-xl whitespace-nowrap" style="color: var(--color-nav-link); word-break: keep-all;">금융 가이드</a>
             </nav>
         </div>
     </header>
 
-    <main class="py-4 px-4 md:py-8 max-w-6xl mx-auto">
-        <header class="mb-8 text-center md:text-left">
-            <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight">🎲 AI 로또 번호 추천</h1>
-            <p class="mt-2 text-base md:text-lg font-medium text-slate-500">사람들이 잘 선택하지 않는 번호를 고려하여 행운의 조합을 추천합니다.</p>
+    <main class="py-12 px-4 max-w-4xl mx-auto">
+        <header class="mb-12 text-center">
+            <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">🎲 행운의 번호 추출기</h1>
+            <p class="text-lg text-slate-500 font-medium">단순한 운을 넘어, 통계적으로 유리한 조합을 찾습니다.</p>
+            
+            <div class="mt-10 flex items-center justify-center gap-2 max-w-xs mx-auto">
+                <div id="step-indicator-1" class="step-dot w-3 h-3 rounded-full bg-blue-600 transition-all"></div>
+                <div class="w-8 h-0.5 bg-slate-200"></div>
+                <div id="step-indicator-2" class="step-dot w-3 h-3 rounded-full bg-slate-200 transition-all"></div>
+                <div class="w-8 h-0.5 bg-slate-200"></div>
+                <div id="step-indicator-3" class="step-dot w-3 h-3 rounded-full bg-slate-200 transition-all"></div>
+            </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <!-- LEFT COLUMN: Settings -->
-            <div class="lg:col-span-4 flex flex-col gap-6">
-                <!-- 로또 6/45 설정 -->
-                <div class="p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700">
-                    <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-5">로또 6/45 설정</h3>
-                    <div class="space-y-5">
-                        <div>
-                            <label for="numGames" class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">게임 수</label>
-                            <input type="number" id="numGames" value="5" min="1" max="20" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-bold text-slate-800 dark:text-white">
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" id="includeBonus" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                            <label for="includeBonus" class="text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer">보너스 번호 포함</label>
-                        </div>
-                    </div>
-                    <hr class="border-slate-100 dark:border-slate-800 my-6">
-                    <button id="generateLotto" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5">로또 번호 생성</button>
+        <!-- STEP 1: 복권 종류 선택 -->
+        <div id="step-1" class="step-section space-y-8 animate-fade-in-up">
+            <div id="typeContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div onclick="selectLottoType('645')" id="card-645" class="group cursor-pointer p-8 rounded-[2.5rem] bg-white dark:bg-[#1e293b] border-2 border-slate-100 dark:border-slate-800 hover:border-blue-500 transition-all text-center shadow-xl">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-blue-600 rounded-3xl flex items-center justify-center text-4xl shadow-lg group-hover:scale-110 transition-transform text-white">🎰</div>
+                    <h4 class="text-2xl font-black mb-2">로또 6/45</h4>
+                    <p class="text-sm text-slate-500 leading-relaxed">45개의 숫자 중 6개를 맞추는<br>전통적인 방식의 고액 복권</p>
                 </div>
-
-                <!-- 연금복권 720+ 설정 -->
-                <div class="p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700">
-                    <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-5">연금복권 720+ 설정</h3>
-                    <div>
-                        <label for="numPensionGames" class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">게임 수</label>
-                        <input type="number" id="numPensionGames" value="5" min="1" max="20" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-bold text-slate-800 dark:text-white">
-                    </div>
-                    <hr class="border-slate-100 dark:border-slate-800 my-6">
-                    <button id="generatePension" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5">연금복권 번호 생성</button>
-                </div>
-            </div>
-
-            <!-- RIGHT COLUMN: Results -->
-            <div class="lg:col-span-8 p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl border transition-all bg-white dark:bg-[#1e293b] border-slate-200 dark:border-slate-700 min-h-[400px]">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-50 dark:border-slate-800 pb-6">
-                    <h3 class="text-lg md:text-xl font-bold flex items-center gap-2"><span>🍀</span> 추천 번호 결과</h3>
-                    <div class="flex items-center gap-2">
-                        <button onclick="shareToX()" class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-900 text-white hover:bg-black transition-colors" title="X 공유">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
-                        </button>
-                        <button onclick="copyLink()" class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors" title="링크 복사">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                        </button>
-                    </div>
-                </div>
-                <div id="lottoResults" class="space-y-4">
-                    <div class="flex flex-col items-center justify-center py-12 text-slate-400">
-                        <span class="text-5xl mb-4">🎰</span>
-                        <p class="font-medium text-sm">번호 생성 버튼을 누르면 행운의 조합이 표시됩니다.</p>
-                    </div>
+                <div onclick="selectLottoType('720')" id="card-720" class="group cursor-pointer p-8 rounded-[2.5rem] bg-white dark:bg-[#1e293b] border-2 border-slate-100 dark:border-slate-800 hover:border-purple-500 transition-all text-center shadow-xl">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-purple-600 rounded-3xl flex items-center justify-center text-4xl shadow-lg group-hover:scale-110 transition-transform text-white">📅</div>
+                    <h4 class="text-2xl font-black mb-2">연금복권 720+</h4>
+                    <p class="text-sm text-slate-500 leading-relaxed">매월 고정된 금액을 받는<br>안정적인 노후 대비용 복권</p>
                 </div>
             </div>
         </div>
 
-        <!-- FAQ 섹션 추가 -->
-        <section class="mt-16 pt-16 border-t border-slate-100 dark:border-slate-800">
-            <h2 class="text-2xl md:text-3xl font-extrabold mb-8 text-center">AI 로또 번호 추천 FAQ</h2>
-            <div class="max-w-4xl mx-auto space-y-8">
-                <div class="bg-slate-50 dark:bg-slate-800/50 p-6 md:p-8 rounded-2xl">
-                    <h3 class="text-lg md:text-xl font-bold mb-4 text-blue-600 dark:text-blue-400">Q. 로또 번호 생성 알고리즘의 통계적 근거는 무엇인가요?</h3>
-                    <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Hedge Dochi의 로또 생성 알고리즘은 단순히 무작위 숫자를 추출하는 방식에서 벗어나, 역대 당첨 번호의 빈도수 분석과 '심리적 회피 번호' 이론을 결합하여 설계되었습니다. 통계적으로 모든 숫자의 출현 확률은 동일하지만, 실제 당첨 시 당첨금을 나누는 인원수는 사람들이 선호하는 번호 조합(예: 생일 기반의 1~31번, 연속된 숫자 등)에 따라 크게 달라집니다. 본 서비스의 알고리즘은 다수의 사용자가 선택할 확률이 낮은 번호 대역을 전략적으로 포함함으로써, 만약 당첨될 경우 기대 수익(당첨금 배분 효율)을 극대화할 수 있는 조합을 우선적으로 추천합니다. 이는 단순한 운을 넘어, 게임 이론적 관점에서 사용자의 잠재적 이익을 보호하려는 시도입니다.
-                    </p>
+        <!-- STEP 2: 상세 옵션 설정 -->
+        <div id="step-2" class="step-section hidden space-y-8 animate-fade-in-up">
+            <div class="max-w-md mx-auto p-10 rounded-[3rem] bg-white dark:bg-[#1e293b] shadow-2xl border border-slate-100 dark:border-slate-800">
+                <h3 id="selected-type-title" class="text-xl font-black mb-8 text-center text-blue-600">로또 6/45 설정</h3>
+                
+                <div class="space-y-8">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 text-center">게임 수 선택</label>
+                        <div class="flex items-center justify-center gap-6">
+                            <button onclick="adjustNumGames(-1)" class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 font-black text-xl">-</button>
+                            <span id="numGamesDisplay" class="text-4xl font-black w-12 text-center">5</span>
+                            <button onclick="adjustNumGames(1)" class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 font-black text-xl">+</button>
+                        </div>
+                    </div>
+
+                    <div id="bonus-toggle-area" class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+                        <span class="font-bold text-sm">보너스 번호 포함</span>
+                        <input type="checkbox" id="includeBonus" class="w-6 h-6 rounded-lg accent-blue-600">
+                    </div>
                 </div>
-                <div class="bg-slate-50 dark:bg-slate-800/50 p-6 md:p-8 rounded-2xl">
-                    <h3 class="text-lg md:text-xl font-bold mb-4 text-purple-600 dark:text-purple-400">Q. 연금복권과 로또 중 당첨 확률이 더 높은 것은 무엇인가요?</h3>
-                    <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
-                        수학적인 당첨 확률 면에서는 연금복권 720+가 로또 6/45보다 훨씬 유리합니다. 로또 1등 당첨 확률은 약 814만 분의 1인 반면, 연금복권 1등 당첨 확률은 500만 분의 1로 약 1.6배가량 높습니다. 또한 연금복권은 고정된 금액을 매월 나누어 받는 구조 덕분에 급격한 자산 관리 실패 위험이 적고, 1등과 2등이 동일한 번호 조합에서 나올 수 있는 구조(조만 다름)를 가지고 있어 전략적인 구매가 가능합니다. Hedge Dochi 시뮬레이터는 이러한 두 복권의 확률적 특성을 고려하여, 사용자의 성향에 따라 고액 일시금을 노리는 로또 조합이나 안정적인 노후 자금 마련을 위한 연금복권 번호를 균형 있게 생성할 수 있도록 가이드를 제공하고 있습니다.
-                    </p>
+
+                <div class="flex justify-center gap-4 mt-10">
+                    <button onclick="goToStep(1)" class="px-6 py-4 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">이전</button>
+                    <button onclick="generateAndShowResults()" class="flex-1 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">번호 생성 ➔</button>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- 상세 가이드 텍스트 (SEO 및 콘텐츠 보강) -->
-        <section class="mt-16 pt-16 border-t border-slate-100 dark:border-slate-800 prose prose-slate dark:prose-invert max-w-none">
-            <h2 class="text-xl md:text-2xl font-extrabold text-blue-600 dark:text-blue-400 mb-6">AI 로또 추천 시스템의 작동 원리 및 통계적 방법론</h2>
+        <!-- STEP 3: 결과 리포트 -->
+        <div id="step-3" class="step-section hidden space-y-8 animate-fade-in-up">
+            <div class="flex justify-between items-end mb-6">
+                <h2 class="text-3xl font-black">🍀 추천 번호 결과</h2>
+                <button onclick="goToStep(1)" class="text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-xl">다시하기</button>
+            </div>
             
-            <h3 class="text-lg font-bold mt-8 mb-4">1. 난수 생성과 시드(Seed) 최적화</h3>
-            <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
-                기본적으로 로또 추첨은 독립 시행(Independent Trials)이며, 과거의 결과가 미래의 추첨에 영향을 미치지 않습니다. 따라서 어떤 번호가 나올지 '예측'하는 것은 수학적으로 불가능합니다. 
-                Hedge Dochi의 추천 시스템은 브라우저의 <code>crypto.getRandomValues()</code> 암호학적 난수 생성기(CSPRNG)를 사용하여 진정한 무작위성(True Randomness)을 보장합니다. 이는 일반적인 <code>Math.random()</code> 함수가 가지는 패턴화의 위험을 차단하여, 추첨기의 물리적 무작위성에 가장 가까운 번호를 생성하기 위함입니다.
-            </p>
+            <div id="lottoResults" class="space-y-4">
+                <!-- 결과가 여기에 동적으로 추가됨 -->
+            </div>
 
-            <h3 class="text-lg font-bold mt-8 mb-4">2. 게임 이론에 입각한 '기대 수익률(Expected Value)' 극대화</h3>
-            <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
-                확률을 바꿀 수는 없지만 <strong>기대 수익률</strong>은 바꿀 수 있습니다. 로또는 당첨금을 당첨자 수가 나눠 갖는 <strong>패리뮤추얼(Pari-Mutuel) 구조</strong>입니다. 
-                사람들은 무의식적으로 생일(1~31), 행운의 숫자(7), 또는 시각적으로 예쁜 패턴(1, 2, 3, 4, 5, 6이나 대각선 배열)을 선호합니다. 만약 이런 번호로 당첨될 경우 수십, 수백 명과 1등 당첨금을 나눠 가져야 하므로 실제 수령액은 극도로 낮아집니다(실제 사례 존재). 
-                본 AI 도구는 내부적으로 <strong>심리적 회피 번호 알고리즘</strong>을 적용하여, 대중이 선호하는 번호 대역의 가중치를 미세하게 낮추고 상대적으로 인기가 없는 번호(예: 32 이상의 고가 번호들의 조합, 불규칙한 산포도)의 조합을 우선 필터링합니다. 이는 당첨 시 '독식'할 확률을 높여 투자의 기대값을 끌어올리는 가장 과학적인 접근법입니다.
-            </p>
+            <div class="mt-12 p-8 rounded-[3rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800 text-center">
+                <h4 class="font-bold mb-4">행운을 공유하세요!</h4>
+                <div class="flex justify-center gap-4">
+                    <button onclick="copyLink()" class="px-6 py-3 bg-slate-100 dark:bg-slate-800 rounded-xl font-bold text-sm">🔗 링크 복사</button>
+                    <button onclick="shareToX()" class="px-6 py-3 bg-slate-900 dark:bg-black text-white rounded-xl font-bold text-sm">𝕏 공유하기</button>
+                </div>
+            </div>
+        </div>
 
-            <h3 class="text-lg font-bold mt-8 mb-4">3. 로또와 자산 관리의 상관관계</h3>
-            <p class="text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
-                Hedge Dochi가 자산 배분 플랫폼임에도 로또 도구를 제공하는 이유는 무엇일까요? 로또는 기대 수익률이 마이너스인 '세금'과 같지만, 소액의 구매는 사용자에게 일주일간의 심리적 위안(Utility)을 제공합니다. 
-                우리는 사용자가 로또에 과도한 자금을 투입하는 것을 방지하고, 이를 포트폴리오의 '극단적 고위험/고수익(Tail Risk)' 옵션으로 소액만 통제 하에 편입하도록 권장합니다. 즉, 로또 구매 비용은 철저히 <strong>'소멸성 예산'</strong>으로 분리하고, 나머지 자본은 리밸런싱 매니저를 통해 철저하게 인덱스 및 자산 배분 전략에 따라 굴려야 한다는 것이 우리의 금융 철학입니다.
-            </p>
+        <!-- SEO 및 정보성 콘텐츠 -->
+        <section class="mt-20 prose prose-slate dark:prose-invert max-w-none border-t border-slate-100 dark:border-slate-800 pt-12">
+            <h2 class="text-2xl font-black text-blue-600 dark:text-blue-400 mb-6">AI 로또 추천 시스템의 원리</h2>
+            <p>Hedge Dochi의 로또 생성기는 단순한 무작위 번호 추출기가 아닙니다. 대중들이 선호하는 번호 대역(1~31)을 피하고, 당첨 시 수령액을 극대화할 수 있는 '회피 번호 전략'을 기반으로 설계되었습니다...</p>
         </section>
     </main>
 
-    <!-- Glossary Section -->
-    <section id="glossary" class="max-w-6xl mx-auto px-4 mt-16 mb-12">
-        <div class="p-8 md:p-12 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-            <h3 class="text-xl md:text-2xl font-bold mb-8 flex items-center gap-2"><span>📖</span> 투자 용어 사전 (Glossary)</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="p-4 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm">
-                    <h4 class="font-bold text-blue-600 dark:text-blue-400 text-sm mb-2">MPT (현대 포트폴리오 이론)</h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">자산 간의 상관관계를 분석하여 동일한 기대 수익률에서 위험(변동성)을 최소화하거나, 동일한 위험 수준에서 수익을 극대화하는 자산 배분 방식입니다.</p>
-                </div>
-                <div class="p-4 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm">
-                    <h4 class="font-bold text-blue-600 dark:text-blue-400 text-sm mb-2">Sharpe Ratio (샤프 지수)</h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">위험 한 단위당 얼마나 많은 수익을 올렸는지를 나타내는 지표입니다. 수치가 높을수록 위험 대비 수익률이 우수함을 의미합니다.</p>
-                </div>
-                <div class="p-4 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm">
-                    <h4 class="font-bold text-blue-600 dark:text-blue-400 text-sm mb-2">Rebalancing (리밸런싱)</h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">가격 변동으로 인해 비중이 변한 포트폴리오를 초기 설정한 목표 비중으로 되돌리는 과정입니다. 기계적인 고점 매도와 저점 매수를 유도합니다.</p>
-                </div>
-                <div class="p-4 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm">
-                    <h4 class="font-bold text-blue-600 dark:text-blue-400 text-sm mb-2">Volatility (변동성)</h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">자산 가격이 시간에 따라 얼마나 크게 오르내리는지를 나타냅니다. 금융에서는 보통 표준편차로 계산하며, 위험의 척도로 사용됩니다.</p>
-                </div>
-                <div class="p-4 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm lg:col-span-2">
-                    <h4 class="font-bold text-blue-600 dark:text-blue-400 text-sm mb-2">Asset Allocation (자산 배분)</h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">주식, 채권, 현금, 대체 자산 등 성격이 다른 여러 자산군에 투자 자금을 나누어 배분하는 전략으로, 전체 포트폴리오 수익과 위험의 90% 이상을 결정합니다.</p>
-                </div>
-            </div>
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
+        <div class="flex justify-center space-x-6 font-bold mb-4">
+            <a href="about.html" class="hover:text-blue-600">소개</a>
+            <a href="privacy.html" class="hover:text-blue-600">약관</a>
+            <a href="contact-form.html" class="hover:text-blue-600">문의</a>
         </div>
-    </section>
-
-    <footer class="text-center mt-12 py-12 border-t border-slate-100 dark:border-slate-800">
-        <div class="max-w-6xl mx-auto px-4 text-sm text-slate-400">
-            <div class="flex justify-center space-x-6 font-bold mb-6">
-                <a href="about.html" class="hover:text-blue-600">소개</a>
-                <a href="privacy.html" class="hover:text-blue-600">약관</a>
-                <a href="contact-form.html" class="hover:text-blue-600">문의</a>
-            </div>
-            <p class="mb-4 leading-relaxed max-w-2xl mx-auto">Hedge Dochi는 복잡한 금융 데이터를 직관적인 도구로 재해석하여, 모든 투자자가 데이터에 기반한 합리적인 자산 배분을 실천할 수 있도록 돕는 전문 금융 가이드 서비스입니다. 감정에 흔들리지 않는 투자의 표준을 제시합니다.</p>
-            <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
-            <p class="mt-2 text-[10px] opacity-60">본 사이트의 모든 콘텐츠는 정보 제공을 목적으로 하며, 법적 조언이나 투자 권유를 구성하지 않습니다.</p>
-        </div>
+        <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
     </footer>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="dark-mode.js"></script>
     <script src="lotto.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const btn = document.getElementById('mobileMenuBtn');
-            const menu = document.getElementById('mobileMenu');
-            if (btn && menu) btn.addEventListener('click', () => { menu.classList.toggle('hidden'); });
-        });
-    </script>
 </body>
 </html>

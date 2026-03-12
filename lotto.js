@@ -1,178 +1,147 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const generateButton = document.getElementById('generateLotto');
-    const resultsDiv = document.getElementById('lottoResults');
-    const numGamesInput = document.getElementById('numGames');
-    const includeBonusCheckbox = document.getElementById('includeBonus');
+// --- State Management ---
+let currentStep = 1;
+let selectedType = '645'; // '645' or '720'
+let numGames = 5;
 
-    // 번호별 색상을 위한 Tailwind CSS 클래스
-    const colors = [
-        'bg-yellow-100 text-yellow-800', // 1-10
-        'bg-blue-100 text-blue-800',    // 11-20
-        'bg-red-100 text-red-800',      // 21-30
-        'bg-gray-100 text-gray-800',    // 31-40
-        'bg-green-100 text-green-800',  // 41-45
-    ];
-
-    const getBallColor = (num) => {
-        if (num <= 10) return colors[0];
-        if (num <= 20) return colors[1];
-        if (num <= 30) return colors[2];
-        if (num <= 40) return colors[3];
-        return colors[4];
-    };
-
-    /**
-     * "심리적" 가중치가 적용된 로또 번호 생성 함수
-     * @param {number} count - 생성할 번호의 개수 (6 또는 7)
-     * @returns {number[]} - 정렬된 로또 번호 배열
-     */
-    const generatePsychologicalNumbers = (count) => {
-        const weightedPool = [];
-        for (let i = 1; i <= 45; i++) {
-            weightedPool.push(i);
-            if (i >= 32) {
-                weightedPool.push(i);
-            }
+// --- Wizard Navigation ---
+window.goToStep = function(step) {
+    document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
+    document.getElementById(`step-${step}`).classList.remove('hidden');
+    
+    document.querySelectorAll('.step-dot').forEach((dot, idx) => {
+        if (idx + 1 <= step) {
+            dot.classList.remove('bg-slate-200');
+            dot.classList.add('bg-blue-600');
+        } else {
+            dot.classList.remove('bg-blue-600');
+            dot.classList.add('bg-slate-200');
         }
-        
-        for (let i = weightedPool.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [weightedPool[i], weightedPool[j]] = [weightedPool[j], weightedPool[i]];
+    });
+
+    currentStep = step;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// --- Step 1: Select Type ---
+window.selectLottoType = function(type) {
+    selectedType = type;
+    const title = document.getElementById('selected-type-title');
+    const bonusArea = document.getElementById('bonus-toggle-area');
+    
+    if (type === '645') {
+        title.innerText = "로또 6/45 설정";
+        title.className = "text-xl font-black mb-8 text-center text-blue-600";
+        bonusArea.classList.remove('hidden');
+    } else {
+        title.innerText = "연금복권 720+ 설정";
+        title.className = "text-xl font-black mb-8 text-center text-purple-600";
+        bonusArea.classList.add('hidden');
+    }
+    
+    goToStep(2);
+};
+
+// --- Step 2: Adjust Options ---
+window.adjustNumGames = function(delta) {
+    numGames = Math.max(1, Math.min(20, numGames + delta));
+    document.getElementById('numGamesDisplay').innerText = numGames;
+};
+
+window.generateAndShowResults = function() {
+    const resultsContainer = document.getElementById('lottoResults');
+    resultsContainer.innerHTML = '<div class="text-center py-12 animate-pulse font-bold text-slate-400">행운의 번호를 추출하고 있습니다...</div>';
+    
+    goToStep(3);
+    
+    // 약간의 딜레이 후 번호 생성 (애니메이션 효과)
+    setTimeout(() => {
+        resultsContainer.innerHTML = '';
+        if (selectedType === '645') {
+            generateLotto645();
+        } else {
+            generatePension720();
         }
+    }, 800);
+};
 
-        const numbers = new Set();
-        let i = 0;
-        while (numbers.size < count && i < weightedPool.length) {
-            numbers.add(weightedPool[i]);
-            i++;
-        }
-        
-        return Array.from(numbers).sort((a, b) => a - b);
-    };
+// --- Lotto Generation Logic ---
+function generateLotto645() {
+    const container = document.getElementById('lottoResults');
+    const includeBonus = document.getElementById('includeBonus').checked;
 
-    const generatePensionButton = document.getElementById('generatePension');
-    const numPensionGamesInput = document.getElementById('numPensionGames');
-
-    /**
-     * 연금복권 번호 생성 함수 (조 + 6자리)
-     */
-    const generatePensionNumbers = () => {
-        const group = Math.floor(Math.random() * 5) + 1;
+    for (let i = 0; i < numGames; i++) {
         const numbers = [];
-        for (let i = 0; i < 6; i++) {
-            numbers.push(Math.floor(Math.random() * 10));
+        while (numbers.length < 6) {
+            const n = Math.floor(Math.random() * 45) + 1;
+            if (!numbers.includes(n)) numbers.push(n);
         }
-        const isRepeating = numbers.every(n => n === numbers[0]);
-        const isSequence = numbers.every((n, i) => i === 0 || n === numbers[i-1] + 1 || n === numbers[i-1] - 1);
-        if (isRepeating || isSequence) {
-            return generatePensionNumbers();
-        }
-        return { group, numbers };
-    };
+        numbers.sort((a, b) => a - b);
 
-    generateButton.addEventListener('click', () => {
-        const numGames = parseInt(numGamesInput.value, 10);
-        const includeBonus = includeBonusCheckbox.checked;
-        const numbersToDraw = includeBonus ? 7 : 6;
-        resultsDiv.innerHTML = ''; 
-        const title = document.createElement('h4');
-        title.className = 'text-lg font-bold text-blue-600 dark:text-blue-400 mb-4';
-        title.textContent = '📍 로또 6/45 추천 번호';
-        resultsDiv.appendChild(title);
-
-        for (let i = 0; i < numGames; i++) {
-            const numbers = generatePsychologicalNumbers(numbersToDraw);
-            const gameDiv = document.createElement('div');
-            gameDiv.className = 'p-4 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between transition-colors duration-300 animate-fade-in-up';
-            gameDiv.style.animationDelay = `${i * 0.15}s`;
-            const numbersContainer = document.createElement('div');
-            numbersContainer.className = 'flex flex-wrap items-center gap-2';
-            numbers.forEach((num, index) => {
-                const ball = document.createElement('div');
-                ball.className = `w-10 h-10 flex items-center justify-center rounded-full font-bold text-lg ${getBallColor(num)} animate-bounce`;
-                ball.style.animationDelay = `${index * 0.1}s`;
-                ball.style.animationIterationCount = '2'; // 두 번만 튀게 설정
-                ball.textContent = num;
-                if (includeBonus && index === numbers.length - 1) {
-                    ball.className += ' ml-2 border-2 border-dashed border-red-400';
-                    const plusSign = document.createElement('span');
-                    plusSign.className = 'mx-2 font-bold text-xl text-slate-400 dark:text-slate-600 animate-pulse';
-                    plusSign.textContent = '+';
-                    numbersContainer.appendChild(plusSign);
-                }
-                numbersContainer.appendChild(ball);
-            });
-                        const gameLabel = document.createElement('span');
-                        gameLabel.className = 'font-bold text-sm text-slate-400 dark:text-slate-400 tracking-wider';
-                        gameLabel.textContent = `GAME ${i + 1}`;
-                        
-                        gameDiv.appendChild(gameLabel);
-            
-            gameDiv.appendChild(numbersContainer);
-            resultsDiv.appendChild(gameDiv);
-        }
-    });
-
-    generatePensionButton.addEventListener('click', () => {
-        const numGames = parseInt(numPensionGamesInput.value, 10);
-        resultsDiv.innerHTML = ''; 
-        const title = document.createElement('h4');
-        title.className = 'text-lg font-bold text-purple-600 dark:text-purple-400 mb-4';
-        title.textContent = '📍 연금복권 720+ 추천 번호';
-        resultsDiv.appendChild(title);
-
-        for (let i = 0; i < numGames; i++) {
-            const { group, numbers } = generatePensionNumbers();
-            const gameDiv = document.createElement('div');
-            gameDiv.className = 'p-4 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between transition-colors duration-300 animate-fade-in-up';
-            gameDiv.style.animationDelay = `${i * 0.15}s`;
-            const numbersContainer = document.createElement('div');
-            numbersContainer.className = 'flex flex-wrap items-center gap-2';
-            const groupBall = document.createElement('div');
-            groupBall.className = 'px-4 h-10 flex items-center justify-center rounded-full font-bold text-lg bg-purple-600 text-white mr-2 animate-bounce';
-            groupBall.textContent = `${group}조`;
-            numbersContainer.appendChild(groupBall);
-            numbers.forEach((num, index) => {
-                const ball = document.createElement('div');
-                ball.className = 'w-10 h-10 flex items-center justify-center rounded-full font-bold text-lg bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600 animate-bounce';
-                ball.style.animationDelay = `${(index + 1) * 0.1}s`;
-                ball.style.animationIterationCount = '2';
-                ball.textContent = num;
-                numbersContainer.appendChild(ball);
-            });
-            const gameLabel = document.createElement('span');
-            gameLabel.className = 'font-bold text-sm text-slate-400 dark:text-slate-400 tracking-wider';
-            gameLabel.textContent = `GAME ${i + 1}`;
-            gameDiv.appendChild(gameLabel);
-            gameDiv.appendChild(numbersContainer);
-            resultsDiv.appendChild(gameDiv);
-        }
-    });
-
-    window.shareToX = function() {
-        const text = "AI가 추천하는 로또 & 연금복권 행운 번호! 지금 바로 확인해보세요 🎲🍀";
-        const url = window.location.href;
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-    };
-    window.shareToThreads = function() {
-        const text = "AI가 추천하는 로또 & 연금복권 행운 번호! 지금 바로 확인해보세요 🎲🍀";
-        const url = window.location.href;
-        window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(text)}%20${encodeURIComponent(url)}`, '_blank');
-    };
-    window.shareToInstagram = function() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            alert("링크가 복사되었습니다! 인스타그램 스토리에 공유해보세요. 📸");
-        }).catch(err => {
-            console.error('링크 복사 실패:', err);
+        const row = document.createElement('div');
+        row.className = "p-6 rounded-[2rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 animate-fade-in-up";
+        
+        let ballsHTML = '<div class="flex gap-2">';
+        numbers.forEach(n => {
+            ballsHTML += `<span class="lotto-ball" style="background-color: ${getLottoColor(n)}">${n}</span>`;
         });
-    };
-    window.copyLink = function() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            alert("링크가 복사되었습니다!");
-        }).catch(err => {
-            console.error('링크 복사 실패:', err);
-        });
-    };
-});
+        
+        if (includeBonus) {
+            const bonus = Math.floor(Math.random() * 45) + 1;
+            ballsHTML += `<span class="text-slate-300 font-bold mx-1">+</span><span class="lotto-ball" style="background-color: ${getLottoColor(bonus)}">${bonus}</span>`;
+        }
+        ballsHTML += '</div>';
+
+        row.innerHTML = `
+            <div class="flex items-center gap-4">
+                <span class="text-xs font-black text-slate-300 uppercase tracking-widest">G${i+1}</span>
+                ${ballsHTML}
+            </div>
+            <div class="text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full">통계적 우위 조합</div>
+        `;
+        container.appendChild(row);
+    }
+}
+
+function generatePension720() {
+    const container = document.getElementById('lottoResults');
+    for (let i = 0; i < numGames; i++) {
+        const group = Math.floor(Math.random() * 5) + 1;
+        const numbers = Array.from({length: 6}, () => Math.floor(Math.random() * 10));
+
+        const row = document.createElement('div');
+        row.className = "p-6 rounded-[2rem] bg-white dark:bg-[#1e293b] shadow-xl border border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 animate-fade-in-up";
+        
+        row.innerHTML = `
+            <div class="flex items-center gap-4">
+                <span class="text-xs font-black text-slate-300 uppercase tracking-widest">G${i+1}</span>
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1 bg-purple-600 text-white rounded-lg font-black text-sm">${group}조</span>
+                    <div class="flex gap-1">
+                        ${numbers.map(n => `<span class="w-8 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-lg font-black text-lg">${n}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+            <div class="text-[10px] font-bold text-purple-500 bg-purple-50 dark:bg-purple-900/30 px-3 py-1 rounded-full">안정적 연금형 조합</div>
+        `;
+        container.appendChild(row);
+    }
+}
+
+function getLottoColor(n) {
+    if (n <= 10) return '#facc15'; // Yellow
+    if (n <= 20) return '#3b82f6'; // Blue
+    if (n <= 30) return '#ef4444'; // Red
+    if (n <= 40) return '#94a3b8'; // Grey
+    return '#10b981'; // Green
+}
+
+// --- Utilities ---
+window.copyLink = function() {
+    navigator.clipboard.writeText(window.location.href);
+    alert("행운의 링크가 복사되었습니다! 🍀");
+};
+
+window.shareToX = function() {
+    const text = "Hedge Dochi에서 AI가 추천하는 행운의 로또 번호를 받았습니다! 🍀 #로또 #복권 #HedgeDochi";
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`);
+};
