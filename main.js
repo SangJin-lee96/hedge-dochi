@@ -45,22 +45,33 @@ function updateCalculation() {
     
     const yearlyData = [initialSeed];
     const realYearlyData = [initialSeed];
+    const tableData = [];
 
     // 10년 시뮬레이션 로직
     for (let year = 1; year <= 10; year++) {
-        // 1. 연간 잉여 현금 계산 (수입 - 지출)
+        const prevWealth = currentWealth;
+        // 1. 연간 잉여 현금 계산
         const annualSurplus = currentAnnualSalary - (currentMonthlyExpense * 12);
         
-        // 2. 투자 수익 적용 (기존 자산 + 신규 유입액의 절반 정도가 투자되었다고 가정)
-        currentWealth = (currentWealth + annualSurplus) * (1 + investmentReturn);
+        // 2. 투자 수익 적용
+        const profit = (currentWealth + (annualSurplus / 2)) * investmentReturn; // 유입 현금은 평균적으로 연중 절반 정도 투자된다고 가정
+        currentWealth = currentWealth + annualSurplus + profit;
         
-        // 3. 연봉 상승 및 물가 상승 반영 (다음 해를 위해)
+        // 테이블 데이터 저장
+        tableData.push({
+            year,
+            salary: currentAnnualSalary,
+            profit: profit,
+            total: currentWealth
+        });
+
+        // 3. 연봉 상승 및 물가 상승 반영
         currentAnnualSalary *= (1 + salaryGrowth);
         currentMonthlyExpense *= (1 + inflationRate);
         
         yearlyData.push(Math.round(currentWealth));
         
-        // 4. 실질 가치 계산 (물가 상승률로 할인)
+        // 4. 실질 가치 계산
         const realValue = currentWealth / Math.pow(1 + inflationRate, year);
         realYearlyData.push(Math.round(realValue));
     }
@@ -70,14 +81,56 @@ function updateCalculation() {
     const avgNetSavings = Math.round((annualSalary - (monthlyExpense * 12)) / 12);
 
     // UI 업데이트
-    document.getElementById('finalWealthText').innerText = (finalWealth / 10000).toFixed(1) + '억';
-    document.getElementById('realValueText').innerText = (finalRealWealth / 10000).toFixed(1) + '억';
-    document.getElementById('netSavingsText').innerText = avgNetSavings + '만';
+    document.getElementById('finalWealthText').innerText = formatToKoreanUnit(finalWealth);
+    document.getElementById('realValueText').innerText = formatToKoreanUnit(finalRealWealth);
+    document.getElementById('netSavingsText').innerText = avgNetSavings.toLocaleString() + '만';
 
+    // 테이블 렌더링
+    renderYearlyTable(tableData);
+    
     // 등급 결정 및 AI 인사이트
     updateWealthTier(finalRealWealth);
     renderChart(yearlyData, realYearlyData);
 }
+
+function formatToKoreanUnit(val) {
+    if (val >= 10000) {
+        return (val / 10000).toFixed(1) + '억';
+    }
+    return val.toLocaleString() + '만';
+}
+
+function renderYearlyTable(data) {
+    const tbody = document.getElementById('yearlyTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors";
+        tr.innerHTML = `
+            <td class="py-4 px-2 text-slate-400">${row.year}년차</td>
+            <td class="py-4 px-2 text-blue-500">${Math.round(row.salary).toLocaleString()}만</td>
+            <td class="py-4 px-2 text-emerald-500">+${Math.round(row.profit).toLocaleString()}만</td>
+            <td class="py-4 px-2 text-right text-slate-800 dark:text-slate-200">${formatToKoreanUnit(row.total)}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+window.toggleYearlyTable = function() {
+    const container = document.getElementById('yearly-table-container');
+    const arrow = document.getElementById('table-arrow');
+    const isHidden = container.classList.contains('hidden');
+    
+    if (isHidden) {
+        container.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        container.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+    }
+};
 
 function updateWealthTier(realWealth) {
     let tier = "브론즈";

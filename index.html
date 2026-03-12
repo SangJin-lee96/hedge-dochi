@@ -263,6 +263,29 @@
                             <span class="text-[10px] font-bold px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 uppercase">10-Year Path</span>
                         </div>
                         <div class="relative h-[300px] md:h-[400px]"><canvas id="wealthChart"></canvas></div>
+                        
+                        <!-- 연도별 상세 데이터 테이블 추가 -->
+                        <div class="mt-12">
+                            <button onclick="toggleYearlyTable()" class="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-blue-600 transition-colors mb-6">
+                                <span>📊 연도별 상세 데이터 보기</span>
+                                <svg id="table-arrow" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div id="yearly-table-container" class="hidden overflow-x-auto no-scrollbar animate-fade-in-up">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b dark:border-slate-800">
+                                            <th class="py-4 px-2">연차</th>
+                                            <th class="py-4 px-2">예상 연봉</th>
+                                            <th class="py-4 px-2">투자 수익</th>
+                                            <th class="py-4 px-2 text-right">기말 자산</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="yearlyTableBody" class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
+                                        <!-- JS에서 데이터 생성 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                     <div class="lg:col-span-4 space-y-6">
                         <div id="insightBox" class="p-8 rounded-[2.5rem] border-2 bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30">
