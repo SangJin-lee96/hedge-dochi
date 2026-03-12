@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-pt-20">
+<head>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="나의 10년 후 자산 등급은? 연봉 상승과 '숨만 쉬어도 나가는 돈'을 반영한 현실적인 자산 시뮬레이터. 당신의 미래 자산 등급을 확인해보세요.">
+    <title>2026 현실 자산 등급 시뮬레이터 | Hedge Dochi</title>
+    <meta property="og:title" content="2026 현실 자산 등급 시뮬레이터 | Hedge Dochi">
+    <meta property="og:description" content="나의 10년 후 자산 등급은? 연봉 상승과 '숨만 쉬어도 나가는 돈'을 반영한 현실적인 자산 시뮬레이터. 당신의 미래 자산 등급을 확인해보세요.">
+    <meta property="og:image" content="https://hedge-dochi-live.pages.dev/og-image.png">
+    <meta property="og:url" content="https://hedge-dochi-live.pages.dev/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="2026 현실 자산 등급 시뮬레이터 | Hedge Dochi">
+    <meta name="twitter:description" content="나의 10년 후 자산 등급은? 연봉 상승과 '숨만 쉬어도 나가는 돈'을 반영한 현실적인 자산 시뮬레이터. 당신의 미래 자산 등급을 확인해보세요.">
+    <meta name="twitter:image" content="https://hedge-dochi-live.pages.dev/og-image.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-GFMXESYQFR');
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "자산 등급 시뮬레이션의 정확도는 어느 정도인가요?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Hedge Dochi의 시뮬레이터는 사용자가 입력한 연봉 상승률, 물가 상승률, 투자 수익률을 바탕으로 수학적 복리 공식을 적용합니다. 미래의 시장 상황을 완벽히 예측할 수는 없으나, 통계적 근거를 바탕으로 가장 현실적인 자산 궤적을 제시합니다."
+        }
+      }, {
+        "@type": "Question",
+        "name": "리밸런싱은 얼마나 자주 해야 하나요?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "일반적으로 분기별(3개월) 또는 반기별(6개월) 정기 리밸런싱을 권장합니다. 또는 자산 비중이 목표치에서 5%p 이상 벗어났을 때 실행하는 '밴드 리밸런싱' 방식도 효율적입니다."
+        }
+      }, {
+        "@type": "Question",
+        "name": "입력한 자산 데이터는 안전하게 보호되나요?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "사용자의 데이터는 Firebase의 보안 인프라를 통해 암호화되어 저장됩니다. 본인 인증(Google Login) 없이는 누구도 데이터에 접근할 수 없으며, 로그아웃 상태에서의 계산은 브라우저 메모리 내에서만 처리됩니다."
+        }
+      }]
+    }
+    </script>
+    <style>
+        @media (max-width: 640px) { h1 { font-size: 2rem !important; } .stat-card { padding: 1.5rem !important; } }
+        :root {
+            --color-primary-text: #0f172a;
+            --color-secondary-text: #475569;
+            --color-background: #f8fafc; --color-accent: #2563eb;
+            --color-accent: #2563eb;
+            --color-nav-bg: #ffffff;
+            --nav-bg-rgb: 255, 255, 255;
+            --color-nav-border: #f1f5f9;
+            --color-nav-link: #334155;
+            --color-toggle-text: #64748b;
+        }
+        html.dark {
+            --color-primary-text: #f8fafc;
+            --color-secondary-text: #94a3b8;
+            --color-background: #020617;
+            --color-accent: #38bdf8;
+            --color-nav-bg: #0f172a;
+            --nav-bg-rgb: 15, 23, 42;
+            --color-nav-border: #1e293b;
+            --color-nav-link: #94a3b8;
+            --color-toggle-text: #94a3b8;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; transition: background-color 0.5s; }
+        .stat-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border-radius: 2.5rem; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        html.dark .stat-card { background: rgba(30, 41, 59, 0.5); border-color: rgba(255, 255, 255, 0.05); }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); }
+        
+        button, a { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        button:active, a:active { transform: scale(0.96); }
+        
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        .capture-area { box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25); }
+        #toast { position: fixed; bottom: 3rem; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: white; padding: 1rem 2.5rem; border-radius: 9999px; font-weight: 800; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 200; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); pointer-events: none; opacity: 0; border: 1px solid rgba(255,255,255,0.1); }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Tooltip Styles */
+        .tooltip-trigger { border-bottom: 1px dashed #3b82f6; cursor: help; position: relative; display: inline-block; }
+        .tooltip-trigger::after { content: attr(data-tooltip); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%) translateY(10px); background: #1e293b; color: white; padding: 0.75rem 1rem; border-radius: 0.75rem; font-size: 0.7rem; width: 200px; text-align: center; line-height: 1.4; opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 150; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); pointer-events: none; word-break: keep-all; font-weight: 500; }
+        .tooltip-trigger:hover::after { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+        html.dark .tooltip-trigger::after { background: #334155; border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden transition-colors">
+    <!-- 배경 장식 -->
+    <div class="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden pointer-events-none">
+        <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-400/10 blur-[120px]"></div>
+        <div class="absolute top-[20%] -right-[5%] w-[30%] h-[30%] rounded-full bg-purple-400/10 blur-[100px]"></div>
+        <div class="absolute -bottom-[10%] left-[20%] w-[35%] h-[35%] rounded-full bg-indigo-400/10 blur-[120px]"></div>
+    </div>
+
+    <!-- 헤더 네비게이션 -->
+        <!-- 헤더 네비게이션 -->
+    <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <!-- 로고 -->
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
+                <span class="text-xl">💎</span>
+                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
+            </div>
+
+            <!-- PC 네비게이션 -->
+            <nav class="hidden md:flex items-center gap-1">
+                <!-- 분석/설계 -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" style="color: var(--color-nav-link);">
+                        분석/설계 <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute top-full left-0 w-48 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl py-2 hidden group-hover:block animate-in fade-in slide-in-from-top-1 duration-200">
+                        <a href="step1-asset.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">자산 시뮬레이터</a>
+                        <a href="step2-fire.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">은퇴 설계</a>
+                        <a href="step3-risk.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">성향 진단</a>
+                    </div>
+                </div>
+
+                <!-- 투자 관리 -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" style="color: var(--color-nav-link);">
+                        투자 관리 <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute top-full left-0 w-48 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl py-2 hidden group-hover:block animate-in fade-in slide-in-from-top-1 duration-200">
+                        <a href="step7-dashboard.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">대시보드</a>
+                        <a href="step8-rebalance.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">리밸런싱</a>
+                    </div>
+                </div>
+
+                <!-- 계산기 -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" style="color: var(--color-nav-link);">
+                        계산기 <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute top-full left-0 w-48 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl py-2 hidden group-hover:block animate-in fade-in slide-in-from-top-1 duration-200">
+                        <a href="step6-simulate.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">복리 계산기</a>
+                        <a href="step6-simulate.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">배당 계산기</a>
+                    </div>
+                </div>
+
+                <!-- 서비스 -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" style="color: var(--color-nav-link);">
+                        서비스 <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute top-full left-0 w-48 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl py-2 hidden group-hover:block animate-in fade-in slide-in-from-top-1 duration-200">
+                        <a href="step4-guide.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">금융 가이드</a>
+                        <a href="lotto.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">로또 추천</a>
+                    </div>
+                </div>
+
+                <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-2"></div>
+                <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
+                <div id="authContainer" class="ml-2">
+                    <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-colors">구글 로그인</button>
+                    <div id="userProfile" class="hidden flex items-center gap-2">
+                        <img id="userPhoto" src="" alt="Profile" class="w-8 h-8 rounded-full border border-slate-200">
+                        <button id="logoutBtn" class="text-xs text-slate-500 font-semibold transition-colors hover:text-blue-600">로그아웃</button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- 모바일 헤더 우측 -->
+            <div class="flex items-center gap-2 md:hidden">
+                <button id="darkModeToggleMobile" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
+                <button id="mobileMenuBtn" class="p-2 rounded-lg" style="color: var(--color-primary-text);">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- 모바일 메뉴 -->
+        <div id="mobileMenu" class="hidden md:hidden absolute top-16 left-0 w-full border-b shadow-lg z-[110]" style="background-color: var(--color-nav-bg); border-color: var(--color-nav-border);">
+            <nav class="flex flex-col p-4 space-y-4 overflow-y-auto max-h-[70vh] no-scrollbar">
+                <!-- 분석/설계 -->
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">분석/설계</p>
+                    <div class="flex flex-col space-y-1">
+                        <a href="step1-asset.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
+                        <a href="step2-fire.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">은퇴 설계</a>
+                        <a href="step3-risk.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">성향 진단</a>
+                    </div>
+                </div>
+                <!-- 투자 관리 -->
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">투자 관리</p>
+                    <div class="flex flex-col space-y-1">
+                        <a href="step7-dashboard.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">대시보드</a>
+                        <a href="step8-rebalance.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">리밸런싱</a>
+                    </div>
+                </div>
+                <!-- 계산기 -->
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">계산기</p>
+                    <div class="flex flex-col space-y-1">
+                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">복리 계산기</a>
+                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">배당 계산기</a>
+                    </div>
+                </div>
+                <!-- 서비스 -->
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">서비스</p>
+                    <div class="flex flex-col space-y-1">
+                        <a href="step4-guide.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">금융 가이드</a>
+                        <a href="lotto.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">로또 추천</a>
+                    </div>
+                </div>
+                <div id="authContainerMobile" class="p-4 border-t border-slate-100 dark:border-slate-700 text-center"></div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Market Pulse Ticker (Integrated) -->
+    <div class="sticky top-16 z-[90] w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 overflow-hidden">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <div id="marketPulse" class="flex items-center gap-8 whitespace-nowrap no-scrollbar overflow-x-auto scroll-smooth">
+                <div class="flex items-center gap-2 px-4 py-1 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse">
+                    <span class="text-[10px] font-bold text-slate-400">데이터를 동기화하는 중...</span>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center gap-2 flex-shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                <span id="lastUpdateTime" class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">--:--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="relative pt-24 pb-32 overflow-hidden">
+        <!-- 배경 데코 -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30">
+            <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-400 blur-[120px] animate-pulse"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-400 blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
+        </div>
+
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-black uppercase tracking-widest mb-8 animate-fade-in-up">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                Next-Gen Financial Intelligence
+            </div>
+            <h1 class="text-4xl md:text-7xl font-black tracking-tight leading-[1.1] mb-8 animate-fade-in-up">
+                당신의 자산 등급을 바꾸는<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">데이터의 힘</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-500 font-medium max-w-2xl mx-auto mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
+                Hedge Dochi는 복잡한 시장 데이터를 직관적인 도구로 재해석하여,<br class="hidden md:block"> 누구나 합리적인 자산 배분을 실천할 수 있도록 돕습니다.
+            </p>
+            
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 animate-fade-in-up" style="animation-delay: 0.2s;">
+                <button id="startRoadmapBtn" class="w-full md:w-auto px-10 py-5 bg-indigo-600 text-white font-black rounded-2xl shadow-2xl shadow-indigo-500/40 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <span class="text-xl">🚀</span> 초보 투자자 가이드 시작
+                </button>
+                <button onclick="document.getElementById('step-1').scrollIntoView({behavior:'smooth'})" class="w-full md:w-auto px-10 py-5 bg-blue-600 text-white font-black rounded-2xl shadow-2xl shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all">
+                    자산 시뮬레이션
+                </button>
+                <a href="step8-rebalance.html" class="w-full md:w-auto px-10 py-5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-black rounded-2xl border border-slate-100 dark:border-slate-700 shadow-xl hover:bg-slate-50 transition-all">
+                    리밸런싱 매니저
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Overlay Modal -->
+    <div id="roadmapModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0 duration-300" id="roadmapContainer">
+            <div class="p-8 md:p-12">
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <h3 class="text-2xl md:text-3xl font-black mb-2">Hedge Dochi 투자 로드맵</h3>
+                        <p class="text-slate-500 font-medium">단계를 따라가며 투자 전문가로 거듭나세요.</p>
+                    </div>
+                    <button id="closeRoadmap" class="p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">✕</button>
+                </div>
+                
+                <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar" id="roadmapSteps">
+                    <!-- Steps will be injected by JS -->
+                </div>
+
+                <div class="mt-10 p-6 rounded-3xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">현재 진행률</p>
+                        <h4 class="text-xl font-black text-blue-600 dark:text-blue-400" id="roadmapProgressText">0% 완료</h4>
+                    </div>
+                    <button id="continueRoadmapBtn" class="px-8 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg hover:bg-blue-700 transition-all">계속하기 ➔</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="py-12 px-4 md:py-24 max-w-6xl mx-auto overflow-x-hidden">
+        <header class="mb-12 text-center">
+            <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4" style="color: var(--color-primary-text);">2026 현실 자산 시뮬레이터</h1>
+            <p class="text-lg md:text-xl font-medium text-slate-500">당신의 10년 후, 데이터로 미리 확인해보세요.</p>
+            
+            <div class="mt-10 flex items-center justify-center gap-2 max-w-md mx-auto">
+                <div id="step-indicator-1" class="step-dot w-3 h-3 rounded-full bg-blue-600 transition-all"></div>
+                <div class="w-8 h-0.5 bg-slate-200"></div>
+                <div id="step-indicator-2" class="step-dot w-3 h-3 rounded-full bg-slate-200 transition-all"></div>
+                <div class="w-8 h-0.5 bg-slate-200"></div>
+                <div id="step-indicator-3" class="step-dot w-3 h-3 rounded-full bg-slate-200 transition-all"></div>
+                <div class="w-8 h-0.5 bg-slate-200"></div>
+                <div id="step-indicator-4" class="step-dot w-3 h-3 rounded-full bg-slate-200 transition-all"></div>
+            </div>
+        </header>
+
+        <div class="max-w-4xl mx-auto">
+            <!-- STEP 1: 기초 자산 및 통화 설정 -->
+            <div id="step-1" class="step-section space-y-8 animate-fade-in-up">
+                <div class="text-center">
+                    <h2 class="text-2xl font-black mb-2 text-slate-800 dark:text-white">STEP 1. 기준 통화와 현재 자산</h2>
+                    <p class="text-slate-500">시뮬레이션의 기준이 되는 통화와 현재 상태를 입력합니다.</p>
+                </div>
+
+                <div class="max-w-md mx-auto space-y-6">
+                    <!-- 통화 선택 스위처 -->
+                    <div class="relative flex p-1 bg-slate-100 dark:bg-slate-800 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-inner">
+                        <div id="currency-glider" class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white dark:bg-slate-600 rounded-[1.8rem] shadow-xl transition-all duration-300"></div>
+                        <button onclick="setCurrency('USD')" id="btn-currency-usd" class="relative z-10 flex-1 py-4 font-black transition-colors text-blue-600 dark:text-blue-400">USD ($)</button>
+                        <button onclick="setCurrency('KRW')" id="btn-currency-krw" class="relative z-10 flex-1 py-4 font-black transition-colors text-slate-400">KRW (₩)</button>
+                    </div>
+
+                    <div class="bg-white dark:bg-[#1e293b] p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8">
+                        <div class="input-group">
+                            <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest text-center">현재 연봉 (세후)</label>
+                            <div class="relative">
+                                <input type="number" id="annualSalary" value="4500" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 focus:ring-4 focus:ring-blue-500 font-black text-2xl text-center">
+                                <span class="currency-label absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">만원</span>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest text-center">현재 보유 목돈 (시드)</label>
+                            <div class="relative">
+                                <input type="number" id="initialSeed" value="3000" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 focus:ring-4 focus:ring-blue-500 font-black text-2xl text-center">
+                                <span class="currency-label absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">만원</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center mt-8">
+                    <button onclick="goToStep(2)" class="px-12 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 transition-all">다음 단계로 ➔</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: 지출 및 성장률 설정 -->
+            <div id="step-2" class="step-section hidden space-y-8 animate-fade-in-up">
+                <div class="text-center">
+                    <h2 class="text-2xl font-black mb-2 text-slate-800 dark:text-white">STEP 2. 나가는 돈과 몸값의 성장</h2>
+                    <p class="text-slate-500">매달 나가는 지출과 매년 예상되는 연봉 상승률을 설정합니다.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white dark:bg-[#1e293b] p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800">
+                    <div class="input-group">
+                        <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">월평균 필수 지출</label>
+                        <div class="relative">
+                            <input type="number" id="monthlyExpense" value="200" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 focus:ring-4 focus:ring-red-400 font-black text-2xl text-red-500">
+                            <span class="currency-label absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">만원</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">예상 연봉 상승률</label>
+                        <div class="relative">
+                            <input type="number" id="salaryGrowth" value="3" step="0.5" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 focus:ring-4 focus:ring-blue-500 font-black text-2xl text-blue-500">
+                            <span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-center gap-4 mt-8">
+                    <button onclick="goToStep(1)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-[2rem] text-slate-500">이전</button>
+                    <button onclick="goToStep(3)" class="px-12 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-[2rem] shadow-xl transition-all">다음 단계로 ➔</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: 투자 및 시장 환경 설정 -->
+            <div id="step-3" class="step-section hidden space-y-8 animate-fade-in-up">
+                <div class="text-center">
+                    <h2 class="text-2xl font-black mb-2 text-slate-800 dark:text-white">STEP 3. 당신이 마주할 시장 환경</h2>
+                    <p class="text-slate-500">기대하는 수익률과 현실적인 물가 상승률을 설정합니다.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white dark:bg-[#1e293b] p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800">
+                    <div class="input-group">
+                        <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">목표 투자 수익률 (연)</label>
+                        <div class="relative">
+                            <input type="number" id="investmentReturn" value="5.0" step="0.1" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 focus:ring-4 focus:ring-emerald-500 font-black text-2xl text-emerald-500">
+                            <span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">%</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">예상 물가 상승률 (연)</label>
+                        <div class="relative">
+                            <input type="number" id="inflationRate" value="2.5" step="0.1" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 focus:ring-4 focus:ring-amber-500 font-black text-2xl text-amber-500">
+                            <span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">%</span>
+                        </div>
+                    </div>
+                    <!-- 환율 설정 추가 -->
+                    <div id="exchangeRateGroup" class="input-group">
+                        <label class="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest">적용 환율 (1 USD)</label>
+                        <div class="relative">
+                            <input type="number" id="manualExchangeRate" value="1350" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-5 pr-14 focus:ring-4 focus:ring-blue-500 font-black text-2xl">
+                            <span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">원</span>
+                        </div>
+                        <div class="mt-2 flex justify-end">
+                            <button onclick="resetToLiveExchangeRate()" class="text-[10px] font-bold text-blue-500 hover:underline">실시간 환율 적용 🔄</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-center gap-4 mt-8">
+                    <button onclick="goToStep(2)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-[2rem] text-slate-500">이전</button>
+                    <button onclick="calculateAndShowResult()" class="px-16 py-5 bg-blue-600 text-white font-black rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 transition-all">결과 보기 🚀</button>
+                </div>
+            </div>
+
+            <!-- STEP 4: 최종 진단 리포트 -->
+            <div id="step-4" class="step-section hidden space-y-8 animate-fade-in-up">
+                <div id="gradeSection" class="capture-area bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-10 md:p-16 rounded-[3rem] shadow-2xl text-center text-white relative overflow-hidden">
+                    <h3 class="text-[10px] font-bold uppercase tracking-[0.4em] mb-8 opacity-80">10-YEAR WEALTH TIER ANALYSIS</h3>
+                    <div id="gradeBadgeIcon" class="text-8xl md:text-9xl mb-8 drop-shadow-2xl">💎</div>
+                    <h2 id="gradeTitle" class="text-5xl md:text-7xl font-black mb-4 tracking-tight">다이아몬드</h2>
+                    <p id="gradeDesc" class="text-white/90 text-lg md:text-2xl font-medium max-w-xl mx-auto leading-relaxed">준비 중...</p>
+                    <div class="mt-12 flex flex-wrap justify-center gap-4">
+                        <button id="showStrategyBtn" class="px-8 py-4 rounded-2xl bg-white text-indigo-600 font-black shadow-xl hover:bg-indigo-50 transition-all active:scale-95">🎯 맞춤 전략 확인</button>
+                        <button onclick="copySimulationResult()" class="px-8 py-4 rounded-2xl bg-indigo-700 text-white font-bold shadow-xl hover:bg-indigo-800 transition-all active:scale-95 flex items-center gap-2">
+                            <span>📋 결과 복사</span>
+                        </button>
+                        <button onclick="downloadResultImage()" class="px-8 py-4 rounded-2xl bg-emerald-600 text-white font-bold shadow-xl hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-2">
+                            <span>🖼️ 이미지 저장</span>
+                        </button>
+                        <button onclick="goToStep(1)" class="px-8 py-4 rounded-2xl bg-white/20 text-white font-bold backdrop-blur-md border border-white/30 hover:bg-white/30 transition-all">🔄 다시 하기</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-8 rounded-[2.5rem] border bg-white dark:bg-[#1e293b] shadow-xl text-center"><p class="text-[10px] font-bold uppercase text-slate-400 mb-2">명목 자산</p><h2 class="text-3xl font-black text-blue-600" id="finalWealthText">0억</h2></div>
+                    <div class="p-8 rounded-[2.5rem] border bg-white dark:bg-[#1e293b] shadow-xl text-center"><p class="text-[10px] font-bold uppercase text-slate-400 mb-2">실질 가치</p><h2 class="text-3xl font-black text-slate-800 dark:text-white" id="realValueText">0억</h2></div>
+                    <div class="p-8 rounded-[2.5rem] bg-indigo-600 text-white shadow-xl text-center"><p class="text-[10px] opacity-70 mb-2">월 평균 저축액</p><h2 class="text-3xl font-black" id="netSavingsText">0만</h2></div>
+                </div>
+
+                <div class="p-8 md:p-12 rounded-[2.5rem] border bg-white dark:bg-[#1e293b] shadow-xl">
+                    <h3 class="text-xl font-bold mb-10">📉 자산 성장 추이</h3>
+                    <div class="relative h-[300px] md:h-[400px]"><canvas id="wealthChart"></canvas></div>
+                    <div class="mt-12">
+                        <button onclick="toggleYearlyTable()" class="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-blue-600 transition-colors mb-6"><span>📊 상세 데이터 보기</span><svg id="table-arrow" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
+                        <div id="yearly-table-container" class="hidden overflow-x-auto no-scrollbar"><table class="w-full text-left border-collapse"><thead><tr class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b dark:border-slate-800"><th class="py-4 px-2">연차</th><th class="py-4 px-2">예상 연봉</th><th class="py-4 px-2">투자 수익</th><th class="py-4 px-2 text-right">기말 자산</th></tr></thead><tbody id="yearlyTableBody" class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300"></tbody></table></div>
+                    </div>
+                </div>
+
+                <div id="insightBox" class="p-8 rounded-[2.5rem] border-2 bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30">
+                    <h4 class="font-bold mb-4 flex items-center text-amber-800 dark:text-amber-300 text-lg">💡 AI 코멘트</h4>
+                    <p id="aiInsight" class="text-sm md:text-base leading-relaxed">분석 중...</p>
+                </div>
+
+                <!-- Result Page Ad Slot -->
+                <div class="p-6 rounded-[2.5rem] bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-center">
+                    <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-3">Recommended for You</p>
+                    <div class="min-h-[60px] flex items-center justify-center text-slate-400 text-xs italic">
+                        자산 성장을 돕는 맞춤형 정보를 준비 중입니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <section class="mt-20 max-w-4xl mx-auto px-4">
+            <h3 class="text-2xl font-black mb-8 text-center">💬 자주 묻는 질문 (FAQ)</h3>
+            <div class="space-y-4">
+                <details class="group p-6 rounded-3xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 shadow-sm cursor-pointer">
+                    <summary class="flex justify-between items-center font-bold text-slate-800 dark:text-white list-none">
+                        <span>자산 등급 시뮬레이션의 정확도는 어느 정도인가요?</span>
+                        <span class="transition-transform group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-4 text-sm text-slate-500 leading-relaxed border-t dark:border-slate-700 pt-4">
+                        Hedge Dochi의 시뮬레이터는 사용자가 입력한 연봉 상승률, 물가 상승률, 투자 수익률을 바탕으로 수학적 복리 공식을 적용합니다. 미래의 시장 상황을 완벽히 예측할 수는 없으나, 통계적 근거를 바탕으로 가장 현실적인 자산 궤적을 제시합니다.
+                    </p>
+                </details>
+                <details class="group p-6 rounded-3xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 shadow-sm cursor-pointer">
+                    <summary class="flex justify-between items-center font-bold text-slate-800 dark:text-white list-none">
+                        <span>리밸런싱은 얼마나 자주 해야 하나요?</span>
+                        <span class="transition-transform group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-4 text-sm text-slate-500 leading-relaxed border-t dark:border-slate-700 pt-4">
+                        일반적으로 분기별(3개월) 또는 반기별(6개월) 정기 리밸런싱을 권장합니다. 또는 자산 비중이 목표치에서 5%p 이상 벗어났을 때 실행하는 '밴드 리밸런싱' 방식도 효율적입니다.
+                    </p>
+                </details>
+                <details class="group p-6 rounded-3xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 shadow-sm cursor-pointer">
+                    <summary class="flex justify-between items-center font-bold text-slate-800 dark:text-white list-none">
+                        <span>입력한 자산 데이터는 안전하게 보호되나요?</span>
+                        <span class="transition-transform group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-4 text-sm text-slate-500 leading-relaxed border-t dark:border-slate-700 pt-4">
+                        사용자의 데이터는 Firebase의 보안 인프라를 통해 암호화되어 저장됩니다. 본인 인증(Google Login) 없이는 누구도 데이터에 접근할 수 없으며, 로그아웃 상태에서의 계산은 브라우저 메모리 내에서만 처리됩니다.
+                    </p>
+                </details>
+            </div>
+        </section>
+
+        <!-- Service Roadmap Section -->
+        <section class="mt-32 px-4 max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-black mb-4">Hedge Dochi와 함께하는<br>경제적 자유 3단계 로드맵</h2>
+                <p class="text-slate-500 font-medium">데이터와 통계로 당신의 투자 근육을 키워드립니다.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Step 1 Card -->
+                <div class="p-10 rounded-[3rem] bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 shadow-xl hover:-translate-y-2 transition-all group">
+                    <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">📊</div>
+                    <h3 class="text-xl font-bold mb-4">01. 미래 설계</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed mb-8">연봉 상승률과 물가 상승률을 반영하여 10년 후 당신의 자산 등급을 미리 확인하세요. 현실적인 목표 설정의 시작입니다.</p>
+                    <button onclick="goToStep(1)" class="text-blue-600 font-black text-xs uppercase tracking-widest">계산하기 ➔</button>
+                </div>
+
+                <!-- Step 2 Card -->
+                <div class="p-10 rounded-[3rem] bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 shadow-xl hover:-translate-y-2 transition-all group">
+                    <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">🧠</div>
+                    <h3 class="text-xl font-bold mb-4">02. 성향 진단</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed mb-8">심리학과 금융 공학을 결합한 테스트로 당신의 위험 감수 능력을 파악하고, 최적화된 자산 배분 비중을 추천받으세요.</p>
+                    <a href="step3-risk.html" class="text-purple-600 font-black text-xs uppercase tracking-widest">진단 시작 ➔</a>
+                </div>
+
+                <!-- Step 3 Card -->
+                <div class="p-10 rounded-[3rem] bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 shadow-xl hover:-translate-y-2 transition-all group">
+                    <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">⚖️</div>
+                    <h3 class="text-xl font-bold mb-4">03. 실전 관리</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed mb-8">실시간 환율과 가격을 반영한 리밸런싱 매니저를 통해 포트폴리오를 관리하세요. 기계적인 수익 실현이 가능해집니다.</p>
+                    <a href="step8-rebalance.html" class="text-emerald-600 font-black text-xs uppercase tracking-widest">관리하기 ➔</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter Section (Moved below roadmap) -->
+    </main>
+
+    <div id="strategyModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0 duration-300" id="modalContainer">
+            <div class="p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <h3 class="text-2xl font-black">🎯 맞춤 투자 전략</h3>
+                    <button id="closeModal" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700">✕</button>
+                </div>
+                <div id="modalContent" class="space-y-6 text-sm md:text-base leading-relaxed overflow-y-auto max-h-[60vh] no-scrollbar"></div>
+                <button id="closeModalBtn" class="w-full py-4 mt-8 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Newsletter Section -->
+    <section class="max-w-4xl mx-auto px-4 mt-32 mb-20">
+        <div class="p-10 md:p-16 rounded-[3rem] bg-gradient-to-br from-slate-800 to-slate-900 text-white text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url("https://www.transparenttextures.com/patterns/cubes.png")]"></div>
+            <div class="relative z-10">
+                <h3 class="text-2xl md:text-3xl font-black mb-4">Hedge Dochi 인사이트 구독하기</h3>
+                <p class="text-slate-400 mb-10 max-w-md mx-auto text-sm md:text-base">매주 변화하는 시장 데이터와 자산 배분 전략을 이메일로 보내드립니다. (비용 0원)</p>
+                <form onsubmit="event.preventDefault(); alert("감사합니다! 구독이 완료되었습니다. 🦔");" class="flex flex-col md:flex-row gap-3 max-w-lg mx-auto">
+                    <input type="email" placeholder="이메일 주소를 입력하세요" required class="flex-1 px-6 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    <button type="submit" class="px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-xl">지금 구독</button>
+                </form>
+            </div>
+        </div>
+    </section>
+    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
+        <div class="flex justify-center space-x-6 font-bold mb-4"><a href="about.html" class="hover:text-blue-600">소개</a><a href="tos.html" class="hover:text-blue-600">이용약관</a>
+            <a href="privacy.html" class="hover:text-blue-600">개인정보처리방침</a><a href="contact-form.html" class="hover:text-blue-600">문의</a></div>
+        <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
+            <p class="opacity-60 text-[10px] max-w-lg mx-auto leading-relaxed mt-2">Hedge Dochi는 데이터 기반의 금융 도구와 가이드를 제공하며, 제공되는 모든 정보는 참고용일 뿐 투자 권유를 구성하지 않습니다.</p>
+    </footer>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="dark-mode.js"></script>
+    <script type="module" src="step1-asset.js"></script>
+    
+    </body>
+    </html>

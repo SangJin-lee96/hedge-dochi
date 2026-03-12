@@ -1,36 +1,15 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db, currentUser } from './core.js';
 
-const firebaseConfig = {
-    apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
-    authDomain: "hedge-dochi.firebaseapp.com",
-    projectId: "hedge-dochi",
-    storageBucket: "hedge-dochi.firebasestorage.app",
-    messagingSenderId: "157519209721",
-    appId: "1:157519209721:web:d1f196e41dcd579a286e28",
-    measurementId: "G-7Y0G1CVXBR"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let currentUser = null;
-
-onAuthStateChanged(auth, async (user) => {
-    const loginBtn = document.getElementById('loginBtn'), userProfile = document.getElementById('userProfile');
+document.addEventListener('coreDataReady', async (e) => {
+    const user = e.detail.user;
     if (user) {
-        currentUser = user;
-        loginBtn?.classList.add('hidden'); userProfile?.classList.remove('hidden');
-        if (document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL;
-        
         // 대시보드 사용자 정보 초기화
         document.getElementById('dashUserName').innerHTML = `${user.displayName} <span id="userTraitBadge" class="ml-2 text-[10px] px-2 py-1 rounded-lg bg-slate-500 text-white opacity-0 transition-opacity duration-1000">분석 중</span>`;
         loadDashboardData(user.uid);
         renderMarketSentiment();
     } else {
-        alert("로그인이 필요합니다."); location.href = "index.html";
+        alert("로그인이 필요한 서비스입니다."); location.href = "index.html";
     }
 });
 

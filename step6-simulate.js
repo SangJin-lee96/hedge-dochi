@@ -1,27 +1,11 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
-    authDomain: "hedge-dochi.firebaseapp.com",
-    projectId: "hedge-dochi",
-    storageBucket: "hedge-dochi.firebasestorage.app",
-    messagingSenderId: "157519209721",
-    appId: "1:157519209721:web:d1f196e41dcd579a286e28",
-    measurementId: "G-7Y0G1CVXBR"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db, currentUser } from './core.js';
 
 // --- State Management ---
 let currentStep = 1;
-let currentUser = null;
 
-onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
+document.addEventListener('coreDataReady', async (e) => {
+    const user = e.detail.user;
     if (user) {
         try {
             const snap = await getDoc(doc(db, "simulations", user.uid));

@@ -1,21 +1,5 @@
-// Import Firebase SDKs
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
-    authDomain: "hedge-dochi.firebaseapp.com",
-    projectId: "hedge-dochi",
-    storageBucket: "hedge-dochi.firebasestorage.app",
-    messagingSenderId: "157519209721",
-    appId: "1:157519209721:web:d1f196e41dcd579a286e28",
-    measurementId: "G-7Y0G1CVXBR"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db, currentUser } from './core.js';
 
 // --- State Management ---
 let currentStep = 1;
@@ -24,10 +8,9 @@ let liveExchangeRate = 1350;
 let exchangeRate = 1350;
 let assets = [];
 let chart = null;
-let currentUser = null;
 
-onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
+document.addEventListener('coreDataReady', async (e) => {
+    const user = e.detail.user;
     if (user) {
         try {
             // 기초 데이터 로드 및 적용
@@ -346,35 +329,11 @@ function updateHealthScore(processedAssets, totalValueInBase) {
     }
 }
 
-// --- Auth & Firebase ---
-onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
-    const loginBtn = document.getElementById('loginBtn'), userProfile = document.getElementById('userProfile'), authContainerMobile = document.getElementById('authContainerMobile');
-    if (user) {
-        loginBtn?.classList.add('hidden'); userProfile?.classList.remove('hidden');
-        if (document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL;
-        if (authContainerMobile) authContainerMobile.innerHTML = `<div class="flex items-center justify-between px-2"><div class="flex items-center gap-3"><img src="${user.photoURL}" class="w-8 h-8 rounded-full"><span class="font-bold text-sm text-slate-800 dark:text-white">${user.displayName}</span></div><button id="logoutBtnMobile" class="text-xs text-red-500 font-bold">로그아웃</button></div>`;
-        document.getElementById('logoutBtnMobile')?.addEventListener('click', () => signOut(auth).then(() => location.reload()));
-        const docSnap = await getDoc(doc(db, "portfolios", user.uid));
-        if (docSnap.exists() && assets.length === 0) {
-            assets = docSnap.data().assets;
-            baseCurrency = docSnap.data().baseCurrency || 'USD';
-            setCurrency(baseCurrency);
-            renderAssets();
-        }
-    } else {
-        loginBtn?.classList.remove('hidden'); userProfile?.classList.add('hidden');
-        if (authContainerMobile) authContainerMobile.innerHTML = `<button onclick="document.getElementById('loginBtn').click()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">구글 로그인</button>`;
-    }
-});
-
+// --- Firebase Saving ---
 async function saveDataToFirebase() {
     if (!currentUser) return;
     await setDoc(doc(db, "portfolios", currentUser.uid), { assets, baseCurrency, lastUpdated: new Date() }, { merge: true });
 }
-
-document.getElementById('loginBtn')?.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
-document.getElementById('logoutBtn')?.addEventListener('click', () => signOut(auth).then(() => location.reload()));
 
 window.showToast = function(msg) {
     let t = document.getElementById('toast');

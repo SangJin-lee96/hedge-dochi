@@ -48,7 +48,7 @@
 <body>
     <!-- 헤더 생략 -->
     <main class="article-container">
-        <nav class="breadcrumb"><a href="index.html">Home</a><span>/</span><a href="guides.html">Guides</a><span>/</span><span class="text-blue-600">Model Portfolios</span></nav>
+        <nav class="breadcrumb"><a href="step1-asset.html">Home</a><span>/</span><a href="step4-guide.html">Guides</a><span>/</span><span class="text-blue-600">Model Portfolios</span></nav>
         
         <header class="mb-16">
             <div class="text-blue-600 dark:text-blue-400 font-bold mb-4">금융 가이드 #06</div>
@@ -103,12 +103,13 @@
             <div class="mt-20 p-10 rounded-[3rem] bg-blue-600 text-white text-center shadow-2xl relative overflow-hidden">
                 <h3 class="text-2xl font-black mb-4">이 모델들을 내 자산에 바로 적용해 보세요</h3>
                 <p class="mb-8 opacity-80 leading-relaxed">Hedge Dochi 리밸런싱 매니저는 위 모델들을 포함한<br>다양한 전략 비중을 원클릭으로 세팅해 드립니다.</p>
-                <a href="rebalance.html" class="inline-block bg-white text-blue-600 font-black py-4 px-12 rounded-2xl hover:bg-blue-50 transition-all shadow-xl active:scale-95">리밸런싱 매니저 이동 ➔</a>
+                <a href="step8-rebalance.html" class="inline-block bg-white text-blue-600 font-black py-4 px-12 rounded-2xl hover:bg-blue-50 transition-all shadow-xl active:scale-95">리밸런싱 매니저 이동 ➔</a>
             </div>
         </section>
+        <div class="text-center mt-16 mb-8"><button onclick="import('./core.js').then(m=>m.goToNextStep(5))" class="px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:scale-105 transition-transform text-lg">6단계: 수익 시뮬레이션 돌려보기 ➔</button></div>
     </main>
 
     <!-- 푸터 및 스크립트 생략 -->
-    <script type="module" src="roadmap-nav.js"></script>
+    <script type="module" src="core.js"></script>
     </body>
     </html>

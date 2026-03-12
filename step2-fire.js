@@ -1,27 +1,11 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
-    authDomain: "hedge-dochi.firebaseapp.com",
-    projectId: "hedge-dochi",
-    storageBucket: "hedge-dochi.firebasestorage.app",
-    messagingSenderId: "157519209721",
-    appId: "1:157519209721:web:d1f196e41dcd579a286e28",
-    measurementId: "G-7Y0G1CVXBR"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db, currentUser, goToNextStep } from './core.js';
 
 let currentStep = 1;
 let fireChart = null;
-let currentUser = null;
 
-onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
+document.addEventListener('coreDataReady', async (e) => {
+    const user = e.detail.user;
     if (user) {
         try {
             const snap = await getDoc(doc(db, "simulations", user.uid));
@@ -49,50 +33,81 @@ window.goToStep = function(step) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-window.calculateFIRE = function() {
-    const monthlyExpense = parseFloat(document.getElementById('f-expense').value) || 0;
-    const currentSeed = parseFloat(document.getElementById('f-seed').value) || 0;
+window.calculateFire = function() {
+    const targetIncome = parseFloat(document.getElementById('f-expense').value) || 200;
+    const withdrawRate = parseFloat(document.getElementById('f-withdraw-rate').value) || 4.0;
+    const seed = parseFloat(document.getElementById('f-seed').value) || 0;
     const annualSave = parseFloat(document.getElementById('f-annual-save').value) || 0;
-    const rate = (parseFloat(document.getElementById('f-rate').value) || 0) / 100;
-    const swr = 0.04; // 4% 법칙 고정
+    const returnRate = (parseFloat(document.getElementById('f-rate').value) || 0) / 100;
+    const inflRate = (parseFloat(document.getElementById('f-inflation').value) || 0) / 100;
 
-    const fireGoal = (monthlyExpense * 12) / swr;
-    let currentWealth = currentSeed;
-    let months = 0;
-    const monthlySave = annualSave / 12;
-    const monthlyRate = rate / 12;
-    const chartData = [currentSeed];
-    const chartLabels = ["현재"];
+    // 실질 수익률 (수익률 - 물가상승률)
+    const realRate = returnRate - inflRate;
 
-    while (currentWealth < fireGoal && months < 600) { // 최대 50년
-        currentWealth = (currentWealth + monthlySave) * (1 + monthlyRate);
-        months++;
-        if (months % 12 === 0) {
-            chartData.push(Math.round(currentWealth));
-            chartLabels.push(`${months/12}년`);
-        }
+    // 목표 은퇴 자금 = (월 필요 금액 * 12) / (인출률 / 100)
+    const fireGoal = (targetIncome * 12) / (withdrawRate / 100);
+
+    let currentWealth = seed;
+    let years = 0;
+    const chartLabels = [];
+    const chartData = [];
+
+    chartLabels.push('현재');
+    chartData.push(currentWealth);
+
+    // 자산이 목표치에 도달할 때까지 연도별 계산 (최대 50년 제한)
+    while (currentWealth < fireGoal && years < 50) {
+        years++;
+        const profit = currentWealth * realRate;
+        currentWealth = currentWealth + annualSave + profit;
+        chartLabels.push(`${years}년`);
+        chartData.push(Math.round(currentWealth));
     }
 
-    const years = Math.floor(months / 12);
-    const achievementYear = new Date().getFullYear() + years;
+    if (years >= 50) {
+        document.getElementById('fireYearsResult').innerText = '50년+ (불가)';
+        document.getElementById('fireDateResult').innerText = '목표 하향 필요';
+        document.getElementById('fireDateResult').classList.add('text-red-500');
+    } else {
+        const targetYear = new Date().getFullYear() + years;
+        document.getElementById('fireYearsResult').innerText = `${years}년`;
+        document.getElementById('fireDateResult').innerText = `${targetYear}년`;
+        document.getElementById('fireDateResult').classList.remove('text-red-500');
+        
+        if (currentUser) saveFireData(fireGoal, years, targetYear);
+    }
 
-    document.getElementById('fireYearsResult').innerText = `${years}년 후`;
-    document.getElementById('fireDateResult').innerText = `당신은 ${achievementYear}년에 은퇴 가능합니다.`;
     document.getElementById('fireGoalAmount').innerText = formatKorean(fireGoal);
-    document.getElementById('fireMonthlyIncome').innerText = formatKorean(monthlyExpense);
-
-    renderFireChart(chartLabels, chartData);
-    renderAdvice(years);
-    if (currentUser) {
-        saveFireData(fireGoal, years, achievementYear);
-        // 기초 재무 프로필도 함께 업데이트하여 다른 도구와 동기화
-        syncToGlobalProfile();
-    }
+    document.getElementById('fireMonthlyIncome').innerText = `${formatKorean(targetIncome)}/월`;
     
-    goToStep(4);
+    renderAdvice(years);
+    renderFireChart(chartLabels, chartData);
+    syncToMainSimulation();
+    
+    // Set up the Next Step button for the curriculum
+    const resultCard = document.getElementById('fireAdvice').parentElement.parentElement; // find the action button area
+    const actionContainer = resultCard.querySelector('.flex.flex-col') || document.querySelector('#step-2 .flex.justify-center');
+    
+    if (actionContainer) {
+        actionContainer.innerHTML = `
+            <button onclick="proceedToCurriculumStep3()" class="w-full md:w-auto px-10 py-5 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black shadow-2xl hover:scale-105 transition-all active:scale-95 text-lg mb-4">
+                3단계: 투자 성향 파악하기 ➔
+            </button>
+            <div class="flex gap-4">
+                <button onclick="copyFireResult()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 font-bold rounded-[2rem] text-slate-500">결과 복사</button>
+                <button onclick="goToStep(1)" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 font-bold rounded-[2rem] text-slate-500">다시 계산</button>
+            </div>
+        `;
+    }
+
+    goToStep(2);
 };
 
-async function syncToGlobalProfile() {
+window.proceedToCurriculumStep3 = function() {
+    goToNextStep(2); // Go to Step 3
+};
+
+async function syncToMainSimulation() {
     if (!currentUser) return;
     try {
         await setDoc(doc(db, "simulations", currentUser.uid), {
@@ -130,6 +145,7 @@ async function saveFireData(goal, years, targetYear) {
 
 function renderAdvice(years) {
     const el = document.getElementById('fireAdvice');
+    if (!el) return;
     if (years <= 10) el.innerText = "은퇴가 가깝습니다! 이제는 자산의 하락 방어와 인출 전략을 구체화하세요.";
     else if (years <= 20) el.innerText = "안정적인 궤도입니다. 저축률을 5%만 높여도 은퇴를 3년 앞당길 수 있습니다.";
     else el.innerText = "긴 여정이지만 복리의 힘은 마지막에 폭발합니다. 꾸준함이 정답입니다.";
@@ -147,7 +163,7 @@ window.copyFireResult = function() {
                  `💰 목표 은퇴 자산: ${goal}\n` +
                  `💵 은퇴 후 월 예상 수입: ${income}\n\n` +
                  `📍 당신은 언제 은퇴할 수 있을까요? 지금 확인해보세요!\n` +
-                 `👉 https://hedge-dochi-live.pages.dev/fire-calc.html`;
+                 `👉 https://hedge-dochi-live.pages.dev/step2-fire.html`;
 
     navigator.clipboard.writeText(text).then(() => {
         alert("은퇴 리포트가 클립보드에 복사되었습니다! 🚀");

@@ -1,100 +1,11 @@
-// Import Firebase SDKs
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db, currentUser, goToNextStep } from './core.js';
 
-const firebaseConfig = {
-    apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
-    authDomain: "hedge-dochi.firebaseapp.com",
-    projectId: "hedge-dochi",
-    storageBucket: "hedge-dochi.firebasestorage.app",
-    messagingSenderId: "157519209721",
-    appId: "1:157519209721:web:d1f196e41dcd579a286e28",
-    measurementId: "G-7Y0G1CVXBR"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// --- State Management ---
 let currentStep = 1;
 let wealthChart = null;
 let baseCurrency = 'KRW';
 let exchangeRate = 1350;
-let currentUser = null;
 
-// --- Roadmap Data ---
-const ROADMAP_STEPS = [
-    { id: 1, title: "내 자산 알아보기", desc: "10년 후 내 자산 등급 시뮬레이션", path: "index.html" },
-    { id: 2, title: "은퇴 목표 설정", desc: "내가 꿈꾸는 노후를 위한 자산 설계", path: "fire-calc.html" },
-    { id: 3, title: "투자 성향 확인", desc: "하락장을 견디는 나의 심리 상태 테스트", path: "risk-test.html" },
-    { id: 4, title: "기초 금융 학습", desc: "복리와 자산 배분의 기본 원리 이해", path: "guides.html" },
-    { id: 5, title: "투자 모델 탐색", desc: "올웨더, 영구 포트폴리오 등 전략 선택", path: "guide-models.html" },
-    { id: 6, title: "수익 시뮬레이션", desc: "배당 및 복리 수익 구체적 계산", path: "dividend.html" },
-    { id: 7, title: "포트폴리오 구축", desc: "실제 자산 등록 및 실시간 관리 시작", path: "dashboard.html" },
-    { id: 8, title: "주기적 리밸런싱", desc: "시장 변화에 따른 자산 비중 최적화", path: "rebalance.html" }
-];
-
-let userRoadmapProgress = 1;
-
-// --- Roadmap UI Logic ---
-function renderRoadmap() {
-    const container = document.getElementById('roadmapSteps');
-    if (!container) return;
-    
-    container.innerHTML = ROADMAP_STEPS.map(step => {
-        const isCompleted = step.id < userRoadmapProgress;
-        const isCurrent = step.id === userRoadmapProgress;
-        const isLocked = step.id > userRoadmapProgress;
-        
-        return `
-            <div class="roadmap-step flex items-center gap-4 p-5 rounded-2xl border transition-all ${isCurrent ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20 shadow-lg' : 'border-slate-100 dark:border-slate-800'} ${isLocked ? 'opacity-50 grayscale' : ''}">
-                <div class="w-10 h-10 rounded-full flex items-center justify-center font-black ${isCompleted ? 'bg-emerald-500 text-white' : isCurrent ? 'bg-indigo-600 text-white animate-pulse' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}">
-                    ${isCompleted ? '✓' : step.id}
-                </div>
-                <div class="flex-1">
-                    <h5 class="font-bold text-slate-800 dark:text-white">${step.title}</h5>
-                    <p class="text-xs text-slate-500">${step.desc}</p>
-                </div>
-                ${isCurrent ? '<span class="text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded-lg">진행 중</span>' : ''}
-            </div>
-        `;
-    }).join('');
-
-    const progressPercent = Math.round(((userRoadmapProgress - 1) / ROADMAP_STEPS.length) * 100);
-    document.getElementById('roadmapProgressText').innerText = `${progressPercent}% 완료`;
-}
-
-async function updateRoadmapProgress(stepId) {
-    if (!currentUser) return;
-    if (stepId <= userRoadmapProgress) return;
-    
-    userRoadmapProgress = stepId;
-    try {
-        await updateDoc(doc(db, "simulations", currentUser.uid), {
-            roadmapProgress: userRoadmapProgress,
-            lastRoadmapUpdate: new Date()
-        });
-    } catch (e) {
-        console.error("로드맵 저장 실패", e);
-    }
-}
-
-window.toggleRoadmapModal = function(show) {
-    const m = document.getElementById('roadmapModal'), c = document.getElementById('roadmapContainer');
-    if (!m || !c) return;
-    if (show) {
-        renderRoadmap();
-        m.classList.remove('hidden'); m.classList.add('flex');
-        setTimeout(() => c.classList.remove('scale-95', 'opacity-0'), 10);
-    } else {
-        c.classList.add('scale-95', 'opacity-0');
-        setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300);
-    }
-};
-
-// --- Wizard Navigation ---
 window.goToStep = async function(step) {
     if (step === 3 || step === 4) {
         try {
@@ -124,14 +35,6 @@ window.goToStep = async function(step) {
 
     currentStep = step;
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // 로드맵 Step 1 완료 조건 (결과 보기 진입 시)
-    if (step === 4) {
-        if (userRoadmapProgress === 1) {
-            updateRoadmapProgress(2);
-            showToast("축하합니다! 로드맵 1단계를 완료했습니다. 🚀");
-        }
-    }
 };
 
 window.resetToLiveExchangeRate = function() {
@@ -143,7 +46,6 @@ window.resetToLiveExchangeRate = function() {
     }
 };
 
-// --- Currency Management ---
 window.setCurrency = function(code) {
     baseCurrency = code;
     const isUSD = code === 'USD';
@@ -176,11 +78,14 @@ function formatValue(val) {
     }
 }
 
-// --- Final Calculation ---
 window.calculateAndShowResult = function() {
     updateCalculation();
     goToStep(4);
     saveDataToFirebase();
+};
+
+window.proceedToCurriculumStep2 = function() {
+    goToNextStep(1); // Call core.js navigation to move to Step 2
 };
 
 function updateCalculation() {
@@ -209,7 +114,6 @@ function updateCalculation() {
 
     for (let year = 1; year <= 10; year++) {
         const surplus = curSalary - (curExpense * 12);
-        
         const profit = (currentWealth + surplus / 2) * investmentReturn;
         currentWealth = currentWealth + surplus + profit;
         
@@ -217,7 +121,6 @@ function updateCalculation() {
         currentWealthOpt = currentWealthOpt + surplus + ((currentWealthOpt + surplus / 2) * (investmentReturn + 0.02));
         
         tableData.push({ year, salary: curSalary, profit: profit, total: currentWealth });
-
         curSalary *= (1 + salaryGrowth);
         curExpense *= (1 + inflationRate);
         
@@ -265,6 +168,22 @@ function updateWealthTier(realWealth, rate) {
     document.getElementById('gradeBadgeIcon').innerText = icon;
     document.getElementById('gradeDesc').innerText = desc;
     document.getElementById('gradeSection').className = `capture-area bg-gradient-to-br ${color} p-10 md:p-16 rounded-[3rem] shadow-2xl text-center text-white relative overflow-hidden`;
+    
+    // UI 업데이트: 기존의 "다시 하기" 버튼들 대신 다음 단계 버튼 삽입
+    const actionContainer = document.querySelector('#gradeSection .mt-12');
+    if (actionContainer) {
+        actionContainer.innerHTML = `
+            <button onclick="proceedToCurriculumStep2()" class="w-full md:w-auto px-10 py-5 rounded-2xl bg-white text-indigo-600 font-black shadow-2xl hover:scale-105 transition-all active:scale-95 text-lg">
+                2단계: 은퇴 목표 설정 ➔
+            </button>
+            <button onclick="copySimulationResult()" class="px-8 py-4 rounded-2xl bg-indigo-700 text-white font-bold shadow-xl hover:bg-indigo-800 transition-all active:scale-95 flex items-center gap-2">
+                <span>📋 복사</span>
+            </button>
+            <button onclick="downloadResultImage()" class="px-8 py-4 rounded-2xl bg-emerald-600 text-white font-bold shadow-xl hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-2">
+                <span>🖼️ 저장</span>
+            </button>
+        `;
+    }
 }
 
 function renderChart(nominalData, realData, consData, optData) {
@@ -288,7 +207,6 @@ function renderChart(nominalData, realData, consData, optData) {
     });
 }
 
-// --- Market Pulse ---
 const MARKET_TICKERS = [
     { symbol: '^GSPC', label: 'S&P 500' },
     { symbol: '^IXIC', label: 'NASDAQ' },
@@ -319,23 +237,14 @@ async function fetchMarketData() {
     if (timeEl) timeEl.innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
 }
 
-// --- Auth & Init ---
-onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
-    const loginBtn = document.getElementById('loginBtn'), userProfile = document.getElementById('userProfile'), authMobile = document.getElementById('authContainerMobile');
+// Core.js에서 데이터 로드 시 동기화
+document.addEventListener('coreDataReady', async (e) => {
+    const user = e.detail.user;
     if (user) {
-        loginBtn?.classList.add('hidden'); userProfile?.classList.remove('hidden');
-        if (document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL;
-        if (authMobile) authMobile.innerHTML = `<div class="flex items-center justify-between"><div class="flex items-center gap-3"><img src="${user.photoURL}" class="w-10 h-10 rounded-full"><span class="font-bold text-slate-800 dark:text-white">${user.displayName}</span></div><button id="logoutBtnMobile" class="text-sm text-red-500 font-bold">로그아웃</button></div>`;
-        document.getElementById('logoutBtnMobile')?.addEventListener('click', () => signOut(auth).then(() => location.reload()));
         try {
             const snap = await getDoc(doc(db, "simulations", user.uid));
             if (snap.exists()) {
                 const d = snap.data();
-                if (d.roadmapProgress) {
-                    userRoadmapProgress = d.roadmapProgress;
-                    renderRoadmap();
-                }
                 if (d.annualSalary) document.getElementById('annualSalary').value = d.annualSalary;
                 if (d.initialSeed) document.getElementById('initialSeed').value = d.initialSeed;
                 if (d.monthlyExpense) document.getElementById('monthlyExpense').value = d.monthlyExpense;
@@ -345,10 +254,7 @@ onAuthStateChanged(auth, async (user) => {
                 if (d.baseCurrency) setCurrency(d.baseCurrency);
                 if (currentStep !== 4 && confirm("이전에 시뮬레이션한 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) calculateAndShowResult();
             }
-        } catch (e) {}
-    } else {
-        loginBtn?.classList.remove('hidden'); userProfile?.classList.add('hidden');
-        if (authMobile) authMobile.innerHTML = `<button onclick="document.getElementById('loginBtn').click()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">구글 로그인</button>`;
+        } catch (err) {}
     }
 });
 
@@ -362,9 +268,7 @@ async function saveDataToFirebase() {
             salaryGrowth: document.getElementById('salaryGrowth').value,
             investmentReturn: document.getElementById('investmentReturn').value,
             inflationRate: document.getElementById('inflationRate').value,
-            baseCurrency, 
-            roadmapProgress: userRoadmapProgress,
-            lastUpdated: new Date()
+            baseCurrency, lastUpdated: new Date()
         }, { merge: true });
         showToast("데이터가 안전하게 저장되었습니다. ☁️");
     } catch (e) {}
@@ -380,35 +284,22 @@ window.showToast = function(msg) {
 window.downloadResultImage = function() {
     const area = document.querySelector('.capture-area');
     if (!area) return;
-    showToast("리포트 이미지를 생성하고 있습니다... 🖼️");
+    showToast("이미지를 생성하고 있습니다... 🖼️");
     html2canvas(area, { useCORS: true, backgroundColor: null, scale: 2, logging: false }).then(canvas => {
         const link = document.createElement('a');
         const tier = document.getElementById('gradeTitle').innerText;
         link.download = `HedgeDochi_Report_${tier}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-        showToast("이미지 저장이 완료되었습니다! ✨");
-    }).catch(() => showToast("이미지 생성 중 오류가 발생했습니다."));
+    }).catch(() => showToast("이미지 생성 오류"));
 };
 
 window.copySimulationResult = function() {
     const tier = document.getElementById('gradeTitle').innerText;
     const nominal = document.getElementById('finalWealthText').innerText;
     const real = document.getElementById('realValueText').innerText;
-    const text = `💎 Hedge Dochi 자산 등급 리포트 💎\n\n나의 10년 후 예상 등급: [ ${tier} ]\n💰 10년 후 명목 자산: ${nominal}\n📉 실질 가치(물가반영): ${real}\n\n📍 당신의 미래 등급을 확인해보세요!\n👉 https://hedge-dochi-live.pages.dev/`;
-    navigator.clipboard.writeText(text).then(() => alert("결과 리포트가 클립보드에 복사되었습니다! 🚀"));
-};
-
-window.toggleStrategyModal = function(show) {
-    const m = document.getElementById('strategyModal'), c = document.getElementById('modalContainer');
-    if (!m || !c) return;
-    if (show) {
-        m.classList.remove('hidden'); m.classList.add('flex');
-        setTimeout(() => c.classList.remove('scale-95', 'opacity-0'), 10);
-    } else {
-        c.classList.add('scale-95', 'opacity-0');
-        setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300);
-    }
+    const text = `💎 Hedge Dochi 자산 등급 리포트 💎\n\n나의 10년 후 예상 등급: [ ${tier} ]\n💰 10년 후 명목 자산: ${nominal}\n📉 실질 가치: ${real}\n\n📍 나의 미래 등급 확인하기\n👉 https://hedge-dochi-live.pages.dev/`;
+    navigator.clipboard.writeText(text).then(() => alert("클립보드에 복사되었습니다!"));
 };
 
 window.toggleYearlyTable = function() {
@@ -419,36 +310,6 @@ window.toggleYearlyTable = function() {
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchMarketData();
-    document.getElementById('startRoadmapBtn')?.addEventListener('click', () => {
-        if (!currentUser) {
-            if (confirm("진행 상황을 저장하려면 로그인이 필요합니다. 로그인하시겠습니까?")) {
-                signInWithPopup(auth, new GoogleAuthProvider());
-            } else {
-                toggleRoadmapModal(true);
-            }
-        } else {
-            toggleRoadmapModal(true);
-        }
-    });
-    document.getElementById('closeRoadmap')?.addEventListener('click', () => toggleRoadmapModal(false));
-    document.getElementById('continueRoadmapBtn')?.addEventListener('click', () => {
-        const nextStep = ROADMAP_STEPS.find(s => s.id === userRoadmapProgress);
-        if (nextStep) {
-            if (nextStep.path === 'index.html') {
-                toggleRoadmapModal(false);
-                document.getElementById('step-1').scrollIntoView({ behavior: 'smooth' });
-            } else {
-                location.href = nextStep.path;
-            }
-        } else {
-            showToast("모든 로드맵 단계를 완료했습니다! 🏆");
-        }
-    });
-    
-    document.getElementById('showStrategyBtn')?.addEventListener('click', () => toggleStrategyModal(true));
-    document.getElementById('closeModal')?.addEventListener('click', () => toggleStrategyModal(false));
-    document.getElementById('loginBtn')?.addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
-    document.getElementById('logoutBtn')?.addEventListener('click', () => signOut(auth).then(() => location.reload()));
     const obs = new MutationObserver(() => { if (currentStep === 4) updateCalculation(); });
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 });
