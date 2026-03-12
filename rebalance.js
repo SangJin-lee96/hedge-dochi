@@ -154,50 +154,90 @@ function updateTotalWeight() {
 
 // --- Calculation ---
 window.calculateRebalance = async function() {
-    const totalValue = assets.reduce((sum, a) => sum + (a.qty * a.price), 0);
     const resultsContainer = document.getElementById('rebalanceResults');
-    resultsContainer.innerHTML = '';
+    resultsContainer.innerHTML = '<div class="text-center py-8 animate-pulse font-bold text-slate-400">포트폴리오 분석 중...</div>';
 
-    assets.forEach(a => {
-        const targetValue = totalValue * (a.targetWeight / 100);
-        const diffValue = targetValue - (a.qty * a.price);
-        const diffQty = a.price > 0 ? (diffValue / a.price).toFixed(2) : 0;
-        
-        const div = document.createElement('div');
-        div.className = "p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center";
-        const actionText = diffQty > 0 ? `<span class="text-emerald-500">매수 ${diffQty}주</span>` : `<span class="text-red-500">매도 ${Math.abs(diffQty)}주</span>`;
-        div.innerHTML = `<span class="font-bold">${a.ticker}</span><div class="font-black">${diffQty == 0 ? '유지' : actionText}</div>`;
-        resultsContainer.appendChild(div);
+    // 1. 총 가산 산출 (환율 적용)
+    let totalValueInBase = 0;
+    const processedAssets = assets.map(a => {
+        const isKRWAsset = a.ticker.endsWith('.KS') || a.ticker.endsWith('.KQ');
+        let currentPriceInBase = a.price;
+
+        if (baseCurrency === 'USD' && isKRWAsset) {
+            currentPriceInBase = a.price / exchangeRate; // 원화 자산을 달러로 환산
+        } else if (baseCurrency === 'KRW' && !isKRWAsset && a.ticker !== 'CASH') {
+            currentPriceInBase = a.price * exchangeRate; // 달러 자산을 원화로 환산
+        }
+
+        const valueInBase = a.qty * currentPriceInBase;
+        totalValueInBase += valueInBase;
+        return { ...a, currentPriceInBase, valueInBase };
     });
 
-    renderChart();
-    updateHealthScore();
-    goToStep(4);
-    saveDataToFirebase();
+    // 2. 결과 도출
+    setTimeout(() => {
+        resultsContainer.innerHTML = '';
+        processedAssets.forEach(a => {
+            const targetValue = totalValueInBase * (a.targetWeight / 100);
+            const diffValue = targetValue - a.valueInBase;
+            const diffQty = a.currentPriceInBase > 0 ? (diffValue / a.currentPriceInBase).toFixed(2) : 0;
+            
+            const div = document.createElement('div');
+            div.className = "p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center animate-fade-in-up";
+            
+            let actionHTML = '';
+            if (parseFloat(diffQty) > 0) {
+                actionHTML = `<div class="text-right"><span class="text-emerald-500 font-black">매수 ${diffQty}주</span><p class="text-[10px] text-slate-400">약 ${formatValue(Math.abs(diffValue))}</p></div>`;
+            } else if (parseFloat(diffQty) < 0) {
+                actionHTML = `<div class="text-right"><span class="text-red-500 font-black">매도 ${Math.abs(diffQty)}주</span><p class="text-[10px] text-slate-400">약 ${formatValue(Math.abs(diffValue))}</p></div>`;
+            } else {
+                actionHTML = `<span class="text-slate-400 font-black">유지</span>`;
+            }
+
+            div.innerHTML = `
+                <div class="flex flex-col">
+                    <span class="font-bold text-slate-800 dark:text-slate-200">${a.ticker}</span>
+                    <span class="text-[10px] font-bold text-slate-400">${((a.valueInBase/totalValueInBase)*100).toFixed(1)}% → ${a.targetWeight}%</span>
+                </div>
+                ${actionHTML}
+            `;
+            resultsContainer.appendChild(div);
+        });
+
+        renderChart(processedAssets);
+        updateHealthScore(processedAssets, totalValueInBase);
+        goToStep(4);
+        saveDataToFirebase();
+    }, 800);
 };
 
-function renderChart() {
+function renderChart(processedAssets) {
     const ctx = document.getElementById('currentChart').getContext('2d');
     if (chart) chart.destroy();
     chart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: assets.map(a => a.ticker),
-            datasets: [{ data: assets.map(a => a.qty * a.price), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] }]
+            labels: processedAssets.map(a => a.ticker),
+            datasets: [{ 
+                data: processedAssets.map(a => a.valueInBase), 
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f43f5e'],
+                borderWidth: 0 
+            }]
         },
-        options: { cutout: '70%', plugins: { legend: { display: false } } }
+        options: { cutout: '75%', plugins: { legend: { display: false } }, animation: { animateRotate: true } }
     });
 }
 
-function updateHealthScore() {
-    const totalValue = assets.reduce((sum, a) => sum + (a.qty * a.price), 0);
+function updateHealthScore(processedAssets, totalValueInBase) {
     let totalDeviance = 0;
-    assets.forEach(a => {
-        const currentWeight = totalValue > 0 ? (a.qty * a.price / totalValue) * 100 : 0;
+    processedAssets.forEach(a => {
+        const currentWeight = totalValueInBase > 0 ? (a.valueInBase / totalValueInBase) * 100 : 0;
         totalDeviance += Math.abs(currentWeight - a.targetWeight);
     });
     const score = Math.max(0, 100 - Math.round(totalDeviance));
-    document.getElementById('healthScore').innerText = score;
+    const scoreEl = document.getElementById('healthScore');
+    scoreEl.innerText = score;
+    scoreEl.className = `text-4xl font-black ${score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500'}`;
 }
 
 // --- Auth & Firebase Persistence ---
