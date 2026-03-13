@@ -1,7 +1,7 @@
 // core.js - Centralized Firebase, Auth, and Roadmap Logic
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
@@ -18,7 +18,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 
 export let currentUser = null;
-export let userProgress = 1;
+export let userProgress = parseInt(localStorage.getItem('roadmapProgress')) || 1;
 export let isCoreReady = false;
 
 export const ROADMAP_STEPS = [
@@ -47,23 +47,22 @@ export function setupAuthUI() {
                     document.getElementById('userPhoto').src = user.photoURL;
                 }
                 
-                // Fast local load
-                const cachedProgress = localStorage.getItem(`progress_${user.uid}`);
-                if (cachedProgress) userProgress = parseInt(cachedProgress);
-
                 // Fetch progress from Firebase
                 try {
                     const snap = await getDoc(doc(db, "simulations", user.uid));
                     if (snap.exists()) {
-                        userProgress = snap.data().roadmapProgress || 1;
-                        localStorage.setItem(`progress_${user.uid}`, userProgress);
+                        const dbProgress = snap.data().roadmapProgress || 1;
+                        // Always prioritize higher progress
+                        userProgress = Math.max(userProgress, dbProgress);
+                        localStorage.setItem('roadmapProgress', userProgress);
                     }
                 } catch (e) { console.error("Failed to load progress:", e); }
                 
             } else {
                 if (loginBtn) loginBtn.classList.remove('hidden');
                 if (userProfile) userProfile.classList.add('hidden');
-                userProgress = parseInt(sessionStorage.getItem('roadmapProgress')) || 1;
+                // Guest users use localStorage
+                userProgress = parseInt(localStorage.getItem('roadmapProgress')) || 1;
             }
             
             isCoreReady = true;
@@ -74,7 +73,7 @@ export function setupAuthUI() {
         document.getElementById('loginBtn')?.addEventListener('click', loginWithGoogle);
         document.getElementById('logoutBtn')?.addEventListener('click', () => {
             signOut(auth).then(() => {
-                sessionStorage.clear();
+                localStorage.removeItem('roadmapProgress');
                 location.reload();
             });
         });
@@ -94,7 +93,9 @@ export async function loginWithGoogle() {
 
 // --- Roadmap Progress API ---
 export async function saveProgress(stepId, additionalData = {}) {
+    // Current step progress update
     userProgress = Math.max(userProgress, stepId);
+    localStorage.setItem('roadmapProgress', userProgress);
     
     if (currentUser) {
         try {
@@ -104,19 +105,17 @@ export async function saveProgress(stepId, additionalData = {}) {
                 lastUpdated: new Date()
             };
             
-            // Store step-specific data in a nested field to avoid overwriting other steps
             if (Object.keys(additionalData).length > 0) {
                 updateObj[`steps.step${stepId}`] = additionalData;
             }
             
             await setDoc(docRef, updateObj, { merge: true });
-            console.log(`Progress for Step ${stepId} saved to Firebase.`);
+            console.log(`Progress Step ${stepId} saved to Firebase.`);
         } catch (e) { console.error("Save progress failed", e); }
     } else {
-        // Guest user storage
-        sessionStorage.setItem('roadmapProgress', userProgress);
+        // Guest user local storage
         if (Object.keys(additionalData).length > 0) {
-            sessionStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
+            localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
         }
     }
 }
@@ -131,7 +130,7 @@ export async function getStepData(stepId) {
             }
         } catch (e) { console.error(`Failed to load data for step ${stepId}:`, e); }
     } else {
-        const localData = sessionStorage.getItem(`step${stepId}Data`);
+        const localData = localStorage.getItem(`step${stepId}Data`);
         return localData ? JSON.parse(localData) : null;
     }
     return null;
@@ -139,13 +138,8 @@ export async function getStepData(stepId) {
 
 export async function checkAuthAndGo(path, stepId) {
     if (!currentUser) {
-        if (confirm("진행 상황을 저장하고 이어서 하시려면 로그인이 필요합니다. 로그인하시겠습니까?")) {
-            const user = await loginWithGoogle();
-            if (user) window.location.href = path;
-        } else {
-            // Allow guest access but warn
-            window.location.href = path;
-        }
+        // Let them proceed but warn that sync won't happen across devices
+        window.location.href = path;
     } else {
         window.location.href = path;
     }
@@ -157,7 +151,7 @@ export function goToNextStep(currentId) {
         saveProgress(nextStep.id);
         window.location.href = nextStep.path;
     } else {
-        showToast("모든 교육 과정을 완수하셨습니다! 당신은 이제 스마트한 투자자입니다. ✨");
+        showToast("모든 교육 과정을 완수하셨습니다! ✨");
         window.location.href = 'index.html';
     }
 }
@@ -169,7 +163,6 @@ export function showToast(msg, type = 'info') {
         t = document.createElement('div');
         t.id = 'hedge-toast';
         document.body.appendChild(t);
-        
         const style = document.createElement('style');
         style.innerHTML = `
             #hedge-toast {
@@ -186,12 +179,10 @@ export function showToast(msg, type = 'info') {
         `;
         document.head.appendChild(style);
     }
-    
     const icon = type === 'success' ? '✅' : 'ℹ️';
     t.innerHTML = `<span>${icon}</span> ${msg}`;
     t.className = `show ${type}`;
     setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// Auto-setup Auth UI on load
 document.addEventListener('DOMContentLoaded', setupAuthUI);

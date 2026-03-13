@@ -11,7 +11,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
     
-    <!-- Google Analytics & Adsense -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GFMXESYQFR"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -21,45 +20,28 @@
     </script>
     
     <style>
-        :root {
-            --color-primary-text: #0f172a;
-            --color-background: #f8fafc;
-        }
-        html.dark {
-            --color-primary-text: #f8fafc;
-            --color-background: #020617;
-        }
+        :root { --color-primary-text: #0f172a; --color-background: #f8fafc; }
+        html.dark { --color-primary-text: #f8fafc; --color-background: #020617; }
         body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; transition: background-color 0.5s; }
-        
-        .step-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative; overflow: hidden;
-        }
-        .step-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
+        .step-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+        .step-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
         .step-card.locked { opacity: 0.6; filter: grayscale(0.8); cursor: not-allowed; }
-        .step-card.locked:hover { transform: none; box-shadow: none; }
-        
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
     </style>
 </head>
 <body class="min-h-screen relative overflow-x-hidden transition-colors">
-    <!-- 배경 장식 -->
     <div class="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden pointer-events-none">
         <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-400/10 blur-[120px]"></div>
         <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-400/10 blur-[120px]"></div>
     </div>
 
-    <!-- 헤더 네비게이션 -->
     <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b bg-white/70 dark:bg-slate-900/70 border-slate-100 dark:border-slate-800">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <!-- 로고 -->
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
                 <span class="text-xl">💎</span>
                 <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
             </div>
-
-            <!-- 우측 기능 -->
             <nav class="flex items-center gap-3">
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors text-slate-500 dark:text-slate-400">🌙</button>
                 <div id="authContainer">
@@ -73,7 +55,6 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section class="pt-20 pb-16 px-4 text-center max-w-4xl mx-auto animate-fade-in-up">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-black uppercase tracking-widest mb-6">
             <span class="relative flex h-2 w-2">
@@ -94,26 +75,22 @@
         <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-xl inline-block w-full max-w-md">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-sm font-bold text-slate-500 dark:text-slate-400">나의 커리큘럼 진행률</span>
-                <span id="progress-text" class="text-lg font-black text-blue-600">계산 중...</span>
+                <span id="progress-text" class="text-lg font-black text-blue-600">불러오는 중...</span>
             </div>
             <div class="h-4 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-6">
                 <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-1000 w-0"></div>
             </div>
-            <button id="resumeBtn" class="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-lg hover:scale-[1.02] transition-transform">
-                이어서 진행하기 ➔
+            <button id="resumeBtn" class="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-lg hover:scale-[1.02] transition-transform opacity-50 cursor-wait" disabled>
+                진행 상황 확인 중...
             </button>
         </div>
     </section>
 
-    <!-- Roadmap Grid -->
     <main class="py-12 px-4 max-w-6xl mx-auto mb-20 animate-fade-in-up" style="animation-delay: 0.2s;">
         <h2 class="text-2xl font-black mb-8 px-2">🚀 단계별 학습 및 실행 도구</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="roadmapGrid">
-            <!-- Cards will be injected by JS -->
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="roadmapGrid"></div>
     </main>
 
-    <!-- Footer -->
     <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
         <div class="flex justify-center space-x-6 font-bold mb-4">
             <a href="about.html" class="hover:text-blue-600">소개</a>
@@ -124,32 +101,24 @@
         <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
     </footer>
 
-    <!-- Scripts -->
     <script src="dark-mode.js"></script>
     <script type="module">
-        import { ROADMAP_STEPS, currentUser, userProgress, checkAuthAndGo, showToast } from './core.js';
-
-        let globalProgress = 1;
+        import { ROADMAP_STEPS, isCoreReady, userProgress, checkAuthAndGo, showToast } from './core.js';
 
         function renderGrid(progress) {
             const grid = document.getElementById('roadmapGrid');
-            grid.innerHTML = ROADMAP_STEPS.map((step, idx) => {
+            grid.innerHTML = ROADMAP_STEPS.map((step) => {
                 const isLocked = step.id > progress;
                 const isCompleted = step.id < progress;
                 const isCurrent = step.id === progress;
-                
-                let statusBadge = '';
-                if (isCompleted) statusBadge = '<span class="absolute top-4 right-4 text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md">완료 ✓</span>';
-                else if (isCurrent) statusBadge = '<span class="absolute top-4 right-4 text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-md animate-pulse">진행 중</span>';
-                else statusBadge = '<span class="absolute top-4 right-4 text-xs font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-md dark:bg-slate-700">잠김 🔒</span>';
+                let statusBadge = isCompleted ? '<span class="absolute top-4 right-4 text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md">완료 ✓</span>' : 
+                                  isCurrent ? '<span class="absolute top-4 right-4 text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-md animate-pulse">진행 중</span>' : 
+                                  '<span class="absolute top-4 right-4 text-xs font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-md dark:bg-slate-700">잠김 🔒</span>';
 
                 return `
-                    <div class="step-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 rounded-3xl ${isLocked ? 'locked' : 'cursor-pointer hover:border-blue-500 dark:hover:border-blue-500'}" 
-                         id="step-card-${step.id}">
+                    <div class="step-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 rounded-3xl ${isLocked ? 'locked' : 'cursor-pointer hover:border-blue-500'}" id="step-card-${step.id}">
                         ${statusBadge}
-                        <div class="w-12 h-12 bg-slate-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner">
-                            ${step.icon}
-                        </div>
+                        <div class="w-12 h-12 bg-slate-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner">${step.icon}</div>
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">STEP ${step.id}</p>
                         <h3 class="text-lg font-bold mb-2 text-slate-800 dark:text-white">${step.title}</h3>
                         <p class="text-sm text-slate-500 leading-relaxed">${step.desc}</p>
@@ -157,30 +126,30 @@
                 `;
             }).join('');
 
-            // Add click events manually to avoid inline script issues with modules
             ROADMAP_STEPS.forEach(step => {
                 const el = document.getElementById(`step-card-${step.id}`);
-                if (el && step.id <= progress) {
-                    el.onclick = () => checkAuthAndGo(step.path, step.id);
-                } else if (el) {
-                    el.onclick = () => showToast('이전 단계를 먼저 완료해주세요!');
-                }
+                if (el && step.id <= progress) el.onclick = () => checkAuthAndGo(step.path, step.id);
+                else if (el) el.onclick = () => showToast('이전 단계를 먼저 완료해주세요!');
             });
             
-            const percent = Math.round(((progress - 1) / ROADMAP_STEPS.length) * 100);
+            const percent = Math.min(100, Math.round(((progress - 1) / ROADMAP_STEPS.length) * 100));
             document.getElementById('progress-text').innerText = `${percent}% 완료`;
             document.getElementById('progress-bar').style.width = `${percent}%`;
             
             const resumeBtn = document.getElementById('resumeBtn');
-            const targetStep = ROADMAP_STEPS.find(s => s.id === progress) || ROADMAP_STEPS[ROADMAP_STEPS.length-1];
+            const targetStep = ROADMAP_STEPS.find(s => s.id === progress) || ROADMAP_STEPS[0];
+            resumeBtn.disabled = false;
+            resumeBtn.classList.remove('opacity-50', 'cursor-wait');
             resumeBtn.onclick = () => checkAuthAndGo(targetStep.path, targetStep.id);
             resumeBtn.innerText = progress > 1 ? `${targetStep.id}단계 이어서 하기 ➔` : '1단계 시작하기 ➔';
         }
 
-        // Listen for data ready from core.js
+        // Check cache immediately for snappy feel
+        const cached = parseInt(localStorage.getItem('roadmapProgress')) || 1;
+        renderGrid(cached);
+
         document.addEventListener('coreDataReady', (e) => {
-            globalProgress = e.detail.userProgress;
-            renderGrid(globalProgress);
+            renderGrid(e.detail.userProgress);
         });
     </script>
 </body>
