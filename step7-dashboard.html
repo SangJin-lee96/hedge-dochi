@@ -11,22 +11,21 @@
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>
         body { font-family: 'Pretendard', sans-serif; word-break: keep-all; }
-        .stat-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .glass-effect { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.8); }
         html.dark .glass-effect { background: rgba(15, 23, 42, 0.8); }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
-        .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
-        @keyframes loading { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+        .ai-message { position: relative; padding: 1.5rem; border-radius: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0; }
+        html.dark .ai-message { background: #1e293b; border-color: #334155; }
+        .ai-message::after { content: ''; position: absolute; left: 2rem; top: -10px; border-width: 0 10px 10px 10px; border-style: solid; border-color: transparent transparent #f8fafc transparent; }
+        html.dark .ai-message::after { border-color: transparent transparent #1e293b transparent; }
     </style>
 </head>
 <body class="bg-[#f8fafc] dark:bg-[#020617] text-slate-900 dark:text-slate-100 min-h-screen">
-    <!-- Header -->
     <header class="sticky top-0 z-50 w-full glass-effect border-b border-slate-100 dark:border-slate-800">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
-                <span class="text-xl">💎</span>
-                <span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
+                <span class="text-xl">💎</span><span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
             </div>
             <div id="userProfile" class="flex items-center gap-3">
                 <span id="dashUserName" class="text-sm font-bold text-slate-600 dark:text-slate-400">Loading...</span>
@@ -36,87 +35,68 @@
     </header>
 
     <main class="max-w-6xl mx-auto px-4 py-12">
-        <div class="mb-12 animate-fade-in-up">
+        <div class="mb-12 animate-fade-in-up text-center md:text-left">
             <h1 class="text-3xl md:text-5xl font-black mb-4">나의 재무 설계 청사진</h1>
-            <p class="text-lg text-slate-500">지금까지 진행한 6단계의 분석 결과를 바탕으로 도출된 당신의 투자 전략입니다.</p>
+            <p class="text-lg text-slate-500">지금까지 당신이 설계한 데이터를 AI가 종합 분석했습니다.</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left: Persona Summary (Step 1 & 3) -->
+            <!-- Persona Summary -->
             <div class="lg:col-span-1 space-y-8 animate-fade-in-up" style="animation-delay: 0.1s;">
-                <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700" id="personaSection">
+                <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700">
                     <div class="flex flex-col items-center text-center">
-                        <div id="personaIcon" class="w-24 h-24 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-5xl mb-6 shadow-inner">🦔</div>
+                        <div id="personaIcon" class="w-24 h-24 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-5xl mb-6">🦔</div>
                         <h2 class="text-sm font-black text-blue-600 uppercase tracking-widest mb-2">My Persona</h2>
-                        <div id="personaName" class="text-2xl font-black mb-4">투자 프로필 분석 중</div>
+                        <div id="personaName" class="text-2xl font-black mb-4">분석 중...</div>
                         <div id="personaTags" class="flex flex-wrap justify-center gap-2 mb-6">
-                            <span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-full text-[10px] font-bold text-slate-500">대기 중</span>
+                            <span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-full text-[10px] font-bold">진행 중</span>
                         </div>
                     </div>
                     <div class="space-y-4 pt-6 border-t border-slate-50 dark:border-slate-700">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-400 uppercase">자산 등급</span>
-                            <span id="tierValue" class="font-black text-slate-700 dark:text-slate-200">미분석</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-400 uppercase">투자 성향</span>
-                            <span id="riskValue" class="font-black text-slate-700 dark:text-slate-200">미진단</span>
-                        </div>
+                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-400 uppercase">자산 등급</span><span id="tierValue" class="font-black">미분석</span></div>
+                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-400 uppercase">투자 성향</span><span id="riskValue" class="font-black">미진단</span></div>
+                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-400 uppercase">월 평균 저축액</span><span id="savingsValue" class="font-black text-emerald-500">0원</span></div>
+                    </div>
+                </div>
+
+                <!-- AI Comment Box -->
+                <div class="animate-fade-in-up" style="animation-delay: 0.3s;">
+                    <div class="flex items-center gap-2 mb-4 ml-2">
+                        <div class="w-8 h-8 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center text-sm font-black">AI</div>
+                        <span class="text-sm font-black">Hedge Dochi Insight</span>
+                    </div>
+                    <div id="aiComment" class="ai-message text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-medium">
+                        당신의 데이터를 바탕으로 맞춤형 투자 조언을 생성하고 있습니다. 잠시만 기다려 주세요...
                     </div>
                 </div>
 
                 <div class="bg-gradient-to-br from-indigo-600 to-blue-700 p-8 rounded-[2.5rem] shadow-xl text-white">
                     <h3 class="font-black text-xl mb-4">8단계: 실전 투자 ➔</h3>
-                    <p class="text-indigo-100 text-sm mb-6 leading-relaxed">설계가 완료되었다면, 이제 실제 자산을 등록하고 리밸런싱을 시작할 차례입니다.</p>
-                    <button onclick="location.href='step8-rebalance.html'" class="w-full py-4 bg-white text-indigo-600 font-black rounded-2xl shadow-lg hover:scale-105 transition-all">실전 포트폴리오 구축하기</button>
+                    <button onclick="location.href='step8-rebalance.html'" class="w-full py-4 bg-white text-indigo-600 font-black rounded-2xl shadow-lg hover:scale-105 transition-all">실전 포트폴리오 구축</button>
                 </div>
             </div>
 
-            <!-- Right: Detailed Summary (Step 2, 5, 6) -->
+            <!-- Detailed Stats -->
             <div class="lg:col-span-2 space-y-8 animate-fade-in-up" style="animation-delay: 0.2s;">
-                <!-- Section: Goals & Simulation -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700 h-full">
-                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Retirement Goal (Step 2)</h3>
-                        <div id="fireSummary" class="space-y-4">
-                            <div class="text-center py-10 text-slate-300">은퇴 설계를 완료해 주세요.</div>
-                        </div>
+                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700">
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Retirement (Step 2)</h3>
+                        <div id="fireSummary" class="text-center py-6 text-slate-300">데이터를 로드 중...</div>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700 h-full">
-                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Compound Target (Step 6)</h3>
-                        <div id="compoundSummary" class="space-y-4">
-                            <div class="text-center py-10 text-slate-300">수익 시뮬레이션을 완료해 주세요.</div>
-                        </div>
+                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700">
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Simulation (Step 6)</h3>
+                        <div id="compoundSummary" class="text-center py-6 text-slate-300">데이터를 로드 중...</div>
                     </div>
                 </div>
 
-                <!-- Section: Strategy & Portfolio (Step 5) -->
                 <div class="bg-white dark:bg-slate-800 p-10 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-700">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
-                        <div>
-                            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Strategy & Recommended Portfolio (Step 5)</h3>
-                            <h2 id="strategyTitle" class="text-3xl font-black">선택된 전략이 없습니다</h2>
-                        </div>
-                        <div id="strategyBadge" class="hidden px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-black uppercase">Active</div>
+                    <div class="flex justify-between items-center mb-10">
+                        <h2 id="strategyTitle" class="text-3xl font-black">전략을 선택해 주세요</h2>
+                        <div id="strategyBadge" class="hidden px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-black">TARGET</div>
                     </div>
-                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                        <div class="relative aspect-square max-w-[240px] mx-auto">
-                            <canvas id="targetChart"></canvas>
-                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div class="text-center">
-                                    <div class="text-xs font-bold text-slate-400 uppercase">Target</div>
-                                    <div class="text-2xl font-black text-slate-800 dark:text-white">100%</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="targetLegend" class="space-y-4">
-                            <!-- Legend items will be injected here -->
-                            <div class="text-center py-8">
-                                <p class="text-sm text-slate-400 mb-4">투자 전략을 선택하시면<br>권장 비중이 이곳에 표시됩니다.</p>
-                                <a href="step5-models.html" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-xl text-xs font-black">전략 선택하러 가기</a>
-                            </div>
-                        </div>
+                        <div class="relative aspect-square max-w-[200px] mx-auto"><canvas id="targetChart"></canvas></div>
+                        <div id="targetLegend" class="space-y-3"></div>
                     </div>
                 </div>
             </div>

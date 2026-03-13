@@ -19,16 +19,23 @@ document.addEventListener('coreDataReady', async (e) => {
 
 async function refreshDashboard() {
     try {
+        // 1. 모든 단계 데이터 병렬 로드
         const [s1, s2, s3, s5, s6] = await Promise.all([
             getStepData(1), getStepData(2), getStepData(3), getStepData(5), getStepData(6)
         ]);
 
+        // 2. UI 업데이트
         updatePersonaUI(s1, s3);
         updateFireUI(s2);
         updateCompoundUI(s6);
         updateStrategyUI(s5);
+        
+        // 3. AI 코멘트 생성 (모든 데이터 로드 후)
+        generateAIComment(s1, s2, s3, s5, s6);
+
     } catch (e) {
         console.error("Dashboard Sync Error:", e);
+        document.getElementById('aiComment').innerText = "데이터 분석 중 오류가 발생했습니다. 새로고침을 시도해 주세요.";
     }
 }
 
@@ -36,14 +43,20 @@ function updatePersonaUI(s1, s3) {
     const nameEl = document.getElementById('personaName');
     const tierEl = document.getElementById('tierValue');
     const riskEl = document.getElementById('riskValue');
-    const tagsEl = document.getElementById('personaTags');
+    const savingsEl = document.getElementById('savingsValue');
     const iconEl = document.getElementById('personaIcon');
+    const tagsEl = document.getElementById('personaTags');
 
     if (s1) {
         const sim = calculateWealthSummary(s1);
         if (tierEl) tierEl.innerText = sim.tier;
         if (nameEl) nameEl.innerText = `${sim.tier} 등급 투자자`;
         if (iconEl) iconEl.innerText = sim.icon;
+        // 월 평균 저축액 표시
+        if (savingsEl) {
+            const savings = s1.monthlySavings || Math.max(0, Math.round((s1.annualSalary / 12) - s1.monthlyExpense));
+            savingsEl.innerText = formatVal(savings, 'KRW');
+        }
     }
 
     if (s3 && s3.riskType) {
@@ -55,7 +68,11 @@ function updatePersonaUI(s1, s3) {
 
 function updateFireUI(s2) {
     const container = document.getElementById('fireSummary');
-    if (!s2 || !container) return;
+    if (!container) return;
+    if (!s2) {
+        container.innerHTML = `<a href="step2-fire.html" class="text-blue-500 font-bold">Step 2 설계하기 ➔</a>`;
+        return;
+    }
     container.innerHTML = `
         <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
             <span class="text-xs font-bold text-slate-400 uppercase">월 생활비 목표</span>
@@ -70,7 +87,11 @@ function updateFireUI(s2) {
 
 function updateCompoundUI(s6) {
     const container = document.getElementById('compoundSummary');
-    if (!s6 || !container) return;
+    if (!container) return;
+    if (!s6) {
+        container.innerHTML = `<a href="step6-simulate.html" class="text-emerald-500 font-bold">Step 6 시뮬레이션 ➔</a>`;
+        return;
+    }
     container.innerHTML = `
         <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
             <span class="text-xs font-bold text-slate-400 uppercase">최종 자산 목표</span>
@@ -87,7 +108,12 @@ function updateStrategyUI(s5) {
     const titleEl = document.getElementById('strategyTitle');
     const badgeEl = document.getElementById('strategyBadge');
     const legendEl = document.getElementById('targetLegend');
-    if (!s5 || !s5.selectedModel || !legendEl) return;
+    if (!legendEl) return;
+
+    if (!s5 || !s5.selectedModel) {
+        legendEl.innerHTML = `<a href="step5-models.html" class="text-blue-500 font-bold">Step 5 전략 선택하기 ➔</a>`;
+        return;
+    }
 
     if (titleEl) titleEl.innerText = s5.selectedModel;
     if (badgeEl) badgeEl.classList.remove('hidden');
@@ -119,6 +145,45 @@ function renderDonutChart(config) {
         data: { labels: config.labels, datasets: [{ data: config.data, backgroundColor: config.colors, borderWidth: 0 }] },
         options: { cutout: '80%', plugins: { legend: { display: false } } }
     });
+}
+
+function generateAIComment(s1, s2, s3, s5, s6) {
+    const commentEl = document.getElementById('aiComment');
+    if (!commentEl) return;
+
+    if (!s1 || !s3 || !s5) {
+        commentEl.innerText = "아직 분석 데이터가 부족합니다. 모든 단계를 완료하시면 정교한 AI 투자 인사이트를 제공해 드립니다.";
+        return;
+    }
+
+    const sim = calculateWealthSummary(s1);
+    const savings = s1.monthlySavings || Math.max(0, Math.round((s1.annualSalary / 12) - s1.monthlyExpense));
+    
+    let message = "";
+    
+    // 1. 등급 및 성향 분석
+    message += `반갑습니다! 분석 결과 당신은 **${sim.tier}** 등급의 **${s3.riskType}** 투자자시군요. `;
+    
+    // 2. 전략 및 저축 평가
+    if (s5.selectedModel === 'All Weather') {
+        message += `선택하신 '올웨더' 전략은 ${s3.riskType === '공격투자형' ? '성향에 비해 보수적일 수 있지만' : '매우 현명한 선택이며'}, 어떤 시장 상황에서도 자산을 안전하게 지켜줄 것입니다. `;
+    }
+    
+    // 3. 저축 및 목표 조언
+    if (savings > 200) {
+        message += `월 ${formatVal(savings, 'KRW')}의 저축액은 매우 훌륭합니다! 이 추세라면 `;
+    } else {
+        message += `현재 월 저축액(${formatVal(savings, 'KRW')})은 목표 달성을 위해 조금 더 늘릴 필요가 있어 보입니다. `;
+    }
+
+    if (s6) {
+        const targetWealth = s6.finalProjectedWealth / 10000;
+        message += `설정하신 ${formatVal(targetWealth, 'KRW')} 자산 목표는 충분히 달성 가능한 범위에 있습니다. `;
+    }
+
+    message += `이제 8단계에서 실제 포트폴리오를 구축해 봅시다! 🚀`;
+    
+    commentEl.innerHTML = message;
 }
 
 function calculateWealthSummary(d) {
