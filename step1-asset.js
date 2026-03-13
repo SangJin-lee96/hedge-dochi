@@ -5,7 +5,6 @@ let wealthChart = null;
 let baseCurrency = 'KRW';
 let exchangeRate = 1350;
 
-// 환율 먼저 로드 후 초기화
 async function initExchangeRate() {
     try {
         const res = await fetch('/api/price?ticker=USDKRW=X');
@@ -13,9 +12,9 @@ async function initExchangeRate() {
         const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
         if (rate) {
             exchangeRate = rate;
-            console.log("실시간 환율 적용 완료:", exchangeRate);
+            console.log("환율 갱신:", exchangeRate);
         }
-    } catch (e) { console.error("환율 로드 실패, 기본값 사용"); }
+    } catch (e) {}
     restoreData();
 }
 
@@ -27,15 +26,19 @@ window.setCurrency = function(code) {
 };
 
 async function autoSaveData() {
-    const salary = parseFloat(document.getElementById('annualSalary')?.value) || 0;
-    const expense = parseFloat(document.getElementById('monthlyExpense')?.value) || 0;
+    const salaryVal = document.getElementById('annualSalary')?.value;
+    const expenseVal = document.getElementById('monthlyExpense')?.value;
+    
+    const salary = parseFloat(salaryVal) || 0;
+    const expense = parseFloat(expenseVal) || 0;
+    // 월 저축액 계산 (연봉/12 - 월지출)
     const monthlySavings = Math.max(0, Math.round((salary / 12) - expense));
 
     const data = {
         annualSalary: salary,
         initialSeed: parseFloat(document.getElementById('initialSeed')?.value) || 0,
         monthlyExpense: expense,
-        monthlySavings: monthlySavings, // 월 저축액 계산하여 저장
+        monthlySavings: monthlySavings,
         salaryGrowth: parseFloat(document.getElementById('salaryGrowth')?.value) || 0,
         investmentReturn: parseFloat(document.getElementById('investmentReturn')?.value) || 0,
         inflationRate: parseFloat(document.getElementById('inflationRate')?.value) || 0,
@@ -43,6 +46,7 @@ async function autoSaveData() {
         liveExchangeRate: exchangeRate
     };
     
+    // 유효한 데이터가 있을 때만 저장 (0 제외)
     if (salary > 0 || data.initialSeed > 0) {
         await saveProgress(1, data);
     }
@@ -75,11 +79,10 @@ function updateCalculation() {
     const realYearlyData = [seed];
 
     for (let year = 1; year <= 10; year++) {
-        const annualSavings = (salary - (expense * 12)) * Math.pow(1 + inflation, year - 1);
-        const profit = currentWealth * returns;
-        currentWealth = currentWealth + annualSavings + profit;
+        const annualSavings = (salary - (expense * 12)) * Math.pow(1 + (inflation / 2), year); // 보수적 저축액 증가율
+        currentWealth = currentWealth + annualSavings + (currentWealth * returns);
         yearlyData.push(Math.round(currentWealth));
-        realYearlyData.push(Math.round(currentWealth / Math.pow(1 + 0.03, year))); // 실질가치 3% 가정
+        realYearlyData.push(Math.round(currentWealth / Math.pow(1 + 0.03, year)));
     }
 
     document.getElementById('finalWealthText').innerText = formatValue(yearlyData[10]);

@@ -37,83 +37,47 @@ export function setupAuthUI() {
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
-                document.getElementById('loginBtn')?.classList.add('hidden');
-                const userProfile = document.getElementById('userProfile');
-                if (userProfile) {
-                    userProfile.classList.remove('hidden');
-                    const photo = document.getElementById('userPhoto');
-                    if (photo) photo.src = user.photoURL;
+                const snap = await getDoc(doc(db, "simulations", user.uid));
+                if (snap.exists()) {
+                    userProgress = Math.max(userProgress, snap.data().roadmapProgress || 1);
+                    localStorage.setItem('roadmapProgress', userProgress);
                 }
-                
-                try {
-                    const snap = await getDoc(doc(db, "simulations", user.uid));
-                    if (snap.exists()) {
-                        const dbProgress = snap.data().roadmapProgress || 1;
-                        userProgress = Math.max(userProgress, dbProgress);
-                        localStorage.setItem('roadmapProgress', userProgress);
-                    }
-                } catch (e) { console.error("Progress Load Error:", e); }
-            } else {
-                document.getElementById('loginBtn')?.classList.remove('hidden');
-                document.getElementById('userProfile')?.classList.add('hidden');
-                userProgress = parseInt(localStorage.getItem('roadmapProgress')) || 1;
             }
             isCoreReady = true;
             document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress } }));
             resolve({ user, userProgress });
         });
-
-        document.getElementById('loginBtn')?.addEventListener('click', () => {
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider).catch(console.error);
-        });
-        document.getElementById('logoutBtn')?.addEventListener('click', () => {
-            signOut(auth).then(() => {
-                localStorage.clear();
-                location.reload();
-            });
-        });
     });
 }
 
-// --- Roadmap Progress API ---
+// --- Robust Saving with Debounce Support ---
+let saveTimeout = null;
 export async function saveProgress(stepId, additionalData = {}) {
     userProgress = Math.max(userProgress, stepId);
     localStorage.setItem('roadmapProgress', userProgress);
     
-    // 비로그인 사용자 데이터도 로컬에 즉시 저장
     if (Object.keys(additionalData).length > 0) {
         localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
     }
 
     if (currentUser) {
-        try {
-            const docRef = doc(db, "simulations", currentUser.uid);
-            const snap = await getDoc(docRef);
-            
-            const payload = {
-                roadmapProgress: userProgress,
-                lastUpdated: new Date()
-            };
-
-            // 필드 업데이트 (점 표기법은 updateDoc에서만 계층 구조로 인식됨)
-            if (Object.keys(additionalData).length > 0) {
-                payload[`steps.step${stepId}`] = additionalData;
-            }
-
-            if (!snap.exists()) {
-                // 문서가 없으면 초기 구조와 함께 생성
-                await setDoc(docRef, {
-                    roadmapProgress: userProgress,
-                    steps: { [`step${stepId}`]: additionalData },
-                    lastUpdated: new Date()
-                });
-            } else {
-                // 문서가 있으면 updateDoc으로 계층 구조 업데이트
-                await updateDoc(docRef, payload);
-            }
-            console.log(`[HedgeDochi] Step ${stepId} Cloud Sync Success`);
-        } catch (e) { console.error("Cloud Save failed", e); }
+        // Debounce to prevent multiple Firestore writes
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(async () => {
+            try {
+                const docRef = doc(db, "simulations", currentUser.uid);
+                const snap = await getDoc(docRef);
+                const payload = { roadmapProgress: userProgress, lastUpdated: new Date() };
+                if (Object.keys(additionalData).length > 0) {
+                    payload[`steps.step${stepId}`] = additionalData;
+                }
+                if (!snap.exists()) {
+                    await setDoc(docRef, { ...payload, steps: { [`step${stepId}`]: additionalData } });
+                } else {
+                    await updateDoc(docRef, payload);
+                }
+            } catch (e) { console.error("Cloud Save failed", e); }
+        }, 500);
     }
 }
 
@@ -123,20 +87,12 @@ export async function getStepData(stepId) {
             const snap = await getDoc(doc(db, "simulations", currentUser.uid));
             if (snap.exists()) {
                 const data = snap.data();
-                // Firestore의 Map 구조 또는 평면화된 키 모두 대응
-                const result = (data.steps && data.steps[`step${stepId}`]) || data[`steps.step${stepId}`];
-                if (result) return result;
+                return data.steps?.[`step${stepId}`] || data[`steps.step${stepId}`] || null;
             }
-        } catch (e) { console.error(`Step ${stepId} load error`, e); }
+        } catch (e) { console.error(`Step ${stepId} Load Error`, e); }
     }
-    
-    // 서버 데이터가 없거나 비로그인 상태면 로컬 저장소 확인
     const localData = localStorage.getItem(`step${stepId}Data`);
     return localData ? JSON.parse(localData) : null;
-}
-
-export async function checkAuthAndGo(path, stepId) {
-    window.location.href = path;
 }
 
 export function goToNextStep(currentId) {
@@ -154,23 +110,10 @@ export function showToast(msg, type = 'info') {
     if (!t) {
         t = document.createElement('div'); t.id = 'hedge-toast'; document.body.appendChild(t);
         const style = document.createElement('style');
-        style.innerHTML = `
-            #hedge-toast {
-                position: fixed; bottom: 3rem; left: 50%; transform: translateX(-50%) translateY(100px);
-                background: rgba(15, 23, 42, 0.95); color: white; padding: 1rem 2.5rem;
-                border-radius: 9999px; font-weight: 800; font-size: 0.9rem; z-index: 9999;
-                transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                opacity: 0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
-                border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
-                display: flex; align-items: center; gap: 0.75rem; pointer-events: none;
-            }
-            #hedge-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-            #hedge-toast.success { border-color: rgba(16, 185, 129, 0.4); }
-        `;
+        style.innerHTML = `#hedge-toast { position: fixed; bottom: 3rem; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(15, 23, 42, 0.95); color: white; padding: 1rem 2.5rem; border-radius: 9999px; font-weight: 800; font-size: 0.9rem; z-index: 9999; transition: all 0.5s; opacity: 0; display: flex; align-items: center; gap: 0.75rem; pointer-events: none; } #hedge-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }`;
         document.head.appendChild(style);
     }
-    const icon = type === 'success' ? '✅' : 'ℹ️';
-    t.innerHTML = `<span>${icon}</span> ${msg}`;
+    t.innerHTML = `<span>${type === 'success' ? '✅' : 'ℹ️'}</span> ${msg}`;
     t.className = `show ${type}`;
     setTimeout(() => t.classList.remove('show'), 3000);
 }
