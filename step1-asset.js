@@ -107,8 +107,8 @@ window.calculateAndShowResult = async function() {
         baseCurrency: baseCurrency
     };
 
-    // 결과 확인 시점에 다음 단계(2단계)로 진척도 업데이트 및 데이터 저장
-    await saveProgress(2, simulationData);
+    // FIX: 2가 아니라 1번에 저장
+    await saveProgress(1, simulationData);
     showToast("진행 상황이 계정에 안전하게 저장되었습니다. ☁️", "success");
 };
 

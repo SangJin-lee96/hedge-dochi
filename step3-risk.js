@@ -61,8 +61,8 @@ window.selectOption = async function(score) {
     } else {
         const result = calculateResult(totalScore);
         showResult(result);
-        // 완료 시 4단계로 진척도 업데이트 및 데이터 저장
-        await saveProgress(4, result);
+        // FIX: 자신의 단계(3)에 데이터 저장
+        await saveProgress(3, result);
         saveRiskProfile(result.riskType, result.recommendedPortfolio);
     }
 };

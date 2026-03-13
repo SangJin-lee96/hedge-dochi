@@ -87,8 +87,8 @@ window.calculateCompound = async function() {
         finalProjectedWealth: currentWealth
     };
     
-    // 결과 확인 시점에 7단계로 진척도 업데이트
-    await saveProgress(7, compoundData);
+    // FIX: 7이 아니라 6번에 저장
+    await saveProgress(6, compoundData);
     showToast("복리 시뮬레이션 결과가 저장되었습니다. ⏳", "success");
 
     const actionContainer = document.querySelector('#step-3 .flex.flex-col') || document.querySelector('#step-3 .flex.justify-center');

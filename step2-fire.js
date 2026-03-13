@@ -96,8 +96,8 @@ window.calculateFire = async function() {
         inflationRate: inflRate * 100
     };
     
-    // 결과 확인 시점에 3단계로 업데이트
-    await saveProgress(3, fireData);
+    // FIX: 3이 아니라 2번에 저장
+    await saveProgress(2, fireData);
     showToast("은퇴 설계 결과가 저장되었습니다. 🏝️", "success");
 
     const actionContainer = document.querySelector('#step-4 .flex.flex-col') || document.querySelector('#step-4 .flex.flex-row');
