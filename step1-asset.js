@@ -7,30 +7,12 @@ let baseCurrency = 'KRW';
 let exchangeRate = 1350;
 
 window.goToStep = async function(step) {
-    if (step === 3 || step === 4) {
-        try {
-            const res = await fetch('/api/price?ticker=USDKRW=X');
-            const data = await res.json();
-            const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-            if (rate) {
-                const input = document.getElementById('manualExchangeRate');
-                if (input && step === 3 && !input.value) input.value = Math.round(rate);
-                exchangeRate = rate;
-            }
-        } catch (e) { console.error("환율 로드 실패", e); }
-    }
-
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
-    document.getElementById(`step-${step}`).classList.remove('hidden');
+    const target = document.getElementById(`step-${step}`);
+    if (target) target.classList.remove('hidden');
     
     document.querySelectorAll('.step-dot').forEach((dot, idx) => {
-        if (idx + 1 <= step) {
-            dot.classList.remove('bg-slate-200');
-            dot.classList.add('bg-blue-600');
-        } else {
-            dot.classList.remove('bg-blue-600');
-            dot.classList.add('bg-slate-200');
-        }
+        dot.className = `step-dot w-3 h-3 rounded-full transition-all ${idx + 1 <= step ? 'bg-blue-600' : 'bg-slate-200'}`;
     });
 
     currentStep = step;
@@ -48,33 +30,35 @@ window.setCurrency = function(code) {
     if (isUSD) {
         if (glider) glider.style.left = '4px';
         btnUsd?.classList.add('text-blue-600');
-        btnKrw?.classList.add('text-slate-400');
+        btnKrw?.classList.remove('text-blue-600');
         labels.forEach(l => l.innerText = 'USD');
     } else {
         if (glider) glider.style.left = '50%';
         btnKrw?.classList.add('text-blue-600');
-        btnUsd?.classList.add('text-slate-400');
+        btnUsd?.classList.remove('text-blue-600');
         labels.forEach(l => l.innerText = '만원');
     }
     autoSaveData();
 };
 
 async function autoSaveData() {
-    const simulationData = {
-        annualSalary: document.getElementById('annualSalary').value,
-        initialSeed: document.getElementById('initialSeed').value,
-        monthlyExpense: document.getElementById('monthlyExpense').value,
-        salaryGrowth: document.getElementById('salaryGrowth').value,
-        investmentReturn: document.getElementById('investmentReturn').value,
-        inflationRate: document.getElementById('inflationRate').value,
+    const data = {
+        annualSalary: document.getElementById('annualSalary')?.value || '',
+        initialSeed: document.getElementById('initialSeed')?.value || '',
+        monthlyExpense: document.getElementById('monthlyExpense')?.value || '',
+        salaryGrowth: document.getElementById('salaryGrowth')?.value || '',
+        investmentReturn: document.getElementById('investmentReturn')?.value || '',
+        inflationRate: document.getElementById('inflationRate')?.value || '',
         baseCurrency: baseCurrency
     };
-    await saveProgress(1, simulationData);
+    // 진척도를 올리지 않고 현재 데이터만 저장
+    if (data.annualSalary || data.initialSeed) {
+        await saveProgress(1, data);
+    }
 }
 
 window.calculateAndShowResult = async function() {
-    updateCalculation();
-    const simulationData = {
+    const data = {
         annualSalary: document.getElementById('annualSalary').value,
         initialSeed: document.getElementById('initialSeed').value,
         monthlyExpense: document.getElementById('monthlyExpense').value,
@@ -83,7 +67,8 @@ window.calculateAndShowResult = async function() {
         inflationRate: document.getElementById('inflationRate').value,
         baseCurrency: baseCurrency
     };
-    await saveProgress(1, simulationData);
+    await saveProgress(1, data);
+    updateCalculation();
     goToStep(4);
 };
 
@@ -96,39 +81,30 @@ function updateCalculation() {
     const inflationRate = (parseFloat(document.getElementById('inflationRate').value) || 0) / 100;
 
     let currentWealth = initialSeed;
-    let currentWealthCons = initialSeed;
-    let currentWealthOpt = initialSeed;
     let curSalary = annualSalary;
     let curExpense = monthlyExpense;
     
     const yearlyData = [initialSeed];
     const realYearlyData = [initialSeed];
-    const yearlyDataCons = [initialSeed];
-    const yearlyDataOpt = [initialSeed];
 
     for (let year = 1; year <= 10; year++) {
         const surplus = curSalary - (curExpense * 12);
         const profit = (currentWealth + surplus / 2) * investmentReturn;
         currentWealth = currentWealth + surplus + profit;
-        
-        currentWealthCons = currentWealthCons + surplus + ((currentWealthCons + surplus / 2) * Math.max(0, investmentReturn - 0.02));
-        currentWealthOpt = currentWealthOpt + surplus + ((currentWealthOpt + surplus / 2) * (investmentReturn + 0.02));
-        
         curSalary *= (1 + salaryGrowth);
         curExpense *= (1 + inflationRate);
-        
         yearlyData.push(Math.round(currentWealth));
-        yearlyDataCons.push(Math.round(currentWealthCons));
-        yearlyDataOpt.push(Math.round(currentWealthOpt));
-        
         const realVal = currentWealth / Math.pow(1 + (baseCurrency === 'KRW' ? inflationRate : 0.03), year);
         realYearlyData.push(Math.round(realVal));
     }
 
-    document.getElementById('finalWealthText').innerText = formatValue(yearlyData[10]);
-    document.getElementById('realValueText').innerText = formatValue(realYearlyData[10]);
+    const finalWealthEl = document.getElementById('finalWealthText');
+    const realValueEl = document.getElementById('realValueText');
+    if (finalWealthEl) finalWealthEl.innerText = formatValue(yearlyData[10]);
+    if (realValueEl) realValueEl.innerText = formatValue(realYearlyData[10]);
+    
     updateWealthTier(realYearlyData[10]);
-    renderChart(yearlyData, realYearlyData, yearlyDataCons, yearlyDataOpt);
+    renderChart(yearlyData, realYearlyData);
 }
 
 function updateWealthTier(realWealth) {
@@ -140,21 +116,26 @@ function updateWealthTier(realWealth) {
     else if (val >= 50000) { tier = "골드"; icon = "🥇"; color = "from-amber-400 to-orange-600"; }
     else if (val >= 20000) { tier = "실버"; icon = "🥈"; color = "from-slate-300 to-slate-500"; }
 
-    document.getElementById('gradeTitle').innerText = tier;
-    document.getElementById('gradeBadgeIcon').innerText = icon;
-    document.getElementById('gradeSection').className = `capture-area bg-gradient-to-br ${color} p-10 md:p-16 rounded-[3rem] shadow-2xl text-center text-white relative overflow-hidden`;
+    const titleEl = document.getElementById('gradeTitle');
+    const badgeEl = document.getElementById('gradeBadgeIcon');
+    const sectionEl = document.getElementById('gradeSection');
+    if (titleEl) titleEl.innerText = tier;
+    if (badgeEl) badgeEl.innerText = icon;
+    if (sectionEl) sectionEl.className = `capture-area bg-gradient-to-br ${color} p-10 md:p-16 rounded-[3rem] shadow-2xl text-center text-white relative overflow-hidden`;
     
-    const container = document.getElementById('step1-actions');
-    if (container) {
-        container.innerHTML = `
+    const actionContainer = document.getElementById('step1-actions');
+    if (actionContainer) {
+        actionContainer.innerHTML = `
             <button onclick="goToNextStep(1)" class="w-full py-5 bg-white text-indigo-600 font-black rounded-2xl shadow-xl hover:scale-105 transition-all text-lg mb-4">2단계 은퇴 목표 설정하기 ➔</button>
             <button onclick="goToStep(1)" class="w-full py-4 bg-white/20 text-white font-bold rounded-2xl hover:bg-white/30 transition-all text-sm">데이터 다시 수정하기</button>
         `;
     }
 }
 
-function renderChart(nominalData, realData, consData, optData) {
-    const ctx = document.getElementById('wealthChart').getContext('2d');
+function renderChart(nominalData, realData) {
+    const ctxEl = document.getElementById('wealthChart');
+    if (!ctxEl) return;
+    const ctx = ctxEl.getContext('2d');
     if (wealthChart) wealthChart.destroy();
     wealthChart = new Chart(ctx, {
         type: 'line',
@@ -174,25 +155,25 @@ function formatValue(val) {
     return '$' + Math.round(val).toLocaleString();
 }
 
-document.addEventListener('coreDataReady', async () => {
+async function restoreData() {
     const data = await getStepData(1);
     if (data) {
-        document.getElementById('annualSalary').value = data.annualSalary || '';
-        document.getElementById('initialSeed').value = data.initialSeed || '';
-        document.getElementById('monthlyExpense').value = data.monthlyExpense || '';
-        document.getElementById('salaryGrowth').value = data.salaryGrowth || '';
-        document.getElementById('investmentReturn').value = data.investmentReturn || '';
-        document.getElementById('inflationRate').value = data.inflationRate || '';
+        const fields = ['annualSalary', 'initialSeed', 'monthlyExpense', 'salaryGrowth', 'investmentReturn', 'inflationRate'];
+        fields.forEach(f => {
+            const el = document.getElementById(f);
+            if (el) el.value = data[f] || '';
+        });
         if (data.baseCurrency) setCurrency(data.baseCurrency);
-        
-        // 데이터가 충분히 있다면 결과 화면 즉시 표시
         if (data.annualSalary && data.initialSeed) {
             updateCalculation();
             goToStep(4);
         }
     }
-});
+}
+
+document.addEventListener('coreDataReady', restoreData);
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('input').forEach(i => i.addEventListener('change', autoSaveData));
+    // 실시간 저장을 위해 input 이벤트 사용
+    document.querySelectorAll('input').forEach(i => i.addEventListener('input', autoSaveData));
 });

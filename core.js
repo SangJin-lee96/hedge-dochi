@@ -81,28 +81,39 @@ export async function saveProgress(stepId, additionalData = {}) {
     userProgress = Math.max(userProgress, stepId);
     localStorage.setItem('roadmapProgress', userProgress);
     
+    // 비로그인 사용자 데이터도 로컬에 즉시 저장
+    if (Object.keys(additionalData).length > 0) {
+        localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
+    }
+
     if (currentUser) {
         try {
             const docRef = doc(db, "simulations", currentUser.uid);
+            const snap = await getDoc(docRef);
             
-            // 핵심 수정: 점(.) 표기법을 사용하여 steps 내부의 특정 스텝 데이터만 업데이트 (다른 스텝 보존)
-            const updateObj = {
+            const payload = {
                 roadmapProgress: userProgress,
                 lastUpdated: new Date()
             };
-            
+
+            // 필드 업데이트 (점 표기법은 updateDoc에서만 계층 구조로 인식됨)
             if (Object.keys(additionalData).length > 0) {
-                updateObj[`steps.step${stepId}`] = additionalData;
+                payload[`steps.step${stepId}`] = additionalData;
             }
-            
-            // setDoc merge: true 대신 updateDoc 사용 또는 setDoc의 필드 경로 지정
-            await setDoc(docRef, updateObj, { merge: true });
-            console.log(`Step ${stepId} data synchronized with Firebase.`);
-        } catch (e) { console.error("Save progress failed", e); }
-    } else {
-        if (Object.keys(additionalData).length > 0) {
-            localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
-        }
+
+            if (!snap.exists()) {
+                // 문서가 없으면 초기 구조와 함께 생성
+                await setDoc(docRef, {
+                    roadmapProgress: userProgress,
+                    steps: { [`step${stepId}`]: additionalData },
+                    lastUpdated: new Date()
+                });
+            } else {
+                // 문서가 있으면 updateDoc으로 계층 구조 업데이트
+                await updateDoc(docRef, payload);
+            }
+            console.log(`[HedgeDochi] Step ${stepId} Cloud Sync Success`);
+        } catch (e) { console.error("Cloud Save failed", e); }
     }
 }
 
@@ -112,17 +123,16 @@ export async function getStepData(stepId) {
             const snap = await getDoc(doc(db, "simulations", currentUser.uid));
             if (snap.exists()) {
                 const data = snap.data();
-                // steps 오브젝트 내부와 과거의 점(.) 포함 키 모두 체크
-                if (data.steps && data.steps[`step${stepId}`]) return data.steps[`step${stepId}`];
-                if (data[`steps.step${stepId}`]) return data[`steps.step${stepId}`];
-                return null;
+                // Firestore의 Map 구조 또는 평면화된 키 모두 대응
+                const result = (data.steps && data.steps[`step${stepId}`]) || data[`steps.step${stepId}`];
+                if (result) return result;
             }
         } catch (e) { console.error(`Step ${stepId} load error`, e); }
-    } else {
-        const localData = localStorage.getItem(`step${stepId}Data`);
-        return localData ? JSON.parse(localData) : null;
     }
-    return null;
+    
+    // 서버 데이터가 없거나 비로그인 상태면 로컬 저장소 확인
+    const localData = localStorage.getItem(`step${stepId}Data`);
+    return localData ? JSON.parse(localData) : null;
 }
 
 export async function checkAuthAndGo(path, stepId) {
