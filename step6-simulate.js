@@ -4,6 +4,16 @@ import { db, currentUser, showToast, saveProgress, goToNextStep, getStepData } f
 // --- State Management ---
 let currentStep = 1;
 
+async function autoSaveData() {
+    const compoundData = {
+        compoundSeed: parseFloat(document.getElementById('c-seed').value) || 0,
+        monthlySavings: parseFloat(document.getElementById('c-monthly').value) || 0,
+        compoundRate: parseFloat(document.getElementById('c-rate').value) || 5.0,
+        compoundPeriod: parseInt(document.getElementById('c-period').value) || 10
+    };
+    await saveProgress(6, compoundData);
+}
+
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
     if (user) {
@@ -20,7 +30,7 @@ document.addEventListener('coreDataReady', async (e) => {
         if (document.getElementById('c-monthly')) document.getElementById('c-monthly').value = d.monthlySavings || 50;
         if (document.getElementById('c-period')) document.getElementById('c-period').value = d.compoundPeriod || 10;
 
-        if (step6Data && currentStep !== 3 && confirm("이전에 시뮬레이션한 복리 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) {
+        if (step6Data && currentStep !== 3 && confirm("이전에 시뮬레이션하던 복리 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) {
             calculateCompound();
         }
     }
@@ -69,7 +79,6 @@ window.calculateCompound = async function() {
     
     renderTable(yearlyData);
     
-    // Save progress and simulation data
     const compoundData = {
         compoundSeed: seed,
         monthlySavings: monthly,
@@ -78,10 +87,10 @@ window.calculateCompound = async function() {
         finalProjectedWealth: currentWealth
     };
     
-    saveProgress(7, compoundData);
+    // 결과 확인 시점에 7단계로 진척도 업데이트
+    await saveProgress(7, compoundData);
     showToast("복리 시뮬레이션 결과가 저장되었습니다. ⏳", "success");
 
-    // Set up the Next Step button for the curriculum
     const actionContainer = document.querySelector('#step-3 .flex.flex-col') || document.querySelector('#step-3 .flex.justify-center');
     if (actionContainer) {
         actionContainer.innerHTML = `
@@ -102,35 +111,12 @@ window.proceedToCurriculumStep7 = function() {
     goToNextStep(6);
 };
 
-async function syncToGlobalProfile(seed, rate) {
-    if (!currentUser) return;
-    try {
-        await setDoc(doc(db, "simulations", currentUser.uid), {
-            initialSeed: seed,
-            investmentReturn: rate,
-            lastUpdated: new Date()
-        }, { merge: true });
-    } catch (e) {}
-}
-
-async function saveCompoundData(seed, monthly, rate, period) {
-    try {
-        await setDoc(doc(db, "compound_settings", currentUser.uid), {
-            seed, monthly, rate, period, updatedAt: new Date()
-        }, { merge: true });
-    } catch (e) { console.error(e); }
-}
-
 window.copyCompoundResult = function() {
     const total = document.getElementById('totalCompoundResult').innerText;
     const profit = document.getElementById('totalProfitResult').innerText;
     const accel = document.getElementById('profitRatio').innerText;
-
-    const text = `⏳ Hedge Dochi 복리의 마법 리포트 ⏳\n\n💰 최종 자산: ${total}\n📈 ${profit}\n🚀 복리 가속도: ${accel}\n\n📍 당신의 적립식 투자 미래를 지금 확인해보세요!\n👉 https://hedge-dochi-live.pages.dev/compound.html`;
-
-    navigator.clipboard.writeText(text).then(() => {
-        showToast("결과 리포트가 클립보드에 복사되었습니다! 🚀");
-    });
+    const text = `⏳ Hedge Dochi 복리의 마법 리포트 ⏳\n💰 최종 자산: ${total}\n📈 ${profit}\n🚀 복리 가속도: ${accel}\n👉 https://hedge-dochi-live.pages.dev/`;
+    navigator.clipboard.writeText(text).then(() => showToast("결과 리포트가 클립보드에 복사되었습니다! 🚀"));
 };
 
 function renderTable(data) {
@@ -139,12 +125,7 @@ function renderTable(data) {
     data.forEach(row => {
         const tr = document.createElement('tr');
         tr.className = "border-b dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors";
-        tr.innerHTML = `
-            <td class="py-4 text-slate-400">${row.year}년차</td>
-            <td class="py-4 font-bold">${formatKorean(row.principal)}</td>
-            <td class="py-4 text-emerald-500 font-bold">+${formatKorean(row.profit)}</td>
-            <td class="py-4 text-right text-slate-800 dark:text-slate-200 font-bold">${formatKorean(row.total)}</td>
-        `;
+        tr.innerHTML = `<td class="py-4 text-slate-400">${row.year}년차</td><td class="py-4 font-bold">${formatKorean(row.principal)}</td><td class="py-4 text-emerald-500 font-bold">+${formatKorean(row.profit)}</td><td class="py-4 text-right text-slate-800 dark:text-slate-200 font-bold">${formatKorean(row.total)}</td>`;
         tbody.appendChild(tr);
     });
 }
@@ -153,5 +134,11 @@ function formatKorean(val) {
     if (val >= 10000) return (val / 10000).toFixed(1) + '억';
     return Math.round(val).toLocaleString() + '만';
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', autoSaveData);
+    });
+});
 
 goToStep(1);

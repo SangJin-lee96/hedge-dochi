@@ -9,6 +9,15 @@ let exchangeRate = 1350;
 let assets = [];
 let chart = null;
 
+async function autoSaveData() {
+    if (!currentUser) return;
+    const totalInvestment = document.getElementById('totalInvestment')?.value || 0;
+    const portfolioData = { assets, baseCurrency, totalInvestment, lastUpdated: new Date() };
+    // Always save to both Step 8 data and the shared 'portfolios' collection
+    await setDoc(doc(db, "portfolios", currentUser.uid), portfolioData, { merge: true });
+    await saveProgress(8, portfolioData);
+}
+
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
     if (user) {
@@ -73,6 +82,7 @@ window.setCurrency = function(code) {
         btnUsd?.classList.add('text-slate-400');
         btnUsd?.classList.remove('text-blue-600');
     }
+    autoSaveData();
 };
 
 window.resetToLiveExchangeRate = function() {
@@ -137,11 +147,13 @@ window.addAsset = function(initialData = { ticker: '', qty: 0, price: 0 }) {
     const id = Date.now() + Math.random();
     assets.push({ id, ...initialData });
     renderAssets();
+    autoSaveData();
 };
 
 window.removeAsset = function(id) {
     assets = assets.filter(a => a.id !== id);
     renderAssets();
+    autoSaveData();
 };
 
 window.quickAdd = async function(ticker) {
@@ -156,6 +168,7 @@ window.quickAdd = async function(ticker) {
 window.updateAsset = function(id, key, val) {
     const asset = assets.find(a => a.id === id);
     if (asset) asset[key] = key === 'ticker' ? val.toUpperCase() : parseFloat(val);
+    autoSaveData();
 };
 
 function renderAssets() {
@@ -197,12 +210,12 @@ window.updateWeight = function(id, val) {
     const asset = assets.find(a => a.id === id);
     if (asset) asset.targetWeight = parseInt(val);
     renderWeights();
+    autoSaveData();
 };
 
 window.applyModel = function(modelType) {
     if (assets.length === 0) { showToast("먼저 자산을 하나 이상 추가해주세요."); return; }
 
-    let targetWeights = [];
     if (modelType === 'ALL_WEATHER') {
         const counts = [0.3, 0.55, 0.15];
         assets.forEach((a, i) => a.targetWeight = Math.round(counts[i % 3] / Math.ceil(assets.length/3) * 100));
@@ -220,6 +233,7 @@ window.applyModel = function(modelType) {
     }
 
     renderWeights();
+    autoSaveData();
     if (window.showToast) window.showToast(`'${modelType}' 모델 비중이 적용되었습니다. 🎯`);
 };
 
@@ -274,7 +288,7 @@ window.calculateRebalance = async function() {
         renderChart(processedAssets);
         updateHealthScore(processedAssets, totalValueInBase);
         goToStep(4);
-        saveDataToFirebase();
+        autoSaveData();
         if (btnText && btnSpinner) { btnText.classList.remove('hidden'); btnSpinner.classList.add('hidden'); }
     }, 800);
 };
@@ -330,18 +344,9 @@ window.proceedToCurriculumStepHub = function() {
 
 window.copyRebalanceResult = function() {
     const score = document.getElementById('healthScore').innerText;
-    const text = `⚖️ Hedge Dochi 리밸런싱 리포트 ⚖️\n📊 포트폴리오 건강 점수: ${score}점\n\n📍 실시간 환율 반영, 나의 포트폴리오 진단하기\n👉 https://hedge-dochi-live.pages.dev/step8-rebalance.html`;
+    const text = `⚖️ Hedge Dochi 리밸런싱 리포트 ⚖️\n📊 포트폴리오 건강 점수: ${score}점\n\n📍 실시간 환율 반영, 나의 포트폴리오 진단하기\n👉 https://hedge-dochi-live.pages.dev/`;
     navigator.clipboard.writeText(text).then(() => showToast("결과가 복사되었습니다! 🚀"));
 };
-
-// --- Firebase Saving ---
-async function saveDataToFirebase() {
-    if (!currentUser) return;
-    const totalInvestment = document.getElementById('totalInvestment')?.value || 0;
-    const portfolioData = { assets, baseCurrency, totalInvestment, lastUpdated: new Date() };
-    await setDoc(doc(db, "portfolios", currentUser.uid), portfolioData, { merge: true });
-    await saveProgress(8, portfolioData);
-}
 
 window.showToast = function(msg) {
     let t = document.getElementById('toast');
@@ -349,6 +354,12 @@ window.showToast = function(msg) {
     t.innerText = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', autoSaveData);
+    });
+});
 
 // --- Init ---
 (async () => {

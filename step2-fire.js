@@ -4,6 +4,17 @@ import { db, currentUser, goToNextStep, saveProgress, showToast, getStepData } f
 let currentStep = 1;
 let fireChart = null;
 
+async function autoSaveData() {
+    const fireData = {
+        monthlyExpense: parseFloat(document.getElementById('f-expense').value) || 200,
+        initialSeed: parseFloat(document.getElementById('f-seed').value) || 0,
+        annualSave: parseFloat(document.getElementById('f-annual-save').value) || 0,
+        investmentReturn: parseFloat(document.getElementById('f-rate').value) || 5.0,
+        inflationRate: parseFloat(document.getElementById('f-inflation').value) || 2.5
+    };
+    await saveProgress(2, fireData);
+}
+
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
     if (user) {
@@ -26,7 +37,7 @@ document.addEventListener('coreDataReady', async (e) => {
         if (document.getElementById('f-rate')) document.getElementById('f-rate').value = d.investmentReturn || s1.investmentReturn || 5.0;
         if (document.getElementById('f-inflation')) document.getElementById('f-inflation').value = d.inflationRate || s1.inflationRate || 2.5;
 
-        if (step2Data && currentStep !== 4 && confirm("이전에 설계한 은퇴 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) {
+        if (step2Data && currentStep !== 4 && confirm("이전에 설계하던 은퇴 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) {
             calculateFire();
         }
     }
@@ -77,7 +88,6 @@ window.calculateFire = async function() {
     renderAdvice(years);
     renderFireChart(chartLabels, chartData);
     
-    // Save data immediately
     const fireData = {
         monthlyExpense: targetIncome,
         initialSeed: seed,
@@ -85,6 +95,8 @@ window.calculateFire = async function() {
         investmentReturn: returnRate * 100,
         inflationRate: inflRate * 100
     };
+    
+    // 결과 확인 시점에 3단계로 업데이트
     await saveProgress(3, fireData);
     showToast("은퇴 설계 결과가 저장되었습니다. 🏝️", "success");
 
@@ -141,5 +153,11 @@ window.copyFireResult = function() {
 function formatKorean(val) {
     return val >= 10000 ? (val / 10000).toFixed(1) + '억' : Math.round(val).toLocaleString() + '만';
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', autoSaveData);
+    });
+});
 
 window.goToStep(1);

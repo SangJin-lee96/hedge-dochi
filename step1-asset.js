@@ -1,5 +1,5 @@
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, goToNextStep, saveProgress, showToast } from './core.js';
+import { db, currentUser, goToNextStep, saveProgress, showToast, getStepData } from './core.js';
 
 let currentStep = 1;
 let wealthChart = null;
@@ -65,7 +65,22 @@ window.setCurrency = function(code) {
         btnUsd?.classList.add('text-slate-400');
         labels.forEach(l => l.innerText = '만원');
     }
+    autoSaveData();
 };
+
+async function autoSaveData() {
+    const simulationData = {
+        annualSalary: document.getElementById('annualSalary').value,
+        initialSeed: document.getElementById('initialSeed').value,
+        monthlyExpense: document.getElementById('monthlyExpense').value,
+        salaryGrowth: document.getElementById('salaryGrowth').value,
+        investmentReturn: document.getElementById('investmentReturn').value,
+        inflationRate: document.getElementById('inflationRate').value,
+        baseCurrency: baseCurrency
+    };
+    // 현재 입력값 즉시 저장 (진척도는 유지)
+    await saveProgress(1, simulationData);
+}
 
 function formatValue(val) {
     if (baseCurrency === 'KRW') {
@@ -82,7 +97,6 @@ window.calculateAndShowResult = async function() {
     updateCalculation();
     goToStep(4);
     
-    // 즉시 저장 로직 실행
     const simulationData = {
         annualSalary: document.getElementById('annualSalary').value,
         initialSeed: document.getElementById('initialSeed').value,
@@ -93,13 +107,13 @@ window.calculateAndShowResult = async function() {
         baseCurrency: baseCurrency
     };
 
-    // 로드맵 진행 상황을 2단계로 업데이트하며 모든 데이터 저장
+    // 결과 확인 시점에 다음 단계(2단계)로 진척도 업데이트 및 데이터 저장
     await saveProgress(2, simulationData);
     showToast("진행 상황이 계정에 안전하게 저장되었습니다. ☁️", "success");
 };
 
 window.proceedToCurriculumStep2 = function() {
-    goToNextStep(1); // 1단계 완료 처리 후 2단계 이동
+    goToNextStep(1); 
 };
 
 function updateCalculation() {
@@ -264,7 +278,7 @@ document.addEventListener('coreDataReady', async (e) => {
         if (d.inflationRate) document.getElementById('inflationRate').value = d.inflationRate;
         if (d.baseCurrency) setCurrency(d.baseCurrency);
         
-        if (currentStep !== 4 && confirm("이전에 시뮬레이션한 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) {
+        if (currentStep !== 4 && confirm("이전에 입력하던 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) {
             calculateAndShowResult();
         }
     }
@@ -299,6 +313,10 @@ window.toggleYearlyTable = function() {
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchMarketData();
+    // Add auto-save to all inputs
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', autoSaveData);
+    });
     const obs = new MutationObserver(() => { if (currentStep === 4) updateCalculation(); });
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 });

@@ -47,11 +47,16 @@ export function setupAuthUI() {
                     document.getElementById('userPhoto').src = user.photoURL;
                 }
                 
+                // Fast local load
+                const cachedProgress = localStorage.getItem(`progress_${user.uid}`);
+                if (cachedProgress) userProgress = parseInt(cachedProgress);
+
                 // Fetch progress from Firebase
                 try {
                     const snap = await getDoc(doc(db, "simulations", user.uid));
                     if (snap.exists()) {
                         userProgress = snap.data().roadmapProgress || 1;
+                        localStorage.setItem(`progress_${user.uid}`, userProgress);
                     }
                 } catch (e) { console.error("Failed to load progress:", e); }
                 
