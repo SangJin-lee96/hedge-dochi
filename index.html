@@ -28,24 +28,21 @@
         .step-card.locked { opacity: 0.6; filter: grayscale(0.8); cursor: not-allowed; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        .loading-spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="min-h-screen relative overflow-x-hidden transition-colors">
-    <div class="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden pointer-events-none">
-        <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-400/10 blur-[120px]"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-400/10 blur-[120px]"></div>
-    </div>
-
     <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b bg-white/70 dark:bg-slate-900/70 border-slate-100 dark:border-slate-800">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
-                <span class="text-xl">💎</span>
-                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
+                <span class="text-xl">💎</span><span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
             </div>
             <nav class="flex items-center gap-3">
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors text-slate-500 dark:text-slate-400">🌙</button>
                 <div id="authContainer">
-                    <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-colors hidden">구글 로그인</button>
+                    <!-- 초기 상태를 hidden이 아닌 로딩 중으로 표시 -->
+                    <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-all">구글 로그인</button>
                     <div id="userProfile" class="hidden flex items-center gap-2">
                         <img id="userPhoto" src="" alt="Profile" class="w-8 h-8 rounded-full border border-slate-200">
                         <button id="logoutBtn" class="text-xs text-slate-500 font-semibold transition-colors hover:text-blue-600">로그아웃</button>
@@ -57,99 +54,69 @@
 
     <section class="pt-20 pb-16 px-4 text-center max-w-4xl mx-auto animate-fade-in-up">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-black uppercase tracking-widest mb-6">
-            <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
             Financial Freedom Roadmap
         </div>
         <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-[1.2] mb-6">
-            투자의 길을 잃었다면,<br>
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">8단계 커리큘럼</span>을 따라오세요.
         </h1>
-        <p class="text-lg text-slate-500 font-medium mb-10 leading-relaxed">
-            나의 현재 자산 진단부터 실전 포트폴리오 리밸런싱까지.<br class="hidden md:block">
-            Hedge Dochi가 제안하는 가장 데이터 기반적이고 합리적인 투자 여정입니다.
-        </p>
         
-        <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-xl inline-block w-full max-w-md">
+        <div class="mt-10 p-8 rounded-[2.5rem] bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-2xl inline-block w-full max-w-md relative overflow-hidden">
             <div class="flex items-center justify-between mb-4">
-                <span class="text-sm font-bold text-slate-500 dark:text-slate-400">나의 커리큘럼 진행률</span>
-                <span id="progress-text" class="text-lg font-black text-blue-600">불러오는 중...</span>
+                <span class="text-sm font-bold text-slate-500">나의 진행률</span>
+                <span id="progress-text" class="text-lg font-black text-blue-600">0%</span>
             </div>
-            <div class="h-4 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-6">
-                <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-1000 w-0"></div>
+            <div class="h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-8">
+                <div id="progress-bar" class="h-full bg-blue-600 transition-all duration-1000 w-0"></div>
             </div>
-            <button id="resumeBtn" class="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-lg hover:scale-[1.02] transition-transform opacity-50 cursor-wait" disabled>
-                진행 상황 확인 중...
+            <button id="resumeBtn" class="w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-xl flex items-center justify-center gap-3 hover:scale-[1.02] transition-all">
+                <div id="btn-spinner" class="loading-spinner"></div>
+                <span id="btn-text">진행 상황 확인 중...</span>
             </button>
         </div>
     </section>
 
     <main class="py-12 px-4 max-w-6xl mx-auto mb-20 animate-fade-in-up" style="animation-delay: 0.2s;">
-        <h2 class="text-2xl font-black mb-8 px-2">🚀 단계별 학습 및 실행 도구</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="roadmapGrid"></div>
     </main>
 
-    <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
-        <div class="flex justify-center space-x-6 font-bold mb-4">
-            <a href="about.html" class="hover:text-blue-600">소개</a>
-            <a href="tos.html" class="hover:text-blue-600">이용약관</a>
-            <a href="privacy.html" class="hover:text-blue-600">개인정보처리방침</a>
-            <a href="contact-form.html" class="hover:text-blue-600">문의</a>
-        </div>
-        <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
-    </footer>
-
     <script src="dark-mode.js"></script>
     <script type="module">
-        import { ROADMAP_STEPS, isCoreReady, userProgress, checkAuthAndGo, showToast } from './core.js';
+        import { ROADMAP_STEPS, userProgress, checkAuthAndGo, showToast } from './core.js';
 
-        function renderGrid(progress) {
+        function updateUI(progress) {
             const grid = document.getElementById('roadmapGrid');
             grid.innerHTML = ROADMAP_STEPS.map((step) => {
                 const isLocked = step.id > progress;
                 const isCompleted = step.id < progress;
-                const isCurrent = step.id === progress;
-                let statusBadge = isCompleted ? '<span class="absolute top-4 right-4 text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md">완료 ✓</span>' : 
-                                  isCurrent ? '<span class="absolute top-4 right-4 text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-md animate-pulse">진행 중</span>' : 
-                                  '<span class="absolute top-4 right-4 text-xs font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-md dark:bg-slate-700">잠김 🔒</span>';
-
                 return `
-                    <div class="step-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 rounded-3xl ${isLocked ? 'locked' : 'cursor-pointer hover:border-blue-500'}" id="step-card-${step.id}">
-                        ${statusBadge}
-                        <div class="w-12 h-12 bg-slate-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner">${step.icon}</div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">STEP ${step.id}</p>
-                        <h3 class="text-lg font-bold mb-2 text-slate-800 dark:text-white">${step.title}</h3>
-                        <p class="text-sm text-slate-500 leading-relaxed">${step.desc}</p>
+                    <div class="step-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 rounded-3xl ${isLocked ? 'locked' : 'cursor-pointer hover:border-blue-500'}" onclick="${isLocked ? '' : `location.href='${step.path}'`}">
+                        ${isCompleted ? '<span class="absolute top-4 right-4 text-[10px] font-black bg-emerald-100 text-emerald-600 px-2 py-1 rounded">완료</span>' : ''}
+                        <div class="text-2xl mb-4">${step.icon}</div>
+                        <p class="text-[10px] font-black text-slate-400 mb-1">STEP ${step.id}</p>
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white">${step.title}</h3>
                     </div>
                 `;
             }).join('');
 
-            ROADMAP_STEPS.forEach(step => {
-                const el = document.getElementById(`step-card-${step.id}`);
-                if (el && step.id <= progress) el.onclick = () => checkAuthAndGo(step.path, step.id);
-                else if (el) el.onclick = () => showToast('이전 단계를 먼저 완료해주세요!');
-            });
-            
             const percent = Math.min(100, Math.round(((progress - 1) / ROADMAP_STEPS.length) * 100));
-            document.getElementById('progress-text').innerText = `${percent}% 완료`;
+            document.getElementById('progress-text').innerText = `${percent}%`;
             document.getElementById('progress-bar').style.width = `${percent}%`;
             
             const resumeBtn = document.getElementById('resumeBtn');
             const targetStep = ROADMAP_STEPS.find(s => s.id === progress) || ROADMAP_STEPS[0];
-            resumeBtn.disabled = false;
-            resumeBtn.classList.remove('opacity-50', 'cursor-wait');
-            resumeBtn.onclick = () => checkAuthAndGo(targetStep.path, targetStep.id);
-            resumeBtn.innerText = progress > 1 ? `${targetStep.id}단계 이어서 하기 ➔` : '1단계 시작하기 ➔';
+            
+            document.getElementById('btn-spinner').classList.add('hidden');
+            document.getElementById('btn-text').innerText = progress > 1 ? `${targetStep.id}단계 이어서 하기 ➔` : '1단계 시작하기 ➔';
+            resumeBtn.onclick = () => location.href = targetStep.path;
         }
 
-        // Check cache immediately for snappy feel
+        // 캐시 데이터로 즉시 1차 렌더링
         const cached = parseInt(localStorage.getItem('roadmapProgress')) || 1;
-        renderGrid(cached);
+        updateUI(cached);
 
+        // Firebase 데이터 로드 완료 시 2차 업데이트
         document.addEventListener('coreDataReady', (e) => {
-            renderGrid(e.detail.userProgress);
+            updateUI(e.detail.userProgress);
         });
     </script>
 </body>

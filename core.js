@@ -36,21 +36,59 @@ export function setupAuthUI() {
     return new Promise((resolve) => {
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
+            const loginBtn = document.getElementById('loginBtn');
+            const userProfile = document.getElementById('userProfile');
+            
             if (user) {
-                const snap = await getDoc(doc(db, "simulations", user.uid));
-                if (snap.exists()) {
-                    userProgress = Math.max(userProgress, snap.data().roadmapProgress || 1);
-                    localStorage.setItem('roadmapProgress', userProgress);
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (userProfile) {
+                    userProfile.classList.remove('hidden');
+                    const photo = document.getElementById('userPhoto');
+                    if (photo) photo.src = user.photoURL;
                 }
+                
+                try {
+                    const snap = await getDoc(doc(db, "simulations", user.uid));
+                    if (snap.exists()) {
+                        userProgress = Math.max(userProgress, snap.data().roadmapProgress || 1);
+                        localStorage.setItem('roadmapProgress', userProgress);
+                    }
+                } catch (e) { console.error("Progress Load Error:", e); }
+            } else {
+                // 비로그인 상태면 로그인 버튼을 명확히 노출
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (userProfile) userProfile.classList.add('hidden');
+                userProgress = parseInt(localStorage.getItem('roadmapProgress')) || 1;
             }
+            
             isCoreReady = true;
             document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress } }));
             resolve({ user, userProgress });
         });
+
+        // 전역 클릭 이벤트 핸들러 등록
+        document.getElementById('loginBtn')?.addEventListener('click', loginWithGoogle);
+        document.getElementById('logoutBtn')?.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                localStorage.clear();
+                location.reload();
+            });
+        });
     });
 }
 
-// --- Robust Saving with Debounce Support ---
+export async function loginWithGoogle() {
+    try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        return result.user;
+    } catch (e) {
+        console.error("Login failed:", e);
+        showToast("로그인에 실패했습니다.");
+        return null;
+    }
+}
+
 let saveTimeout = null;
 export async function saveProgress(stepId, additionalData = {}) {
     userProgress = Math.max(userProgress, stepId);
@@ -61,7 +99,6 @@ export async function saveProgress(stepId, additionalData = {}) {
     }
 
     if (currentUser) {
-        // Debounce to prevent multiple Firestore writes
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(async () => {
             try {
@@ -89,10 +126,23 @@ export async function getStepData(stepId) {
                 const data = snap.data();
                 return data.steps?.[`step${stepId}`] || data[`steps.step${stepId}`] || null;
             }
-        } catch (e) { console.error(`Step ${stepId} Load Error`, e); }
+        } catch (e) {}
     }
     const localData = localStorage.getItem(`step${stepId}Data`);
     return localData ? JSON.parse(localData) : null;
+}
+
+export async function checkAuthAndGo(path, stepId) {
+    if (!currentUser) {
+        if (confirm("로그인하면 기기를 바꿔도 진행 상황을 저장할 수 있습니다. 로그인하시겠습니까?")) {
+            const user = await loginWithGoogle();
+            if (user) window.location.href = path;
+        } else {
+            window.location.href = path;
+        }
+    } else {
+        window.location.href = path;
+    }
 }
 
 export function goToNextStep(currentId) {
