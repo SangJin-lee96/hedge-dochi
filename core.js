@@ -44,24 +44,22 @@ export function setupAuthUI() {
                 if (loginBtn) loginBtn.classList.add('hidden');
                 if (userProfile) {
                     userProfile.classList.remove('hidden');
-                    document.getElementById('userPhoto').src = user.photoURL;
+                    const photo = document.getElementById('userPhoto');
+                    if (photo) photo.src = user.photoURL;
                 }
                 
-                // Fetch progress from Firebase
                 try {
                     const snap = await getDoc(doc(db, "simulations", user.uid));
                     if (snap.exists()) {
                         const dbProgress = snap.data().roadmapProgress || 1;
-                        // Always prioritize higher progress
                         userProgress = Math.max(userProgress, dbProgress);
                         localStorage.setItem('roadmapProgress', userProgress);
                     }
-                } catch (e) { console.error("Failed to load progress:", e); }
+                } catch (e) { console.error("Progress Load Error:", e); }
                 
             } else {
                 if (loginBtn) loginBtn.classList.remove('hidden');
                 if (userProfile) userProfile.classList.add('hidden');
-                // Guest users use localStorage
                 userProgress = parseInt(localStorage.getItem('roadmapProgress')) || 1;
             }
             
@@ -73,7 +71,7 @@ export function setupAuthUI() {
         document.getElementById('loginBtn')?.addEventListener('click', loginWithGoogle);
         document.getElementById('logoutBtn')?.addEventListener('click', () => {
             signOut(auth).then(() => {
-                localStorage.removeItem('roadmapProgress');
+                localStorage.clear();
                 location.reload();
             });
         });
@@ -85,35 +83,33 @@ export async function loginWithGoogle() {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
         return result.user;
-    } catch (e) {
-        console.error("Login failed:", e);
-        return null;
-    }
+    } catch (e) { console.error("Login failed:", e); return null; }
 }
 
 // --- Roadmap Progress API ---
 export async function saveProgress(stepId, additionalData = {}) {
-    // Current step progress update
     userProgress = Math.max(userProgress, stepId);
     localStorage.setItem('roadmapProgress', userProgress);
     
     if (currentUser) {
         try {
             const docRef = doc(db, "simulations", currentUser.uid);
+            
+            // FIX: Use nested object instead of dotted string to ensure Firestore nesting
             const updateObj = {
                 roadmapProgress: userProgress,
-                lastUpdated: new Date()
+                lastUpdated: new Date(),
+                steps: {} 
             };
             
             if (Object.keys(additionalData).length > 0) {
-                updateObj[`steps.step${stepId}`] = additionalData;
+                updateObj.steps[`step${stepId}`] = additionalData;
             }
             
             await setDoc(docRef, updateObj, { merge: true });
-            console.log(`Progress Step ${stepId} saved to Firebase.`);
-        } catch (e) { console.error("Save progress failed", e); }
+            console.log(`Step ${stepId} Saved Successfully.`);
+        } catch (e) { console.error("Save failed", e); }
     } else {
-        // Guest user local storage
         if (Object.keys(additionalData).length > 0) {
             localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
         }
@@ -126,9 +122,10 @@ export async function getStepData(stepId) {
             const snap = await getDoc(doc(db, "simulations", currentUser.uid));
             if (snap.exists()) {
                 const data = snap.data();
-                return data.steps?.[`step${stepId}`] || null;
+                // FIX: Check both nested structure AND legacy dotted-string keys for robustness
+                return data.steps?.[`step${stepId}`] || data[`steps.step${stepId}`] || null;
             }
-        } catch (e) { console.error(`Failed to load data for step ${stepId}:`, e); }
+        } catch (e) { console.error(`Step ${stepId} Load Error:`, e); }
     } else {
         const localData = localStorage.getItem(`step${stepId}Data`);
         return localData ? JSON.parse(localData) : null;
@@ -137,12 +134,7 @@ export async function getStepData(stepId) {
 }
 
 export async function checkAuthAndGo(path, stepId) {
-    if (!currentUser) {
-        // Let them proceed but warn that sync won't happen across devices
-        window.location.href = path;
-    } else {
-        window.location.href = path;
-    }
+    window.location.href = path;
 }
 
 export function goToNextStep(currentId) {
@@ -151,18 +143,14 @@ export function goToNextStep(currentId) {
         saveProgress(nextStep.id);
         window.location.href = nextStep.path;
     } else {
-        showToast("모든 교육 과정을 완수하셨습니다! ✨");
         window.location.href = 'index.html';
     }
 }
 
-// --- Common UI Utilities ---
 export function showToast(msg, type = 'info') {
     let t = document.getElementById('hedge-toast');
     if (!t) {
-        t = document.createElement('div');
-        t.id = 'hedge-toast';
-        document.body.appendChild(t);
+        t = document.createElement('div'); t.id = 'hedge-toast'; document.body.appendChild(t);
         const style = document.createElement('style');
         style.innerHTML = `
             #hedge-toast {
