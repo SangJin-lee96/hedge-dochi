@@ -1,7 +1,7 @@
 // core.js - Centralized Firebase, Auth, and Roadmap Logic
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
@@ -32,16 +32,13 @@ export const ROADMAP_STEPS = [
     { id: 8, title: "주기적 리밸런싱", path: "step8-rebalance.html", desc: "시장 변화에 따른 자산 비중 최적화", icon: "⚖️" }
 ];
 
-// --- Authentication UI Setup ---
 export function setupAuthUI() {
     return new Promise((resolve) => {
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
-            const loginBtn = document.getElementById('loginBtn');
-            const userProfile = document.getElementById('userProfile');
-            
             if (user) {
-                if (loginBtn) loginBtn.classList.add('hidden');
+                document.getElementById('loginBtn')?.classList.add('hidden');
+                const userProfile = document.getElementById('userProfile');
                 if (userProfile) {
                     userProfile.classList.remove('hidden');
                     const photo = document.getElementById('userPhoto');
@@ -56,19 +53,20 @@ export function setupAuthUI() {
                         localStorage.setItem('roadmapProgress', userProgress);
                     }
                 } catch (e) { console.error("Progress Load Error:", e); }
-                
             } else {
-                if (loginBtn) loginBtn.classList.remove('hidden');
-                if (userProfile) userProfile.classList.add('hidden');
+                document.getElementById('loginBtn')?.classList.remove('hidden');
+                document.getElementById('userProfile')?.classList.add('hidden');
                 userProgress = parseInt(localStorage.getItem('roadmapProgress')) || 1;
             }
-            
             isCoreReady = true;
             document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress } }));
             resolve({ user, userProgress });
         });
 
-        document.getElementById('loginBtn')?.addEventListener('click', loginWithGoogle);
+        document.getElementById('loginBtn')?.addEventListener('click', () => {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider).catch(console.error);
+        });
         document.getElementById('logoutBtn')?.addEventListener('click', () => {
             signOut(auth).then(() => {
                 localStorage.clear();
@@ -76,14 +74,6 @@ export function setupAuthUI() {
             });
         });
     });
-}
-
-export async function loginWithGoogle() {
-    try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        return result.user;
-    } catch (e) { console.error("Login failed:", e); return null; }
 }
 
 // --- Roadmap Progress API ---
@@ -95,20 +85,20 @@ export async function saveProgress(stepId, additionalData = {}) {
         try {
             const docRef = doc(db, "simulations", currentUser.uid);
             
-            // FIX: Use nested object instead of dotted string to ensure Firestore nesting
+            // 핵심 수정: 점(.) 표기법을 사용하여 steps 내부의 특정 스텝 데이터만 업데이트 (다른 스텝 보존)
             const updateObj = {
                 roadmapProgress: userProgress,
-                lastUpdated: new Date(),
-                steps: {} 
+                lastUpdated: new Date()
             };
             
             if (Object.keys(additionalData).length > 0) {
-                updateObj.steps[`step${stepId}`] = additionalData;
+                updateObj[`steps.step${stepId}`] = additionalData;
             }
             
+            // setDoc merge: true 대신 updateDoc 사용 또는 setDoc의 필드 경로 지정
             await setDoc(docRef, updateObj, { merge: true });
-            console.log(`Step ${stepId} Saved Successfully.`);
-        } catch (e) { console.error("Save failed", e); }
+            console.log(`Step ${stepId} data synchronized with Firebase.`);
+        } catch (e) { console.error("Save progress failed", e); }
     } else {
         if (Object.keys(additionalData).length > 0) {
             localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
@@ -122,10 +112,12 @@ export async function getStepData(stepId) {
             const snap = await getDoc(doc(db, "simulations", currentUser.uid));
             if (snap.exists()) {
                 const data = snap.data();
-                // FIX: Check both nested structure AND legacy dotted-string keys for robustness
-                return data.steps?.[`step${stepId}`] || data[`steps.step${stepId}`] || null;
+                // steps 오브젝트 내부와 과거의 점(.) 포함 키 모두 체크
+                if (data.steps && data.steps[`step${stepId}`]) return data.steps[`step${stepId}`];
+                if (data[`steps.step${stepId}`]) return data[`steps.step${stepId}`];
+                return null;
             }
-        } catch (e) { console.error(`Step ${stepId} Load Error:`, e); }
+        } catch (e) { console.error(`Step ${stepId} load error`, e); }
     } else {
         const localData = localStorage.getItem(`step${stepId}Data`);
         return localData ? JSON.parse(localData) : null;

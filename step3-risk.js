@@ -17,13 +17,16 @@ let totalScore = 0;
 document.addEventListener('coreDataReady', async (e) => {
     const riskData = await getStepData(3);
     if (riskData && riskData.riskType) {
-        showResult(riskData);
+        showResult(riskData, true); // 데이터가 있으면 결과 화면 즉시 표시
     }
 });
 
 window.startQuiz = function() {
     const startScreen = document.getElementById('start-screen');
+    const resultContainer = document.getElementById('result-container');
     if (startScreen) startScreen.classList.add('hidden');
+    if (resultContainer) resultContainer.classList.add('hidden');
+    
     document.getElementById('test-header').classList.remove('hidden');
     document.getElementById('quiz-container').classList.remove('hidden');
     currentQuestion = 0; totalScore = 0;
@@ -60,63 +63,43 @@ window.selectOption = async function(score) {
         renderQuestion();
     } else {
         const result = calculateResult(totalScore);
-        showResult(result);
-        // FIX: 자신의 단계(3)에 데이터 저장
         await saveProgress(3, result);
-        saveRiskProfile(result.riskType, result.recommendedPortfolio);
+        showResult(result);
     }
 };
 
 function calculateResult(score) {
-    if (score >= 30) return { riskType: "공격투자형", icon: "🔥", color: "text-red-500", desc: "높은 변동성을 견딜 준비가 된 투자자입니다. 시장 평균 이상의 수익을 위해 주식 비중을 높이세요.", recommendedPortfolio: "주식 80%, 채권 10%, 코인 10%", score };
+    if (score >= 30) return { riskType: "공격투자형", icon: "🔥", color: "text-red-500", desc: "높은 변동성을 견딜 준비가 된 투자자입니다.", recommendedPortfolio: "주식 80%, 채권 10%, 코인 10%", score };
     if (score >= 22) return { riskType: "적극투자형", icon: "🚀", color: "text-orange-500", desc: "자산 증식에 적극적이지만 어느 정도의 안전 장치도 필요로 합니다.", recommendedPortfolio: "주식 70%, 채권 20%, 대체자산 10%", score };
-    if (score >= 15) return { riskType: "위험중립형", icon: "⚖️", color: "text-blue-500", desc: "수익과 안정의 균형을 중시합니다. 전통적인 60:40 포트폴리오가 잘 어울립니다.", recommendedPortfolio: "주식 60%, 채권 40%", score };
+    if (score >= 15) return { riskType: "위험중립형", icon: "⚖️", color: "text-blue-500", desc: "수익과 안정의 균형을 중시합니다.", recommendedPortfolio: "주식 60%, 채권 40%", score };
     if (score >= 10) return { riskType: "안정추구형", icon: "🛡️", color: "text-emerald-500", desc: "원금 손실을 싫어하며 예적금보다 약간 더 높은 수익을 원합니다.", recommendedPortfolio: "주식 30%, 채권 60%, 현금 10%", score };
-    return { riskType: "안정형", icon: "💎", color: "text-slate-500", desc: "자산의 보존이 최우선입니다. 변동성이 극도로 낮은 자산 위주로 구성하세요.", recommendedPortfolio: "채권 80%, 현금 20%", score };
+    return { riskType: "안정형", icon: "💎", color: "text-slate-500", desc: "자산의 보존이 최우선입니다.", recommendedPortfolio: "채권 80%, 현금 20%", score };
 }
 
-function showResult(result) {
+function showResult(result, isRecovery = false) {
     const startScreen = document.getElementById('start-screen');
     const header = document.getElementById('test-header');
     const quizContainer = document.getElementById('quiz-container');
     const resultContainer = document.getElementById('result-container');
     if (startScreen) startScreen.classList.add('hidden');
-    header.classList.add('hidden');
-    quizContainer.classList.add('hidden');
+    if (header) header.classList.add('hidden');
+    if (quizContainer) quizContainer.classList.add('hidden');
     resultContainer.classList.remove('hidden');
+    
     resultContainer.innerHTML = `
-        <div class="text-center space-y-6">
+        <div class="text-center space-y-6 mb-10">
+            ${isRecovery ? '<div class="inline-block px-4 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black mb-4 uppercase tracking-widest">분석 완료 ✓</div>' : ''}
             <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-slate-50 dark:bg-slate-800 text-5xl mb-4 shadow-inner">${result.icon}</div>
-            <p class="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">나의 투자 성향 분석 결과</p>
             <h2 class="text-4xl md:text-6xl font-black">당신은 <span class="${result.color}">${result.riskType}</span></h2>
             <p class="text-lg text-slate-500 max-w-md mx-auto leading-relaxed">${result.desc}</p>
         </div>
-        <div class="p-10 rounded-[3rem] bg-white dark:bg-[#1e293b] shadow-2xl border border-slate-100 dark:border-slate-800">
-            <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-6 text-center">추천 포트폴리오 비중</h4>
-            <div class="text-2xl font-black text-center text-blue-600 mb-8">${result.recommendedPortfolio}</div>
-            <div class="flex flex-col gap-4 mt-10">
-                <button onclick="proceedToCurriculumStep4()" class="w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl text-center shadow-xl hover:scale-105 transition-all text-lg">4단계: 투자 기초 지식 학습하기 ➔</button>
-                <div class="flex gap-4"><button onclick="copyRiskTestResult()" class="flex-1 py-4 bg-indigo-700 text-white font-bold rounded-2xl shadow-lg hover:bg-indigo-800 transition-all flex items-center justify-center gap-2"><span>📋 결과 공유</span></button><button onclick="location.reload()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">다시 테스트</button></div>
-            </div>
+        <div class="p-10 rounded-[3rem] bg-white dark:bg-[#1e293b] shadow-2xl border border-slate-100 dark:border-slate-800 mb-8 text-center">
+            <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">추천 포트폴리오 비중</h4>
+            <div class="text-2xl font-black text-blue-600">${result.recommendedPortfolio}</div>
         </div>
-        <div id="save-status" class="p-8 rounded-[2.5rem] bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 text-center mt-8"><p class="text-sm text-blue-800 dark:text-blue-200">진단 결과가 자동 저장되었습니다.</p></div>
+        <div class="flex flex-col gap-4">
+            <button onclick="goToNextStep(3)" class="w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl text-center shadow-xl hover:scale-[1.02] transition-all text-lg">다음 단계로 진행하기 ➔</button>
+            <button onclick="startQuiz()" class="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition-all text-sm">테스트 다시 하기 (결과 수정)</button>
+        </div>
     `;
-}
-
-window.proceedToCurriculumStep4 = function() { goToNextStep(3); };
-
-window.copyRiskTestResult = function() {
-    const type = document.querySelector('#result-container h2 span').innerText;
-    const portfolio = document.querySelector('#result-container .text-2xl').innerText;
-    const text = `🧠 Hedge Dochi 투자 성향 진단 결과 🧠\n나의 투자 스타일은: [ ${type} ]\n📊 추천 포트폴리오: ${portfolio}\n👉 https://hedge-dochi-live.pages.dev/`;
-    navigator.clipboard.writeText(text).then(() => showToast("진단 결과가 복사되었습니다! 🚀"));
-};
-
-async function saveRiskProfile(type, portfolio) {
-    if(!currentUser) return;
-    try {
-        await setDoc(doc(db, "risk_profiles", currentUser.uid), { type, portfolio, score: totalScore, updatedAt: new Date() }, { merge: true });
-        const statusEl = document.getElementById('save-status');
-        if (statusEl) statusEl.innerHTML = `<p class="text-sm text-emerald-600 font-bold">✅ 진단 결과가 대시보드에 안전하게 저장되었습니다!</p>`;
-    } catch (e) { console.error("Save Error:", e); }
 }
