@@ -40,7 +40,7 @@
         body { font-family: 'Pretendard', sans-serif; background-color: var(--color-background); color: var(--color-primary-text); word-break: keep-all; line-height: 1.8; transition: background-color 0.3s; }
         .article-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
         .breadcrumb { display: flex; gap: 8px; font-size: 0.8rem; font-weight: 600; color: var(--color-secondary-text); margin-bottom: 40px; }
-        .model-card { background: white; border-radius: 2rem; padding: 2.5rem; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+        .model-card { background: white; border-radius: 2rem; padding: 2.5rem; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); margin-bottom: 2rem; transition: all 0.3s; }
         html.dark .model-card { background: #1e293b; border-color: #334155; }
         .tag { font-size: 0.7rem; font-weight: 800; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -51,59 +51,11 @@
     <!-- 헤더 네비게이션 -->
     <header class="sticky top-0 z-[100] w-full backdrop-blur-md border-b transition-colors duration-300" style="background-color: rgba(var(--nav-bg-rgb), 0.7); border-color: var(--color-nav-border);">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <!-- 로고 -->
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
                 <span class="text-xl">💎</span>
                 <span class="font-bold text-lg tracking-tight whitespace-nowrap">Hedge Dochi</span>
             </div>
-
-            <!-- PC 네비게이션 -->
             <nav class="hidden md:flex items-center gap-1">
-                <!-- 분석/설계 -->
-                <div class="relative group">
-                    <button class="flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" style="color: var(--color-nav-link);">
-                        분석/설계 <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    <div class="absolute top-full left-0 w-48 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl py-2 hidden group-hover:block animate-in fade-in slide-in-from-top-1 duration-200">
-                        <a href="step1-asset.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">자산 시뮬레이터</a>
-                        <a href="step2-fire.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">은퇴 설계</a>
-                        <a href="step3-risk.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">성향 진단</a>
-                    </div>
-                </div>
-
-                <!-- 투자 관리 -->
-                <div class="relative group">
-                    <button class="flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" style="color: var(--color-nav-link);">
-                        투자 관리 <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    <div class="absolute top-full left-0 w-48 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl py-2 hidden group-hover:block animate-in fade-in slide-in-from-top-1 duration-200">
-                        <a href="step7-dashboard.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">대시보드</a>
-                        <a href="step8-rebalance.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">리밸런싱</a>
-                    </div>
-                </div>
-
-                <!-- 계산기 -->
-                <div class="relative group">
-                    <button class="flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" style="color: var(--color-nav-link);">
-                        계산기 <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    <div class="absolute top-full left-0 w-48 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl py-2 hidden group-hover:block animate-in fade-in slide-in-from-top-1 duration-200">
-                        <a href="step6-simulate.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">복리 계산기</a>
-                        <a href="step6-simulate.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">배당 계산기</a>
-                    </div>
-                </div>
-
-                <!-- 서비스 -->
-                <div class="relative group">
-                    <button class="flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" style="color: var(--color-nav-link);">
-                        서비스 <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    <div class="absolute top-full left-0 w-48 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl py-2 hidden group-hover:block animate-in fade-in slide-in-from-top-1 duration-200">
-                        <a href="step4-guide.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">금융 가이드</a>
-                        <a href="lotto.html" class="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">로또 추천</a>
-                    </div>
-                </div>
-
                 <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-2"></div>
                 <button id="darkModeToggle" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
                 <div id="authContainer" class="ml-2">
@@ -113,54 +65,6 @@
                         <button id="logoutBtn" class="text-xs text-slate-500 font-semibold transition-colors hover:text-blue-600">로그아웃</button>
                     </div>
                 </div>
-            </nav>
-
-            <!-- 모바일 헤더 우측 -->
-            <div class="flex items-center gap-2 md:hidden">
-                <button id="darkModeToggleMobile" class="p-2 rounded-lg transition-colors" style="color: var(--color-toggle-text);">🌙</button>
-                <button id="mobileMenuBtn" class="p-2 rounded-lg" style="color: var(--color-primary-text);">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- 모바일 메뉴 -->
-        <div id="mobileMenu" class="hidden md:hidden absolute top-16 left-0 w-full border-b shadow-lg z-[110]" style="background-color: var(--color-nav-bg); border-color: var(--color-nav-border);">
-            <nav class="flex flex-col p-4 space-y-4 overflow-y-auto max-h-[70vh] no-scrollbar">
-                <!-- 분석/설계 -->
-                <div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">분석/설계</p>
-                    <div class="flex flex-col space-y-1">
-                        <a href="step1-asset.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">자산 시뮬레이터</a>
-                        <a href="step2-fire.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">은퇴 설계</a>
-                        <a href="step3-risk.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" style="color: var(--color-nav-link);">성향 진단</a>
-                    </div>
-                </div>
-                <!-- 투자 관리 -->
-                <div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">투자 관리</p>
-                    <div class="flex flex-col space-y-1">
-                        <a href="step7-dashboard.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">대시보드</a>
-                        <a href="step8-rebalance.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">리밸런싱</a>
-                    </div>
-                </div>
-                <!-- 계산기 -->
-                <div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">계산기</p>
-                    <div class="flex flex-col space-y-1">
-                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">복리 계산기</a>
-                        <a href="step6-simulate.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">배당 계산기</a>
-                    </div>
-                </div>
-                <!-- 서비스 -->
-                <div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">서비스</p>
-                    <div class="flex flex-col space-y-1">
-                        <a href="step4-guide.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">금융 가이드</a>
-                        <a href="lotto.html" class="text-base font-semibold p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">로또 추천</a>
-                    </div>
-                </div>
-                <div id="authContainerMobile" class="p-4 border-t border-slate-100 dark:border-slate-700 text-center"></div>
             </nav>
         </div>
     </header>
@@ -176,7 +80,7 @@
 
         <section class="space-y-12 animate-fade-in-up" style="animation-delay: 0.1s;">
             <!-- Model 1 -->
-            <div class="model-card">
+            <div class="model-card" id="card-All-Weather">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <h2 class="text-2xl font-black">레이 달리오의 올웨더 (All Weather)</h2>
                     <span class="tag bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">안정성 최우선</span>
@@ -192,7 +96,7 @@
             </div>
 
             <!-- Model 2 -->
-            <div class="model-card">
+            <div class="model-card" id="card-60-40">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <h2 class="text-2xl font-black">전통적인 60/40 포트폴리오</h2>
                     <span class="tag bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">표준형</span>
@@ -206,7 +110,7 @@
             </div>
 
             <!-- Model 3 -->
-            <div class="model-card">
+            <div class="model-card" id="card-Permanent">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <h2 class="text-2xl font-black">영구 포트폴리오 (Permanent)</h2>
                     <span class="tag bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">극도의 방어</span>
@@ -222,7 +126,7 @@
             </div>
 
             <div class="text-center mt-20 mb-8">
-                <button onclick="import('./core.js').then(m=>m.goToNextStep(5))" class="px-12 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[2rem] font-black shadow-2xl hover:scale-105 transition-all text-xl">
+                <button onclick="window.proceedToStep6()" class="px-12 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[2rem] font-black shadow-2xl hover:scale-105 transition-all text-xl">
                     6단계: 수익 시뮬레이션 돌려보기 ➔
                 </button>
                 <div class="mt-6">
@@ -233,28 +137,50 @@
     </main>
 
     <script type="module">
-        import { showToast } from './core.js';
+        import { showToast, saveProgress, goToNextStep, getStepData } from './core.js';
 
-        window.selectStrategy = function(name) {
-            // Remove previous selections
+        window.selectStrategy = async function(name) {
             document.querySelectorAll('.model-card').forEach(c => {
                 c.classList.remove('ring-4', 'ring-blue-500', 'border-blue-500');
                 const btn = c.querySelector('button');
                 if (btn) {
                     btn.innerText = "이 전략 선택하기";
-                    btn.className = btn.className.replace('bg-slate-900 text-white', 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400');
+                    btn.className = "w-full py-4 font-bold rounded-2xl border transition-all " + 
+                                  (name === 'All Weather' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+                                   name === '60/40' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
+                                   'bg-purple-50 text-purple-600 border-purple-100');
                 }
             });
 
-            // Apply new selection
-            const card = event.target.closest('.model-card');
-            card.classList.add('ring-4', 'ring-blue-500', 'border-blue-500');
-            
-            event.target.innerText = "선택 완료 ✓";
-            event.target.classList.add('bg-slate-900', 'text-white');
+            const cardId = 'card-' + name.replace('/', '-').replace(' ', '-');
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.classList.add('ring-4', 'ring-blue-500', 'border-blue-500');
+                const btn = card.querySelector('button');
+                btn.innerText = "선택 완료 ✓";
+                btn.className = "w-full py-4 bg-slate-900 text-white font-bold rounded-2xl border border-slate-900 transition-all";
+            }
 
+            await saveProgress(5, { selectedModel: name });
             showToast(`${name} 전략이 선택되었습니다! 하단의 6단계 버튼을 클릭하세요.`, 'success');
         };
+
+        window.proceedToStep6 = () => goToNextStep(5);
+
+        document.addEventListener('coreDataReady', async () => {
+            const data = await getStepData(5);
+            if (data && data.selectedModel) {
+                const name = data.selectedModel;
+                const cardId = 'card-' + name.replace('/', '-').replace(' ', '-');
+                const card = document.getElementById(cardId);
+                if (card) {
+                    card.classList.add('ring-4', 'ring-blue-500', 'border-blue-500');
+                    const btn = card.querySelector('button');
+                    btn.innerText = "선택 완료 ✓";
+                    btn.className = "w-full py-4 bg-slate-900 text-white font-bold rounded-2xl border border-slate-900 transition-all";
+                }
+            }
+        });
     </script>
 
     <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
@@ -266,7 +192,6 @@
                 <a href="contact-form.html" class="hover:text-blue-600">문의</a>
             </div>
             <p>© 2026 Hedge Dochi. All Rights Reserved.</p>
-            <p class="opacity-60 text-[10px] max-w-lg mx-auto leading-relaxed mt-2">Hedge Dochi는 데이터 기반의 금융 도구와 가이드를 제공하며, 제공되는 모든 정보는 참고용일 뿐 투자 권유를 구성하지 않습니다.</p>
         </div>
     </footer>
 
@@ -274,5 +199,5 @@
     <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="dark-mode.js"></script>
     <script type="module" src="core.js"></script>
-    </body>
-    </html>
+</body>
+</html>

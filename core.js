@@ -19,6 +19,7 @@ export const db = getFirestore(app);
 
 export let currentUser = null;
 export let userProgress = 1;
+export let isCoreReady = false;
 
 export const ROADMAP_STEPS = [
     { id: 1, title: "나의 현재 위치 파악", path: "step1-asset.html", desc: "10년 후 내 자산 등급 시뮬레이션", icon: "📊" },
@@ -33,37 +34,46 @@ export const ROADMAP_STEPS = [
 
 // --- Authentication UI Setup ---
 export function setupAuthUI() {
-    onAuthStateChanged(auth, async (user) => {
-        currentUser = user;
-        const loginBtn = document.getElementById('loginBtn');
-        const userProfile = document.getElementById('userProfile');
-        
-        if (user) {
-            if (loginBtn) loginBtn.classList.add('hidden');
-            if (userProfile) {
-                userProfile.classList.remove('hidden');
-                document.getElementById('userPhoto').src = user.photoURL;
+    return new Promise((resolve) => {
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            const loginBtn = document.getElementById('loginBtn');
+            const userProfile = document.getElementById('userProfile');
+            
+            if (user) {
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (userProfile) {
+                    userProfile.classList.remove('hidden');
+                    document.getElementById('userPhoto').src = user.photoURL;
+                }
+                
+                // Fetch progress from Firebase
+                try {
+                    const snap = await getDoc(doc(db, "simulations", user.uid));
+                    if (snap.exists()) {
+                        userProgress = snap.data().roadmapProgress || 1;
+                    }
+                } catch (e) { console.error("Failed to load progress:", e); }
+                
+            } else {
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (userProfile) userProfile.classList.add('hidden');
+                userProgress = parseInt(sessionStorage.getItem('roadmapProgress')) || 1;
             }
             
-            // Fetch progress from Firebase
-            try {
-                const snap = await getDoc(doc(db, "simulations", user.uid));
-                if (snap.exists() && snap.data().roadmapProgress) {
-                    userProgress = snap.data().roadmapProgress;
-                }
-            } catch (e) { console.error("Failed to load progress:", e); }
-            
-        } else {
-            if (loginBtn) loginBtn.classList.remove('hidden');
-            if (userProfile) userProfile.classList.add('hidden');
-            userProgress = parseInt(sessionStorage.getItem('roadmapProgress')) || 1;
-        }
-        
-        document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress } }));
-    });
+            isCoreReady = true;
+            document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress } }));
+            resolve({ user, userProgress });
+        });
 
-    document.getElementById('loginBtn')?.addEventListener('click', loginWithGoogle);
-    document.getElementById('logoutBtn')?.addEventListener('click', () => signOut(auth).then(() => location.reload()));
+        document.getElementById('loginBtn')?.addEventListener('click', loginWithGoogle);
+        document.getElementById('logoutBtn')?.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                sessionStorage.clear();
+                location.reload();
+            });
+        });
+    });
 }
 
 export async function loginWithGoogle() {
@@ -80,24 +90,46 @@ export async function loginWithGoogle() {
 // --- Roadmap Progress API ---
 export async function saveProgress(stepId, additionalData = {}) {
     userProgress = Math.max(userProgress, stepId);
-    const dataToSave = {
-        roadmapProgress: userProgress,
-        lastUpdated: new Date(),
-        ...additionalData
-    };
-
+    
     if (currentUser) {
         try {
-            await setDoc(doc(db, "simulations", currentUser.uid), dataToSave, { merge: true });
-            console.log("Progress saved to Firebase:", userProgress);
+            const docRef = doc(db, "simulations", currentUser.uid);
+            const updateObj = {
+                roadmapProgress: userProgress,
+                lastUpdated: new Date()
+            };
+            
+            // Store step-specific data in a nested field to avoid overwriting other steps
+            if (Object.keys(additionalData).length > 0) {
+                updateObj[`steps.step${stepId}`] = additionalData;
+            }
+            
+            await setDoc(docRef, updateObj, { merge: true });
+            console.log(`Progress for Step ${stepId} saved to Firebase.`);
         } catch (e) { console.error("Save progress failed", e); }
     } else {
         // Guest user storage
         sessionStorage.setItem('roadmapProgress', userProgress);
-        Object.keys(additionalData).forEach(key => {
-            sessionStorage.setItem(key, additionalData[key]);
-        });
+        if (Object.keys(additionalData).length > 0) {
+            sessionStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
+        }
     }
+}
+
+export async function getStepData(stepId) {
+    if (currentUser) {
+        try {
+            const snap = await getDoc(doc(db, "simulations", currentUser.uid));
+            if (snap.exists()) {
+                const data = snap.data();
+                return data.steps?.[`step${stepId}`] || null;
+            }
+        } catch (e) { console.error(`Failed to load data for step ${stepId}:`, e); }
+    } else {
+        const localData = sessionStorage.getItem(`step${stepId}Data`);
+        return localData ? JSON.parse(localData) : null;
+    }
+    return null;
 }
 
 export async function checkAuthAndGo(path, stepId) {

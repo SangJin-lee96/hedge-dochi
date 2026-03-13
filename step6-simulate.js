@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, showToast, saveProgress, goToNextStep } from './core.js';
+import { db, currentUser, showToast, saveProgress, goToNextStep, getStepData } from './core.js';
 
 // --- State Management ---
 let currentStep = 1;
@@ -7,14 +7,22 @@ let currentStep = 1;
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
     if (user) {
-        try {
-            const snap = await getDoc(doc(db, "simulations", user.uid));
-            if (snap.exists()) {
-                const d = snap.data();
-                if (document.getElementById('c-seed')) document.getElementById('c-seed').value = d.initialSeed || 3000;
-                if (document.getElementById('c-rate')) document.getElementById('c-rate').value = d.investmentReturn || 5.0;
-            }
-        } catch (e) {}
+        const step6Data = await getStepData(6);
+        const step1Data = await getStepData(1);
+        const step2Data = await getStepData(2);
+        
+        const d = step6Data || {};
+        const s1 = step1Data || {};
+        const s2 = step2Data || {};
+        
+        if (document.getElementById('c-seed')) document.getElementById('c-seed').value = d.compoundSeed || s2.initialSeed || s1.initialSeed || 3000;
+        if (document.getElementById('c-rate')) document.getElementById('c-rate').value = d.compoundRate || s2.investmentReturn || s1.investmentReturn || 5.0;
+        if (document.getElementById('c-monthly')) document.getElementById('c-monthly').value = d.monthlySavings || 50;
+        if (document.getElementById('c-period')) document.getElementById('c-period').value = d.compoundPeriod || 10;
+
+        if (step6Data && currentStep !== 3 && confirm("이전에 시뮬레이션한 복리 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) {
+            calculateCompound();
+        }
     }
 });
 

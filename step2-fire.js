@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, goToNextStep, saveProgress, showToast } from './core.js';
+import { db, currentUser, goToNextStep, saveProgress, showToast, getStepData } from './core.js';
 
 let currentStep = 1;
 let fireChart = null;
@@ -7,20 +7,28 @@ let fireChart = null;
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
     if (user) {
-        try {
-            const snap = await getDoc(doc(db, "simulations", user.uid));
-            if (snap.exists()) {
-                const d = snap.data();
-                if (document.getElementById('f-expense')) document.getElementById('f-expense').value = d.monthlyExpense || 200;
-                if (document.getElementById('f-seed')) document.getElementById('f-seed').value = d.initialSeed || 3000;
-                if (document.getElementById('f-annual-save')) {
-                    const annualSave = (parseFloat(d.annualSalary) || 4500) - (parseFloat(d.monthlyExpense) || 200) * 12;
-                    document.getElementById('f-annual-save').value = Math.max(0, annualSave);
-                }
-                if (document.getElementById('f-rate')) document.getElementById('f-rate').value = d.investmentReturn || 5.0;
-                if (document.getElementById('f-inflation')) document.getElementById('f-inflation').value = d.inflationRate || 2.5;
+        const step2Data = await getStepData(2);
+        const step1Data = await getStepData(1);
+        
+        const d = step2Data || {};
+        const s1 = step1Data || {};
+        
+        if (document.getElementById('f-expense')) document.getElementById('f-expense').value = d.monthlyExpense || s1.monthlyExpense || 200;
+        if (document.getElementById('f-seed')) document.getElementById('f-seed').value = d.initialSeed || s1.initialSeed || 3000;
+        if (document.getElementById('f-annual-save')) {
+            if (d.annualSave !== undefined) {
+                document.getElementById('f-annual-save').value = d.annualSave;
+            } else {
+                const annualSave = (parseFloat(s1.annualSalary) || 4500) - (parseFloat(s1.monthlyExpense) || 200) * 12;
+                document.getElementById('f-annual-save').value = Math.max(0, annualSave);
             }
-        } catch (e) { console.error("Data Load Error:", e); }
+        }
+        if (document.getElementById('f-rate')) document.getElementById('f-rate').value = d.investmentReturn || s1.investmentReturn || 5.0;
+        if (document.getElementById('f-inflation')) document.getElementById('f-inflation').value = d.inflationRate || s1.inflationRate || 2.5;
+
+        if (step2Data && currentStep !== 4 && confirm("이전에 설계한 은퇴 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) {
+            calculateFire();
+        }
     }
 });
 

@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, showToast, saveProgress, goToNextStep } from './core.js';
+import { db, currentUser, showToast, saveProgress, goToNextStep, getStepData } from './core.js';
 
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
@@ -20,36 +20,36 @@ async function loadDashboardData(uid) {
     activityLog.innerHTML = "";
 
     try {
-        const [riskSnap, simSnap, portSnap, lottoSnap, goalSnap, fireSnap, watchSnap, divSnap, compSnap] = await Promise.all([
-            getDoc(doc(db, "risk_profiles", uid)),
-            getDoc(doc(db, "simulations", uid)),
+        const [portSnap, lottoSnap, goalSnap, watchSnap, divSnap] = await Promise.all([
             getDoc(doc(db, "portfolios", uid)),
             getDoc(doc(db, "lotto_history", uid)),
             getDoc(doc(db, "user_goals", uid)),
-            getDoc(doc(db, "fire_goals", uid)),
             getDoc(doc(db, "user_watchlists", uid)),
-            getDoc(doc(db, "dividend_goals", uid)),
-            getDoc(doc(db, "compound_settings", uid))
+            getDoc(doc(db, "dividend_goals", uid))
         ]);
+
+        const step3Data = await getStepData(3);
+        const step1Data = await getStepData(1);
+        const step2Data = await getStepData(2);
+        const step6Data = await getStepData(6);
 
         let riskType = null;
         let recommendedPortfolio = null;
-        if (riskSnap.exists()) {
-            const d = riskSnap.data();
-            riskType = d.type;
-            recommendedPortfolio = d.portfolio;
-            document.getElementById('dashRiskType').innerText = d.type;
-            document.getElementById('dashRiskDesc').innerText = `추천: ${d.portfolio}`;
+        if (step3Data) {
+            riskType = step3Data.riskType;
+            recommendedPortfolio = step3Data.recommendedPortfolio;
+            document.getElementById('dashRiskType').innerText = riskType;
+            document.getElementById('dashRiskDesc').innerText = `추천: ${recommendedPortfolio}`;
             const icons = { "공격투자형": "🔥", "적극투자형": "🚀", "위험중립형": "⚖️", "안정추구형": "🛡️", "안정형": "💎" };
-            document.getElementById('dashRiskIcon').innerText = icons[d.type] || "🧠";
+            document.getElementById('dashRiskIcon').innerText = icons[riskType] || "🧠";
         } else {
             document.getElementById('dashRiskType').innerText = "성향 분석 전";
             document.getElementById('dashRiskDesc').innerText = "3단계를 먼저 진행해 주세요.";
         }
 
         let simResult = null;
-        if (simSnap.exists()) {
-            simResult = calculateSummary(simSnap.data());
+        if (step1Data) {
+            simResult = calculateSummary(step1Data);
             document.getElementById('dashTierName').innerText = simResult.tier;
             document.getElementById('dashTierIcon').innerText = simResult.icon;
             addLog(`나의 10년 후 예상 자산 등급: ${simResult.tier}`);
@@ -75,22 +75,6 @@ async function loadDashboardData(uid) {
             showEmptyAssetGuide(recommendedPortfolio);
         }
 
-function showEmptyAssetGuide(recommended) {
-    const centerText = document.getElementById('dashChartCenterText');
-    if (centerText) centerText.innerText = "등록 필요";
-    
-    const legend = document.getElementById('dashAssetLegend');
-    if (legend) {
-        legend.innerHTML = `
-            <div class="col-span-full p-6 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 text-center">
-                <p class="text-blue-600 dark:text-blue-400 font-bold mb-4">아직 등록된 자산이 없습니다.</p>
-                <p class="text-xs text-slate-500 mb-6">${recommended ? `당신의 추천 비중은 <b>${recommended}</b> 입니다.` : '이전 단계의 분석 데이터를 기반으로 포트폴리오를 구성해 드릴 수 있습니다.'}</p>
-                <a href="step8-rebalance.html" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-xl text-xs font-black shadow-lg hover:bg-blue-700 transition-all">실제 자산 등록하러 가기 ➔</a>
-            </div>
-        `;
-    }
-}
-
         if (lottoSnap.exists()) {
             const d = lottoSnap.data();
             const container = document.getElementById('dashLottoList');
@@ -104,11 +88,11 @@ function showEmptyAssetGuide(recommended) {
             });
         }
 
-        if (fireSnap.exists()) {
-            const d = fireSnap.data();
-            document.getElementById('dashFireRemaining').innerText = `${d.remainingYears}년 남음`;
-            document.getElementById('dashFireDate').innerText = `${d.targetYear}년 은퇴 예정`;
-            document.getElementById('dashFireIcon').innerText = d.remainingYears <= 5 ? "🥂" : "🏝️";
+        if (step2Data) {
+            const d = step2Data;
+            document.getElementById('dashFireRemaining').innerText = `목표: ${formatVal(d.monthlyExpense || 200, 'KRW')}/월`;
+            document.getElementById('dashFireDate').innerText = `목표 수익률: ${d.investmentReturn || 0}%`;
+            document.getElementById('dashFireIcon').innerText = "🏝️";
         }
 
         if (goalSnap.exists() && simResult) {
@@ -129,6 +113,22 @@ function showEmptyAssetGuide(recommended) {
     finally { cards.forEach(c => c.classList.remove('skeleton')); }
 }
 
+function showEmptyAssetGuide(recommended) {
+    const centerText = document.getElementById('dashChartCenterText');
+    if (centerText) centerText.innerText = "등록 필요";
+    
+    const legend = document.getElementById('dashAssetLegend');
+    if (legend) {
+        legend.innerHTML = `
+            <div class="col-span-full p-6 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 text-center">
+                <p class="text-blue-600 dark:text-blue-400 font-bold mb-4">아직 등록된 자산이 없습니다.</p>
+                <p class="text-xs text-slate-500 mb-6">${recommended ? `당신의 추천 비중은 <b>${recommended}</b> 입니다.` : '이전 단계의 분석 데이터를 기반으로 포트폴리오를 구성해 드릴 수 있습니다.'}</p>
+                <a href="step8-rebalance.html" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-xl text-xs font-black shadow-lg hover:bg-blue-700 transition-all">실제 자산 등록하러 가기 ➔</a>
+            </div>
+        `;
+    }
+}
+
 function updateUserAvatar(sim, riskType) {
     const photoEl = document.getElementById('dashUserPhoto');
     const badgeEl = document.getElementById('userTraitBadge');
@@ -137,7 +137,6 @@ function updateUserAvatar(sim, riskType) {
     const avatars = { "다이아몬드": "👑", "플래티넘": "💎", "골드": "💰", "실버": "🥈", "브론즈": "🦔" };
     const char = avatars[sim?.tier] || "🦔";
     
-    // 캐릭터 이모지 기반 프로필 생성 (태그 교체)
     const newAvatar = document.createElement('div');
     newAvatar.id = 'dashUserPhoto';
     newAvatar.className = "w-24 h-24 rounded-[2.5rem] bg-gradient-to-br from-blue-600 to-indigo-700 shadow-2xl flex items-center justify-center text-5xl transform hover:rotate-12 transition-transform duration-500 cursor-pointer";
@@ -238,7 +237,6 @@ function calculateHealthScore(assets) {
     assets.forEach(a => dev += Math.abs(((a.qty * (a.price || 0)) / total * 100) - (a.targetWeight || 0)));
     const score = Math.max(0, 100 - Math.round(dev));
     
-    // 이격도 알림 처리 (기존 로직 유지)
     const alertBanner = document.getElementById('rebalanceAlert');
     if (alertBanner) {
         if (dev >= 10) alertBanner.classList.remove('hidden');

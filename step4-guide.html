@@ -219,8 +219,13 @@
                 <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">Read Guide ➔</div>
             </a>
         </div>
-        <div class="text-center mt-16 mb-8"><button onclick="location.href='step5-models.html'" class="px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:scale-105 transition-transform text-lg">5단계: 투자 전략 선택하기 ➔</button></div>
+        <div class="text-center mt-16 mb-8"><button onclick="window.proceedToStep5()" class="px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:scale-105 transition-transform text-lg">5단계: 투자 전략 선택하기 ➔</button></div>
     </main>
+
+    <script type="module">
+        import { goToNextStep } from './core.js';
+        window.proceedToStep5 = () => goToNextStep(4);
+    </script>
 
     <footer class="text-center py-12 border-t border-slate-100 dark:border-slate-800 mt-20 text-sm text-slate-400 px-4">
         <div class="max-w-6xl mx-auto">

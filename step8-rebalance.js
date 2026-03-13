@@ -1,5 +1,5 @@
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, showToast, saveProgress, goToNextStep } from './core.js';
+import { db, currentUser, showToast, saveProgress, goToNextStep, getStepData } from './core.js';
 
 // --- State Management ---
 let currentStep = 1;
@@ -12,26 +12,26 @@ let chart = null;
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
     if (user) {
-        try {
-            // 기초 데이터 로드 및 적용
-            const [simSnap, portSnap] = await Promise.all([
-                getDoc(doc(db, "simulations", user.uid)),
-                getDoc(doc(db, "portfolios", user.uid))
-            ]);
+        const step8Data = await getStepData(8);
+        const step1Data = await getStepData(1);
+        const portSnap = await getDoc(doc(db, "portfolios", user.uid));
 
-            if (simSnap.exists()) {
-                const d = simSnap.data();
-                const totalInvestInput = document.getElementById('totalInvestment');
-                if (totalInvestInput && !totalInvestInput.value) {
-                    totalInvestInput.value = d.initialSeed || 3000;
-                }
-            }
+        if (step8Data) {
+            assets = step8Data.assets || [];
+            baseCurrency = step8Data.baseCurrency || 'USD';
+            setCurrency(baseCurrency);
+        } else if (portSnap.exists()) {
+            assets = portSnap.data().assets || [];
+            baseCurrency = portSnap.data().baseCurrency || 'USD';
+            setCurrency(baseCurrency);
+        }
 
-            if (portSnap.exists()) {
-                assets = portSnap.data().assets || [];
-                renderAssetList();
-            }
-        } catch (e) {}
+        const totalInvestInput = document.getElementById('totalInvestment');
+        if (totalInvestInput && !totalInvestInput.value) {
+            totalInvestInput.value = (step8Data?.totalInvestment) || (step1Data?.initialSeed) || 3000;
+        }
+
+        renderAssets();
     }
 });
 
@@ -160,6 +160,7 @@ window.updateAsset = function(id, key, val) {
 
 function renderAssets() {
     const container = document.getElementById('assetContainer');
+    if (!container) return;
     container.innerHTML = '';
     assets.forEach(asset => {
         const div = document.createElement('div');
@@ -203,7 +204,6 @@ window.applyModel = function(modelType) {
 
     let targetWeights = [];
     if (modelType === 'ALL_WEATHER') {
-        // 올웨더 간소화 (주식 30, 채권 55, 원자재 15)
         const counts = [0.3, 0.55, 0.15];
         assets.forEach((a, i) => a.targetWeight = Math.round(counts[i % 3] / Math.ceil(assets.length/3) * 100));
     } else if (modelType === '6040') {
@@ -214,7 +214,6 @@ window.applyModel = function(modelType) {
         assets.forEach(a => a.targetWeight = weight);
     }
 
-    // 합계 100% 보정
     let currentTotal = assets.reduce((sum, a) => sum + (a.targetWeight || 0), 0);
     if (currentTotal !== 100) {
         assets[assets.length - 1].targetWeight += (100 - currentTotal);
@@ -288,18 +287,14 @@ function formatValue(val) {
 window.downloadRebalanceImage = function() {
     const area = document.querySelector('.capture-area');
     if (!area) return;
-    
     if (window.showToast) window.showToast("진단 리포트 이미지를 생성하고 있습니다... 🖼️");
-
     html2canvas(area, { useCORS: true, backgroundColor: null, scale: 2, logging: false }).then(canvas => {
         const link = document.createElement('a');
         link.download = `HedgeDochi_Portfolio_Report.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
         if (window.showToast) window.showToast("이미지 저장이 완료되었습니다! ✨");
-    }).catch(() => {
-        if (window.showToast) window.showToast("이미지 생성 중 오류가 발생했습니다.");
-    });
+    }).catch(() => { if (window.showToast) window.showToast("이미지 생성 중 오류가 발생했습니다."); });
 };
 
 function renderChart(processedAssets) {
@@ -333,14 +328,6 @@ window.proceedToCurriculumStepHub = function() {
     goToNextStep(8);
 };
 
-window.fetchPrice = async function(ticker) {
-    return quickAdd(ticker);
-};
-
-window.savePortfolio = async function() {
-    return saveDataToFirebase();
-};
-
 window.copyRebalanceResult = function() {
     const score = document.getElementById('healthScore').innerText;
     const text = `⚖️ Hedge Dochi 리밸런싱 리포트 ⚖️\n📊 포트폴리오 건강 점수: ${score}점\n\n📍 실시간 환율 반영, 나의 포트폴리오 진단하기\n👉 https://hedge-dochi-live.pages.dev/step8-rebalance.html`;
@@ -350,7 +337,10 @@ window.copyRebalanceResult = function() {
 // --- Firebase Saving ---
 async function saveDataToFirebase() {
     if (!currentUser) return;
-    await setDoc(doc(db, "portfolios", currentUser.uid), { assets, baseCurrency, lastUpdated: new Date() }, { merge: true });
+    const totalInvestment = document.getElementById('totalInvestment')?.value || 0;
+    const portfolioData = { assets, baseCurrency, totalInvestment, lastUpdated: new Date() };
+    await setDoc(doc(db, "portfolios", currentUser.uid), portfolioData, { merge: true });
+    await saveProgress(8, portfolioData);
 }
 
 window.showToast = function(msg) {

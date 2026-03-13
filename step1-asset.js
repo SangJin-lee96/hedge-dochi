@@ -252,21 +252,21 @@ async function fetchMarketData() {
 
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
-    if (user) {
-        try {
-            const snap = await getDoc(doc(db, "simulations", user.uid));
-            if (snap.exists()) {
-                const d = snap.data();
-                if (d.annualSalary) document.getElementById('annualSalary').value = d.annualSalary;
-                if (d.initialSeed) document.getElementById('initialSeed').value = d.initialSeed;
-                if (d.monthlyExpense) document.getElementById('monthlyExpense').value = d.monthlyExpense;
-                if (d.salaryGrowth) document.getElementById('salaryGrowth').value = d.salaryGrowth;
-                if (d.investmentReturn) document.getElementById('investmentReturn').value = d.investmentReturn;
-                if (d.inflationRate) document.getElementById('inflationRate').value = d.inflationRate;
-                if (d.baseCurrency) setCurrency(d.baseCurrency);
-                if (currentStep !== 4 && confirm("이전에 시뮬레이션한 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) calculateAndShowResult();
-            }
-        } catch (err) {}
+    const step1Data = await getStepData(1);
+    
+    if (step1Data) {
+        const d = step1Data;
+        if (d.annualSalary) document.getElementById('annualSalary').value = d.annualSalary;
+        if (d.initialSeed) document.getElementById('initialSeed').value = d.initialSeed;
+        if (d.monthlyExpense) document.getElementById('monthlyExpense').value = d.monthlyExpense;
+        if (d.salaryGrowth) document.getElementById('salaryGrowth').value = d.salaryGrowth;
+        if (d.investmentReturn) document.getElementById('investmentReturn').value = d.investmentReturn;
+        if (d.inflationRate) document.getElementById('inflationRate').value = d.inflationRate;
+        if (d.baseCurrency) setCurrency(d.baseCurrency);
+        
+        if (currentStep !== 4 && confirm("이전에 시뮬레이션한 데이터가 있습니다. 결과를 바로 확인하시겠습니까?")) {
+            calculateAndShowResult();
+        }
     }
 });
 
