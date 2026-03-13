@@ -36,61 +36,25 @@ export function setupAuthUI() {
     return new Promise((resolve) => {
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
-            const loginBtn = document.getElementById('loginBtn');
-            const userProfile = document.getElementById('userProfile');
-            
             if (user) {
-                if (loginBtn) loginBtn.classList.add('hidden');
-                if (userProfile) {
-                    userProfile.classList.remove('hidden');
-                    const photo = document.getElementById('userPhoto');
-                    if (photo) photo.src = user.photoURL;
+                const snap = await getDoc(doc(db, "simulations", user.uid));
+                if (snap.exists()) {
+                    const data = snap.data();
+                    userProgress = Math.max(userProgress, data.roadmapProgress || 1);
+                    localStorage.setItem('roadmapProgress', userProgress);
                 }
-                
-                try {
-                    const snap = await getDoc(doc(db, "simulations", user.uid));
-                    if (snap.exists()) {
-                        userProgress = Math.max(userProgress, snap.data().roadmapProgress || 1);
-                        localStorage.setItem('roadmapProgress', userProgress);
-                    }
-                } catch (e) { console.error("Progress Load Error:", e); }
-            } else {
-                // 비로그인 상태면 로그인 버튼을 명확히 노출
-                if (loginBtn) loginBtn.classList.remove('hidden');
-                if (userProfile) userProfile.classList.add('hidden');
-                userProgress = parseInt(localStorage.getItem('roadmapProgress')) || 1;
             }
-            
             isCoreReady = true;
             document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress } }));
             resolve({ user, userProgress });
         });
-
-        // 전역 클릭 이벤트 핸들러 등록
-        document.getElementById('loginBtn')?.addEventListener('click', loginWithGoogle);
-        document.getElementById('logoutBtn')?.addEventListener('click', () => {
-            signOut(auth).then(() => {
-                localStorage.clear();
-                location.reload();
-            });
-        });
     });
 }
 
-export async function loginWithGoogle() {
-    try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        return result.user;
-    } catch (e) {
-        console.error("Login failed:", e);
-        showToast("로그인에 실패했습니다.");
-        return null;
-    }
-}
+// Per-step timeout to avoid collisions
+const saveTimeouts = {};
 
-let saveTimeout = null;
-export async function saveProgress(stepId, additionalData = {}) {
+export async function saveProgress(stepId, additionalData = {}, immediate = false) {
     userProgress = Math.max(userProgress, stepId);
     localStorage.setItem('roadmapProgress', userProgress);
     
@@ -98,23 +62,41 @@ export async function saveProgress(stepId, additionalData = {}) {
         localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
     }
 
-    if (currentUser) {
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(async () => {
-            try {
-                const docRef = doc(db, "simulations", currentUser.uid);
-                const snap = await getDoc(docRef);
-                const payload = { roadmapProgress: userProgress, lastUpdated: new Date() };
-                if (Object.keys(additionalData).length > 0) {
-                    payload[`steps.step${stepId}`] = additionalData;
-                }
-                if (!snap.exists()) {
-                    await setDoc(docRef, { ...payload, steps: { [`step${stepId}`]: additionalData } });
-                } else {
-                    await updateDoc(docRef, payload);
-                }
-            } catch (e) { console.error("Cloud Save failed", e); }
-        }, 500);
+    if (!currentUser) return;
+
+    const performSave = async () => {
+        try {
+            const docRef = doc(db, "simulations", currentUser.uid);
+            const snap = await getDoc(docRef);
+            
+            const payload = {
+                roadmapProgress: userProgress,
+                lastUpdated: new Date()
+            };
+
+            if (Object.keys(additionalData).length > 0) {
+                payload[`steps.step${stepId}`] = additionalData;
+            }
+
+            if (!snap.exists()) {
+                await setDoc(docRef, {
+                    roadmapProgress: userProgress,
+                    steps: { [`step${stepId}`]: additionalData },
+                    lastUpdated: new Date()
+                });
+            } else {
+                await updateDoc(docRef, payload);
+            }
+            console.log(`[Core] Step ${stepId} sync complete.`);
+        } catch (e) { console.error("[Core] Cloud save error:", e); }
+    };
+
+    if (immediate) {
+        if (saveTimeouts[stepId]) clearTimeout(saveTimeouts[stepId]);
+        await performSave();
+    } else {
+        if (saveTimeouts[stepId]) clearTimeout(saveTimeouts[stepId]);
+        saveTimeouts[stepId] = setTimeout(performSave, 1000); // 1 sec debounce for typing
     }
 }
 
@@ -124,31 +106,18 @@ export async function getStepData(stepId) {
             const snap = await getDoc(doc(db, "simulations", currentUser.uid));
             if (snap.exists()) {
                 const data = snap.data();
-                return data.steps?.[`step${stepId}`] || data[`steps.step${stepId}`] || null;
+                return (data.steps && data.steps[`step${stepId}`]) || data[`steps.step${stepId}`] || null;
             }
-        } catch (e) {}
+        } catch (e) { console.error(`[Core] Step ${stepId} load error`, e); }
     }
     const localData = localStorage.getItem(`step${stepId}Data`);
     return localData ? JSON.parse(localData) : null;
 }
 
-export async function checkAuthAndGo(path, stepId) {
-    if (!currentUser) {
-        if (confirm("로그인하면 기기를 바꿔도 진행 상황을 저장할 수 있습니다. 로그인하시겠습니까?")) {
-            const user = await loginWithGoogle();
-            if (user) window.location.href = path;
-        } else {
-            window.location.href = path;
-        }
-    } else {
-        window.location.href = path;
-    }
-}
-
 export function goToNextStep(currentId) {
     const nextStep = ROADMAP_STEPS.find(s => s.id === currentId + 1);
     if (nextStep) {
-        saveProgress(nextStep.id);
+        saveProgress(nextStep.id, {}, true); // Force save progress number
         window.location.href = nextStep.path;
     } else {
         window.location.href = 'index.html';

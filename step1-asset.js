@@ -12,9 +12,9 @@ async function initExchangeRate() {
         const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
         if (rate) {
             exchangeRate = rate;
-            console.log("환율 갱신:", exchangeRate);
+            console.log("[Step 1] 실시간 환율 로드:", exchangeRate);
         }
-    } catch (e) {}
+    } catch (e) { console.error("[Step 1] 환율 로드 실패"); }
     restoreData();
 }
 
@@ -22,16 +22,12 @@ window.setCurrency = function(code) {
     baseCurrency = code;
     const glider = document.getElementById('currency-glider');
     if (glider) glider.style.left = (code === 'USD') ? '4px' : '50%';
-    autoSaveData();
+    autoSaveData(false); // Debounced save
 };
 
-async function autoSaveData() {
-    const salaryVal = document.getElementById('annualSalary')?.value;
-    const expenseVal = document.getElementById('monthlyExpense')?.value;
-    
-    const salary = parseFloat(salaryVal) || 0;
-    const expense = parseFloat(expenseVal) || 0;
-    // 월 저축액 계산 (연봉/12 - 월지출)
+async function autoSaveData(immediate = false) {
+    const salary = parseFloat(document.getElementById('annualSalary')?.value) || 0;
+    const expense = parseFloat(document.getElementById('monthlyExpense')?.value) || 0;
     const monthlySavings = Math.max(0, Math.round((salary / 12) - expense));
 
     const data = {
@@ -46,21 +42,22 @@ async function autoSaveData() {
         liveExchangeRate: exchangeRate
     };
     
-    // 유효한 데이터가 있을 때만 저장 (0 제외)
     if (salary > 0 || data.initialSeed > 0) {
-        await saveProgress(1, data);
+        await saveProgress(1, data, immediate);
     }
 }
 
 window.calculateAndShowResult = async function() {
-    await autoSaveData();
+    await autoSaveData(true); // Final result: Save immediately!
     updateCalculation();
     window.goToStep(4);
 };
 
 window.goToStep = function(step) {
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
-    document.getElementById(`step-${step}`)?.classList.remove('hidden');
+    const target = document.getElementById(`step-${step}`);
+    if (target) target.classList.remove('hidden');
+    
     document.querySelectorAll('.step-dot').forEach((dot, idx) => {
         dot.className = `step-dot w-3 h-3 rounded-full transition-all ${idx + 1 <= step ? 'bg-blue-600' : 'bg-slate-200'}`;
     });
@@ -79,7 +76,7 @@ function updateCalculation() {
     const realYearlyData = [seed];
 
     for (let year = 1; year <= 10; year++) {
-        const annualSavings = (salary - (expense * 12)) * Math.pow(1 + (inflation / 2), year); // 보수적 저축액 증가율
+        const annualSavings = (salary - (expense * 12));
         currentWealth = currentWealth + annualSavings + (currentWealth * returns);
         yearlyData.push(Math.round(currentWealth));
         realYearlyData.push(Math.round(currentWealth / Math.pow(1 + 0.03, year)));
@@ -159,5 +156,5 @@ async function restoreData() {
 document.addEventListener('coreDataReady', initExchangeRate);
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('input').forEach(i => i.addEventListener('input', autoSaveData));
+    document.querySelectorAll('input').forEach(i => i.addEventListener('input', () => autoSaveData(false)));
 });

@@ -66,7 +66,7 @@
                         <span class="text-sm font-black">Hedge Dochi Insight</span>
                     </div>
                     <div id="aiComment" class="ai-message text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-medium">
-                        당신의 데이터를 바탕으로 맞춤형 투자 조언을 생성하고 있습니다. 잠시만 기다려 주세요...
+                        분석 데이터를 불러오고 있습니다...
                     </div>
                 </div>
 
@@ -81,22 +81,33 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700">
                         <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Retirement (Step 2)</h3>
-                        <div id="fireSummary" class="text-center py-6 text-slate-300">데이터를 로드 중...</div>
+                        <div id="fireSummary" class="text-center py-6 text-slate-300">로드 중...</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700">
                         <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Simulation (Step 6)</h3>
-                        <div id="compoundSummary" class="text-center py-6 text-slate-300">데이터를 로드 중...</div>
+                        <div id="compoundSummary" class="text-center py-6 text-slate-300">로드 중...</div>
                     </div>
                 </div>
 
                 <div class="bg-white dark:bg-slate-800 p-10 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-700">
                     <div class="flex justify-between items-center mb-10">
-                        <h2 id="strategyTitle" class="text-3xl font-black">전략을 선택해 주세요</h2>
-                        <div id="strategyBadge" class="hidden px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-black">TARGET</div>
+                        <div>
+                            <h2 id="strategyTitle" class="text-3xl font-black">투자 전략</h2>
+                            <p class="text-xs text-slate-400 mt-1 font-bold uppercase tracking-tighter">Recommended Weights</p>
+                        </div>
+                        <div id="strategyBadge" class="hidden px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-black">ACTIVE</div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                         <div class="relative aspect-square max-w-[200px] mx-auto"><canvas id="targetChart"></canvas></div>
                         <div id="targetLegend" class="space-y-3"></div>
+                    </div>
+                </div>
+
+                <!-- Growth Projection Chart -->
+                <div class="bg-white dark:bg-slate-800 p-10 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-700">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Asset Growth Projection (Step 6 Data)</h3>
+                    <div class="h-[240px] w-full">
+                        <canvas id="growthChart"></canvas>
                     </div>
                 </div>
             </div>
