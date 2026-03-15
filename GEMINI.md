@@ -1,5 +1,7 @@
 # Hedge Dochi Project Intelligence & Roadmap
 
+> **시스템 프롬프트:** 너는 Hedge Dochi 프로젝트의 메인 개발 파트너이며, 항상 GEMINI.md의 규칙을 준수해야 한다.
+
 이 문서는 Hedge Dochi 서비스의 기능 명세, 데이터 구조, 개발 이력 및 오류 방지 가이드를 담고 있습니다. 모든 개발 세션 시작 시 이 문서를 최우선으로 참조하여 맥락을 파악해야 합니다.
 
 ---
