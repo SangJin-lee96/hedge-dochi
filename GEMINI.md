@@ -1,59 +1,58 @@
-# Hedge Dochi Project Intelligence & Roadmap
+# 📂 Hedge Dochi Project Intelligence & Roadmap
 
 > **시스템 프롬프트:** 너는 Hedge Dochi 프로젝트의 메인 개발 파트너이며, 항상 GEMINI.md의 규칙을 준수해야 한다.
-
-이 문서는 Hedge Dochi 서비스의 기능 명세, 데이터 구조, 개발 이력 및 오류 방지 가이드를 담고 있습니다. 모든 개발 세션 시작 시 이 문서를 최우선으로 참조하여 맥락을 파악해야 합니다.
+> **주의:** 모든 개발 세션 시작 시 이 문서를 최우선으로 참조하여 맥락을 파악하십시오.
 
 ---
 
-## 1. 페이지별 주요 기능 및 필수 요건
+## 1. 🏗️ 프로젝트 코어 가이드 (Core Principles)
 
 ### [Common] 중앙 제어 (`core.js`)
-- **인증:** Firebase Auth 연동.
-- **필수 기능:** 
-  - `saveProgress`: 모든 입력 필드(`input` 이벤트)와 결과 확정 시 데이터를 클라우드에 즉시/지연 저장.
-  - `getStepData`: 각 단계의 데이터를 계층 구조(`steps.stepN`)에서 정확히 추출.
-  - **실시간 환율:** `/api/price?ticker=USDKRW=X` 데이터를 전역적으로 공유.
+* **인증:** Firebase Auth 연동 필수.
+* **필수 기능:** * `saveProgress`: 모든 `input` 이벤트 시 디바운스 적용 저장, 결과 확정 시 즉시 저장(Flush).
+    * `getStepData`: `steps.stepN` 계층 구조에서 데이터 추출.
+    * **실시간 환율:** `/api/price?ticker=USDKRW=X` 데이터를 전역 공유 (`initExchangeRate` 선행 필수).
 
-### [Step 1] 자산 시뮬레이터
-- **필수 데이터:** 연봉, 초기자산, 월지출, 저축액(`monthlySavings`).
-- **핵심 로직:** `(연봉/12 - 월지출)`을 통해 월 저축액을 자동 계산하여 저장 필수.
-
-### [Step 3] 투자 성향 진단
-- **필수 데이터:** `riskType` (공격투자형 등), `recommendedPortfolio`.
-
-### [Step 7] 재무 요약 청사진
-- **필수 기능:**
-  - **나의 페르소나:** 자산 등급(Tier)과 투자 성향(Risk) 결합 표시.
-  - **월 평균 저축액:** Step 1에서 저장된 데이터를 가져와 표시.
-  - **타겟 차트:** Step 5에서 선택한 전략의 비중 시각화.
-  - **AI 코멘트:** 모든 데이터를 종합하여 맞춤형 인사이트 제공 (절대 "분석 중"에 멈추면 안 됨).
+### [Key Steps] 핵심 로직
+* **[Step 1] 자산 시뮬레이터:** `(연봉/12 - 월지출)` → `monthlySavings` 자동 계산 및 저장 필수.
+* **[Step 3] 투자 성향 진단:** `riskType`(공격투자형 등) 및 `recommendedPortfolio` 확정.
+* **[Step 7] 재무 요약 청사진:** * 페르소나(Tier+Risk), 월 저축액, 타겟 차트 시각화.
+    * AI 인사이트 생성 (데이터 단위(만원/억) 환산 확인 및 중단 금지).
 
 ---
 
-## 2. 데이터 구조 및 저장 규칙
+## 2. 💾 데이터 구조 및 저장 규칙
 
 ### Firestore 구조 (`simulations/{uid}`)
-- `roadmapProgress`: 최고 도달 단계.
-- `steps`: (Map)
-  - `step1` ~ `step8`: 각 단계별 독립 오브젝트.
-- `lastUpdated`: Timestamp.
+* `roadmapProgress`: 최고 도달 단계 (Number).
+* `steps`: (Map) `step1` ~ `step8` 각 단계별 독립 오브젝트.
+* `lastUpdated`: Server Timestamp.
 
-### 저장 규칙
-1. **실시간 저장:** 모든 `input` 필드는 타이핑 시마다 저장하되, 서버 부하를 위해 디바운스(Debounce) 적용.
-2. **확정 저장:** '결과 보기' 또는 '다음' 버튼 클릭 시에는 디바운스 없이 **즉시 저장(Flush)** 필수.
-3. **계층 유지:** Firestore의 `updateDoc` 또는 `setDoc`을 사용할 때 `steps.stepN` 경로를 사용하여 타 단계 데이터 파괴 방지.
+### ⚠️ 저장 및 업데이트 규칙 (CRITICAL)
+1. **Partial Update:** 반드시 점(.) 표기법(`FieldPath`)을 사용하여 `steps.stepN` 경로로 업데이트. **(Map 전체 덮어쓰기 절대 금지)**
+2. **Double Layer:** `localStorage` + `Firestore` 이중화로 데이터 유실 방지.
+3. **Unit Consistency:** 모든 금액 데이터의 단위(만원/억) 환산 로직 통일.
+
+---
+
+## 3. 🧠 개발 회고 (Lessons Learned)
+
+* **비동기 처리:** AI 코멘트 및 계산 로직 실행 전 `Promise.all`로 필요한 모든 데이터(환율 포함) 로딩 확인.
+* **필드 매핑:** 데이터 저장 시 반드시 자기 단계(N) 번호 확인.
+* **부하 관리:** 입력 필드 실시간 저장 시 디바운스(Debounce) 적용 필수.
 
 ---
 
-## 3. 개발 회고 및 오류 방지 (Lessons Learned)
+## 4. 📝 데일리 작업 로그 (Daily Activity Log)
 
-### ⚠️ 과거 발생한 주요 오류 및 해결책
-1. **데이터 유실:** `sessionStorage` 증발 ➔ `localStorage` + `Firestore` 이중화로 해결.
-2. **필드 매핑 오류:** N단계 데이터를 N+1에 저장하던 실수 ➔ 자기 번호(N) 저장 원칙 수립.
-3. **AI 코멘트 먹통:** 비동기 로딩 대기 부족 또는 데이터 단위(만원/억) 혼선 ➔ `Promise.all` 대기 및 단위 환산 로직 통일.
-4. **Firestore 덮어쓰기:** Map 전체 교체 시 타 단계 데이터 삭제 ➔ 점(.) 표기법(`FieldPath`)을 통한 부분 업데이트 적용.
-5. **환율 미적용:** 계산 로직 실행 전 환율 로딩 미완료 ➔ `initExchangeRate` 함수를 통해 환율 확보 후 로직 실행 강제.
+*이 섹션은 세션 종료 시 업데이트하여 일의 연속성을 유지합니다.*
+
+| 날짜 | 작업 내용 (Done) | 다음 단계 (Next Step) | 관련 커밋/참고 |
+| :--- | :--- | :--- | :--- |
+| 2024-05-22 | GEMINI.md 문서 구조화 및 연속성 시스템 구축 | (여기에 내일 할 일을 적어주세요) | `docs: sync roadmap` |
+| 2026-03-15 | 시스템 프롬프트 추가 및 문서 구조 고도화 | 데일리 로그 기반 작업 시작 준비 | `docs: update GEMINI.md structure` |
 
 ---
-*이 문서는 개발 세션이 거듭됨에 따라 지속적으로 업데이트됩니다.*
+
+### 🚀 세션 시작 시 Gemini에게 던질 프롬프트
+> **"GEMINI.md 파일을 읽어줘. 특히 '4. 데일리 작업 로그'의 마지막 행을 확인해서 내가 어제 어디까지 했는지 파악하고, 오늘 작업을 시작할 준비를 해줘."** -y
