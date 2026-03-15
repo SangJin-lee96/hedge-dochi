@@ -36,13 +36,24 @@ export function setupAuthUI() {
     return new Promise((resolve) => {
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
+            const loginBtn = document.getElementById('loginBtn');
+            const userProfile = document.getElementById('userProfile');
+            const userPhoto = document.getElementById('userPhoto');
+
             if (user) {
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (userProfile) userProfile.classList.remove('hidden');
+                if (userPhoto) userPhoto.src = user.photoURL || 'https://via.placeholder.com/32';
+                
                 const snap = await getDoc(doc(db, "simulations", user.uid));
                 if (snap.exists()) {
                     const data = snap.data();
                     userProgress = Math.max(userProgress, data.roadmapProgress || 1);
                     localStorage.setItem('roadmapProgress', userProgress);
                 }
+            } else {
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (userProfile) userProfile.classList.add('hidden');
             }
             isCoreReady = true;
             document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress } }));
@@ -51,7 +62,41 @@ export function setupAuthUI() {
     });
 }
 
-// Per-step timeout to avoid collisions
+export async function signInWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    try {
+        await signInWithPopup(auth, provider);
+        showToast("로그인되었습니다.", "success");
+    } catch (e) {
+        console.error("Login error", e);
+        showToast("로그인에 실패했습니다.", "info");
+    }
+}
+
+export async function logout() {
+    try {
+        await signOut(auth);
+        localStorage.clear();
+        location.href = 'index.html';
+    } catch (e) {
+        console.error("Logout error", e);
+    }
+}
+
+export function checkAuthAndGo(path) {
+    if (!currentUser) {
+        showToast("로그인이 필요한 서비스입니다.", "info");
+        return;
+    }
+    location.href = path;
+}
+
+// Global Event Listeners for Auth Buttons
+document.addEventListener('click', (e) => {
+    if (e.target.id === 'loginBtn') signInWithGoogle();
+    if (e.target.id === 'logoutBtn') logout();
+});
+
 const saveTimeouts = {};
 
 export async function saveProgress(stepId, additionalData = {}, immediate = false) {

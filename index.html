@@ -79,6 +79,22 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="roadmapGrid"></div>
     </main>
 
+    <footer class="border-t border-slate-100 dark:border-slate-800 py-12 px-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">💎</span>
+                <span class="font-bold text-slate-900 dark:text-white">Hedge Dochi</span>
+            </div>
+            <nav class="flex flex-wrap justify-center gap-6 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <a href="about.html" class="hover:text-blue-600 transition-colors">회사 소개</a>
+                <a href="privacy.html" class="hover:text-blue-600 transition-colors">개인정보처리방침</a>
+                <a href="tos.html" class="hover:text-blue-600 transition-colors">이용약관</a>
+                <a href="contact-form.html" class="hover:text-blue-600 transition-colors">문의하기</a>
+            </nav>
+            <p class="text-xs text-slate-400">© 2026 Hedge Dochi. All rights reserved.</p>
+        </div>
+    </footer>
+
     <script src="dark-mode.js"></script>
     <script type="module">
         import { ROADMAP_STEPS, userProgress, checkAuthAndGo, showToast } from './core.js';
