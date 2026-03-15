@@ -51,6 +51,7 @@
 | :--- | :--- | :--- | :--- |
 | 2024-05-22 | GEMINI.md 문서 구조화 및 연속성 시스템 구축 | (여기에 내일 할 일을 적어주세요) | `docs: sync roadmap` |
 | 2026-03-15 | 시스템 프롬프트 추가 및 문서 구조 고도화 | 데일리 로그 기반 작업 시작 준비 | `docs: update GEMINI.md structure` |
+| 2026-03-15 | 비로그인 초기 화면 버그 수정 및 전 페이지 표준 푸터(AdSense 대응) 통합 적용 | 전반적인 사용자 데이터 동기화 로직 최적화 | `fix: improve initial screen and unify footers` |
 
 ---
 
