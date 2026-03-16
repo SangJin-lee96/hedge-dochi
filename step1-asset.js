@@ -270,6 +270,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-step4-download')?.addEventListener('click', window.downloadResultImage);
     document.getElementById('btn-step4-retry')?.addEventListener('click', () => { logClick('다시하기'); window.goToStep(1); });
     document.getElementById('btn-step4-toggle-table')?.addEventListener('click', window.toggleYearlyTable);
+    
+    // 핵심 버튼: 2단계 은퇴 설계로 이동
+    document.getElementById('btn-step1-to-step2')?.addEventListener('click', () => {
+        logClick('Step 1 -> Step 2 Curriculum');
+        goToNextStep(1);
+    });
 
     // 5. 모달 제어
     const modal = document.getElementById('strategyModal');
