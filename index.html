@@ -101,9 +101,13 @@
 
         function updateUI(progress) {
             const grid = document.getElementById('roadmapGrid');
+            const totalSteps = ROADMAP_STEPS.length;
+            
             grid.innerHTML = ROADMAP_STEPS.map((step) => {
                 const isLocked = step.id > progress;
-                const isCompleted = step.id < progress;
+                // 마지막 단계(9)까지 완료된 경우 모든 단계를 완료로 표시
+                const isCompleted = step.id < progress || (progress === totalSteps && step.id === totalSteps);
+                
                 return `
                     <div class="step-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 rounded-3xl ${isLocked ? 'locked' : 'cursor-pointer hover:border-blue-500'}" onclick="${isLocked ? '' : `location.href='${step.path}'`}">
                         ${isCompleted ? '<span class="absolute top-4 right-4 text-[10px] font-black bg-emerald-100 text-emerald-600 px-2 py-1 rounded">완료</span>' : ''}
@@ -114,16 +118,23 @@
                 `;
             }).join('');
 
-            const percent = Math.min(100, Math.round(((progress - 1) / ROADMAP_STEPS.length) * 100));
+            // 퍼센트 계산: 모든 단계를 마치면 100%
+            const percent = progress >= totalSteps ? 100 : Math.round(((progress - 1) / (totalSteps - 1)) * 100);
             document.getElementById('progress-text').innerText = `${percent}%`;
             document.getElementById('progress-bar').style.width = `${percent}%`;
             
             const resumeBtn = document.getElementById('resumeBtn');
-            const targetStep = ROADMAP_STEPS.find(s => s.id === progress) || ROADMAP_STEPS[0];
+            const targetStep = ROADMAP_STEPS.find(s => s.id === progress) || ROADMAP_STEPS[totalSteps - 1];
             
             document.getElementById('btn-spinner').classList.add('hidden');
-            document.getElementById('btn-text').innerText = progress > 1 ? `${targetStep.id}단계 이어서 하기 ➔` : '1단계 시작하기 ➔';
-            resumeBtn.onclick = () => location.href = targetStep.path;
+            
+            if (progress >= totalSteps) {
+                document.getElementById('btn-text').innerText = '마스터 플랜 리포트 보기 ➔';
+                resumeBtn.onclick = () => location.href = 'final-blueprint.html';
+            } else {
+                document.getElementById('btn-text').innerText = progress > 1 ? `${targetStep.id}단계 이어서 하기 ➔` : '1단계 시작하기 ➔';
+                resumeBtn.onclick = () => location.href = targetStep.path;
+            }
         }
 
         // 캐시 데이터로 즉시 1차 렌더링
