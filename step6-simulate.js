@@ -75,6 +75,11 @@ window.calculateCompound = async function() {
     const finalProfit = currentWealth - totalPrincipal;
     document.getElementById('totalCompoundResult').innerText = formatKorean(currentWealth);
     document.getElementById('totalProfitResult').innerText = `수익금: ${formatKorean(finalProfit)}`;
+    
+    // FIX: 총 원금 UI 업데이트 코드 추가
+    const principalEl = document.getElementById('totalPrincipal');
+    if (principalEl) principalEl.innerText = formatKorean(totalPrincipal);
+    
     document.getElementById('profitRatio').innerText = `${((finalProfit / totalPrincipal) * 100).toFixed(1)}% 성장`;
     
     renderTable(yearlyData);
