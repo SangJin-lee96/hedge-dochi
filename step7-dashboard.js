@@ -49,7 +49,8 @@ function updatePersonaUI(s1, s3) {
     const iconEl = document.getElementById('personaIcon');
 
     if (s1) {
-        const sim = calculateWealthSummary(s1);
+        // 1단계에서 저장된 등급을 우선 사용, 없으면 재계산
+        const sim = s1.tier ? { tier: s1.tier, icon: getTierIcon(s1.tier) } : calculateWealthSummary(s1);
         if (tierEl) tierEl.innerText = sim.tier;
         if (iconEl) iconEl.innerText = sim.icon;
         if (nameEl) nameEl.innerText = `${sim.tier} 등급 투자자`;
@@ -64,6 +65,11 @@ function updatePersonaUI(s1, s3) {
         if (tagsEl) tagsEl.innerHTML = `<span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-bold">${s3.riskType}</span>`;
         if (s1 && nameEl) nameEl.innerText = `${s3.riskType} ${nameEl.innerText}`;
     }
+}
+
+function getTierIcon(tier) {
+    const icons = { "다이아몬드": "💎", "플래티넘": "💍", "골드": "🥇", "실버": "🥈", "브론즈": "🥉" };
+    return icons[tier] || "🥉";
 }
 
 function updateFireUI(s2) {

@@ -33,7 +33,7 @@ window.goToStep = function(step) {
 };
 
 // --- Action Functions ---
-async function autoSaveData(immediate = false) {
+async function autoSaveData(immediate = false, extraData = {}) {
     const salary = parseFloat(document.getElementById('annualSalary')?.value) || 0;
     const expense = parseFloat(document.getElementById('monthlyExpense')?.value) || 0;
     const monthlySavings = Math.max(0, Math.round((salary / 12) - expense));
@@ -47,7 +47,8 @@ async function autoSaveData(immediate = false) {
         investmentReturn: parseFloat(document.getElementById('investmentReturn')?.value) || 0,
         inflationRate: parseFloat(document.getElementById('inflationRate')?.value) || 0,
         baseCurrency: baseCurrency,
-        manualExchangeRate: parseFloat(document.getElementById('manualExchangeRate')?.value) || exchangeRate
+        manualExchangeRate: parseFloat(document.getElementById('manualExchangeRate')?.value) || exchangeRate,
+        ...extraData
     };
     
     if (salary > 0 || data.initialSeed > 0) {
@@ -57,8 +58,6 @@ async function autoSaveData(immediate = false) {
 }
 
 async function calculateAndShowResult() {
-    const data = await autoSaveData(true);
-    logClick('결과 보기', data);
     updateCalculation();
     window.goToStep(4);
 }
@@ -80,7 +79,6 @@ function updateCalculation() {
     if (tableBody) tableBody.innerHTML = '';
 
     for (let year = 1; year <= 10; year++) {
-        // 매년 시작 시 연봉과 지출을 상승시킴 (사용자가 '1년차'에 상승된 연봉을 보길 원함)
         currentSalary *= (1 + salaryGrowth);
         currentExpense *= (1 + inflation);
 
@@ -104,13 +102,22 @@ function updateCalculation() {
         }
     }
 
+    const finalRealWealth = realYearlyData[10];
+    const tierInfo = updateWealthTier(finalRealWealth);
+    
+    // 최종 데이터를 Firestore에 명시적으로 저장
+    autoSaveData(true, {
+        finalNominalWealth: yearlyData[10],
+        finalRealWealth: finalRealWealth,
+        tier: tierInfo.tier
+    });
+
     document.getElementById('finalWealthText').innerText = formatValue(yearlyData[10]);
     document.getElementById('realValueText').innerText = formatValue(realYearlyData[10]);
     document.getElementById('netSavingsText').innerText = formatValue(Math.max(0, Math.round((salary/12) - expense)));
     
-    updateWealthTier(realYearlyData[10]);
     renderChart(yearlyData, realYearlyData);
-    generateAIInsight(yearlyData[10], realYearlyData[10]);
+    generateAIInsight(yearlyData[10], finalRealWealth);
 }
 
 function updateWealthTier(realWealth) {
@@ -137,6 +144,8 @@ function updateWealthTier(realWealth) {
     document.getElementById('gradeBadgeIcon').innerText = icon;
     document.getElementById('gradeDesc').innerText = desc;
     document.getElementById('gradeSection').className = `capture-area bg-gradient-to-br ${color} p-10 md:p-16 rounded-[2.5rem] shadow-2xl text-center text-white relative overflow-hidden`;
+    
+    return { tier, icon };
 }
 
 function renderChart(nominalData, realData) {
