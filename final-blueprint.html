@@ -17,7 +17,8 @@
         .audit-bar { height: 12px; border-radius: 9999px; background: #f1f5f9; position: relative; }
         html.dark .audit-bar { background: #0f172a; }
         .audit-progress { height: 100%; border-radius: 9999px; transition: width 1s ease-out; }
-        .weight-input { width: 60px; text-align: center; border-radius: 0.75rem; border: 1px solid #e2e8f0; padding: 0.25rem; font-weight: 800; }
+        .weight-input { width: 60px; text-align: center; border-radius: 0.75rem; border: 1px solid #e2e8f0; padding: 0.25rem; font-weight: 800; outline: none; }
+        .weight-input:focus { border-color: #3b82f6; ring: 2px; ring-color: #3b82f6; }
         html.dark .weight-input { background: #0f172a; border-color: #334155; color: white; }
         .lock-btn { transition: all 0.2s; opacity: 0.3; cursor: pointer; }
         .lock-btn.active { opacity: 1; color: #3b82f6; }
@@ -43,33 +44,39 @@
             <div>
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600 text-white text-[10px] font-black uppercase tracking-tighter mb-4">Official Master Plan</div>
                 <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-2">종합 재무 진단 보고서</h1>
-                <p class="text-slate-500 font-medium">관리자: AI 도치 | 발행일: <span id="currentDate">2026.03.15</span></p>
+                <p class="text-slate-500 font-medium italic">"데이터는 거짓말을 하지 않습니다. 당신의 자산을 과학적으로 관리하세요."</p>
             </div>
-            <div class="text-right hidden md:block">
-                <p class="text-xs font-bold text-slate-400 uppercase mb-1">Portfolio Health</p>
-                <div id="totalHealthScore" class="text-6xl font-black text-blue-600">--</div>
+            <div class="text-right">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Global Portfolio Health</p>
+                <div id="totalHealthScore" class="text-7xl font-black text-blue-600 tracking-tighter">--</div>
             </div>
         </div>
 
-        <!-- Section 1: Executive Summary -->
+        <!-- Section 1: Executive Summary (Enriched) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            <div class="lg:col-span-2 report-card p-10">
-                <h3 class="text-sm font-black text-blue-600 uppercase tracking-widest mb-6">Executive Summary</h3>
-                <div id="advisorVerdict" class="text-xl md:text-2xl font-bold leading-relaxed text-slate-800 dark:text-slate-200">
-                    데이터를 분석하여 당신을 위한 맞춤형 총평을 생성 중입니다...
+            <div class="lg:col-span-2 report-card p-10 md:p-12 relative">
+                <div class="absolute top-0 right-0 p-8 text-6xl opacity-5 grayscale pointer-events-none">📝</div>
+                <h3 class="text-xs font-black text-blue-600 uppercase tracking-[0.2em] mb-8">Executive Summary & Verdict</h3>
+                <div id="advisorVerdict" class="space-y-6">
+                    <!-- Dynamic verdict paragraphs will be injected here -->
+                    <p class="text-slate-400 animate-pulse font-medium text-lg">AI 도치가 당신의 재무 상태를 심층 분석하고 있습니다...</p>
                 </div>
             </div>
-            <div class="report-card p-10 bg-slate-900 text-white border-none">
-                <h3 class="text-sm font-black text-blue-400 uppercase tracking-widest mb-6">Financial Velocity</h3>
-                <div class="space-y-6">
+            <div class="report-card p-10 bg-slate-900 text-white border-none shadow-2xl shadow-blue-500/10">
+                <h3 class="text-xs font-black text-blue-400 uppercase tracking-[0.2em] mb-8">Financial Velocity</h3>
+                <div class="space-y-8">
                     <div>
-                        <p class="text-[10px] text-slate-400 font-bold mb-1 uppercase">현재 저축 체력</p>
-                        <p id="currentSavingsText" class="text-2xl font-black">0원</p>
+                        <p class="text-[10px] text-slate-500 font-black mb-2 uppercase">현재 월 저축액</p>
+                        <p id="currentSavingsText" class="text-3xl font-black text-white">0원</p>
                     </div>
                     <div>
-                        <p class="text-[10px] text-slate-400 font-bold mb-1 uppercase">목표 달성 가시성</p>
-                        <div class="audit-bar mt-2"><div id="velocityBar" class="audit-progress bg-blue-500" style="width: 0%"></div></div>
-                        <p id="velocityFeedback" class="text-[10px] font-bold mt-2 text-slate-400">데이터를 분석 중입니다.</p>
+                        <p class="text-[10px] text-slate-500 font-black mb-2 uppercase">목표 달성 가시성 (저축 체력)</p>
+                        <div class="audit-bar mt-2 bg-white/10"><div id="velocityBar" class="audit-progress bg-gradient-to-r from-blue-500 to-indigo-400" style="width: 0%"></div></div>
+                        <p id="velocityFeedback" class="text-xs font-bold mt-4 text-blue-300 leading-relaxed">---</p>
+                    </div>
+                    <div class="pt-4 border-t border-white/10">
+                        <p class="text-[10px] text-slate-500 font-black mb-1 uppercase">10년 후 예상 자산</p>
+                        <p id="projectedWealthSmall" class="text-xl font-black text-emerald-400">0원</p>
                     </div>
                 </div>
             </div>
@@ -77,42 +84,46 @@
 
         <!-- Section 2: Asset Allocation Audit -->
         <div class="report-card p-10 md:p-12 mb-12">
-            <div class="flex justify-between items-center mb-10">
-                <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">Asset Allocation Audit</h3>
-                <span id="selectedStrategyTag" class="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-black text-slate-500 uppercase">Strategy: ---</span>
+            <div class="flex justify-between items-center mb-12">
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">02. Asset Allocation Audit</h3>
+                <span id="selectedStrategyTag" class="px-4 py-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-full text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase">Strategy: ---</span>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                <div class="relative aspect-square max-w-[300px] mx-auto">
+                <div class="relative aspect-square max-w-[320px] mx-auto">
                     <canvas id="auditChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Balance</span>
-                        <span id="balancePercent" class="text-3xl font-black">0%</span>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Balance Score</span>
+                        <span id="balancePercent" class="text-4xl font-black text-slate-800 dark:text-white">0%</span>
                     </div>
                 </div>
-                <div id="auditList" class="space-y-6">
-                    <!-- Category audit items will be injected here -->
+                <div id="auditList" class="space-y-8">
+                    <!-- Category audit items injected here -->
                 </div>
             </div>
         </div>
 
-        <!-- Section 3: Interactive Rebalancing Action (Simulated) -->
-        <div class="report-card p-10 md:p-12 mb-12 bg-white dark:bg-slate-800 border-2 border-blue-500/20">
-            <div class="flex justify-between items-center mb-10">
-                <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">Today's Rebalancing Action</h3>
-                <div class="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-xl">
-                    <span class="text-[10px] font-black text-blue-600">비중 합계</span>
-                    <span id="totalWeightDisplay" class="font-black text-blue-600">100%</span>
+        <!-- Section 3: Interactive Rebalancing Action -->
+        <div class="report-card p-10 md:p-12 mb-12 border-2 border-blue-500/20 bg-white dark:bg-slate-800/50">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
+                <div>
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2">03. Interactive Rebalancing Action</h3>
+                    <p class="text-sm text-slate-500 font-medium">목표 비중을 직접 조절하며 매매 시나리오를 시뮬레이션하세요.</p>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-100 dark:bg-slate-900 px-5 py-3 rounded-2xl">
+                    <span class="text-[10px] font-black text-slate-500 uppercase">Total Weight</span>
+                    <span id="totalWeightDisplay" class="text-xl font-black text-blue-600">100%</span>
                 </div>
             </div>
-            <div class="overflow-x-auto">
+            
+            <div class="overflow-x-auto mb-10">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="text-[10px] font-black text-slate-400 uppercase border-b dark:border-slate-700">
-                            <th class="py-4 px-2">자산 종목</th>
-                            <th class="py-4 px-2">현재 비중</th>
-                            <th class="py-4 px-2">목표 비중 (%)</th>
-                            <th class="py-4 px-2">잠금</th>
-                            <th class="py-4 px-2 text-right">매매 실행 제안</th>
+                        <tr class="text-[10px] font-black text-slate-400 uppercase border-b border-slate-100 dark:border-slate-700">
+                            <th class="py-5 px-2">Asset</th>
+                            <th class="py-5 px-2">Current</th>
+                            <th class="py-5 px-2">Target (%)</th>
+                            <th class="py-5 px-2 text-center">Lock</th>
+                            <th class="py-5 px-2 text-right">Execution Guide</th>
                         </tr>
                     </thead>
                     <tbody id="rebalanceTableBody">
@@ -120,25 +131,31 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-8 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl text-[11px] text-slate-500 font-medium leading-relaxed">
-                💡 <b>사용자 가이드:</b> 목표 비중을 직접 수정해보세요. 자물쇠 아이콘을 클릭하여 특정 자산을 고정하면, 고정되지 않은 나머지 자산들이 자동으로 비율을 맞춰 항상 100%가 유지됩니다.
+
+            <!-- Important Action Button -->
+            <div class="flex flex-col items-center gap-4 py-6 border-t border-slate-100 dark:border-slate-700">
+                <button id="btn-save-strategy" class="w-full max-w-md py-5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20 transition-all flex items-center justify-center gap-3 active:scale-95 group">
+                    <span class="text-lg">이 비중으로 나의 전략 확정 및 저장</span>
+                    <span class="group-hover:translate-x-1 transition-transform">💾</span>
+                </button>
+                <p class="text-[10px] text-slate-400 font-bold">확정된 비중은 7단계 대시보드와 리밸런싱 가이드에 영구 반영됩니다.</p>
             </div>
         </div>
 
         <!-- Section 4: Advisor's Recommendation -->
-        <div class="report-card p-10 md:p-12 mb-12 border-l-8 border-l-blue-600">
-            <h3 class="text-sm font-black text-blue-600 uppercase tracking-widest mb-8">Asset Manager's Recommendation</h3>
-            <div id="recommendationList" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="report-card p-10 md:p-12 mb-12 bg-slate-50 dark:bg-slate-900/30 border-none">
+            <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-10">04. Advisor's Priority Checklist</h3>
+            <div id="recommendationList" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Recommendations will be injected here -->
             </div>
         </div>
 
-        <!-- Footer Actions -->
-        <div class="no-print flex flex-col md:flex-row gap-4">
-            <button onclick="window.print()" class="flex-1 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-3xl shadow-xl flex items-center justify-center gap-3">
-                <span>📄 PDF 보고서 저장하기</span>
+        <!-- Final Footer Actions -->
+        <div class="no-print flex flex-col md:flex-row gap-4 pt-8">
+            <button onclick="window.print()" class="flex-1 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-3xl shadow-2xl flex items-center justify-center gap-3 hover:opacity-90 transition-opacity">
+                <span>📄 PDF 리포트 다운로드</span>
             </button>
-            <button onclick="location.href='index.html'" class="flex-1 py-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold rounded-3xl text-slate-500 transition-all hover:bg-slate-50">로드맵 홈으로 이동</button>
+            <button onclick="location.href='index.html'" class="flex-1 py-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-black rounded-3xl text-slate-500 hover:bg-slate-50 transition-all">로드맵 홈으로 돌아가기</button>
         </div>
     </main>
 
