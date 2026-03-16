@@ -14,14 +14,23 @@ const questions = [
 let currentQuestion = 0;
 let totalScore = 0;
 
+// --- Debugging Helper ---
+function logClick(btnName, data = {}) {
+    console.log(`[Step 3] ${btnName} 버튼 클릭됨`, {
+        timestamp: new Date().toISOString(),
+        data: data
+    });
+}
+
 document.addEventListener('coreDataReady', async (e) => {
     const riskData = await getStepData(3);
     if (riskData && riskData.riskType) {
-        showResult(riskData, true); // 데이터가 있으면 결과 화면 즉시 표시
+        showResult(riskData, true);
     }
 });
 
 window.startQuiz = function() {
+    logClick('진단 시작/재시작');
     const startScreen = document.getElementById('start-screen');
     const resultContainer = document.getElementById('result-container');
     if (startScreen) startScreen.classList.add('hidden');
@@ -98,8 +107,26 @@ function showResult(result, isRecovery = false) {
             <div class="text-2xl font-black text-blue-600">${result.recommendedPortfolio}</div>
         </div>
         <div class="flex flex-col gap-4">
-            <button onclick="goToNextStep(3)" class="w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl text-center shadow-xl hover:scale-[1.02] transition-all text-lg">다음 단계로 진행하기 ➔</button>
-            <button onclick="startQuiz()" class="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition-all text-sm">테스트 다시 하기 (결과 수정)</button>
+            <button id="btn-step3-next" class="w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl text-center shadow-xl hover:scale-[1.02] transition-all text-lg">다음 단계로 진행하기 ➔</button>
+            <button id="btn-step3-retry" class="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition-all text-sm">테스트 다시 하기 (결과 수정)</button>
         </div>
     `;
 }
+
+// --- Event Delegation for Dynamic Buttons ---
+document.addEventListener('DOMContentLoaded', () => {
+    const resultContainer = document.getElementById('result-container');
+    if (resultContainer) {
+        resultContainer.addEventListener('click', (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+
+            if (target.id === 'btn-step3-next') {
+                logClick('다음 단계로 진행');
+                goToNextStep(3);
+            } else if (target.id === 'btn-step3-retry') {
+                window.startQuiz();
+            }
+        });
+    }
+});
