@@ -248,8 +248,8 @@
                     <!-- 통화 선택 스위처 -->
                     <div class="relative flex p-1 bg-slate-100 dark:bg-slate-800 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-inner">
                         <div id="currency-glider" class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white dark:bg-slate-600 rounded-[1.8rem] shadow-xl transition-all duration-300"></div>
-                        <button onclick="setCurrency('USD')" id="btn-currency-usd" class="relative z-10 flex-1 py-4 font-black transition-colors text-blue-600 dark:text-blue-400">USD ($)</button>
-                        <button onclick="setCurrency('KRW')" id="btn-currency-krw" class="relative z-10 flex-1 py-4 font-black transition-colors text-slate-400">KRW (₩)</button>
+                        <button id="btn-set-usd" class="relative z-10 flex-1 py-4 font-black transition-colors text-blue-600 dark:text-blue-400">USD ($)</button>
+                        <button id="btn-set-krw" class="relative z-10 flex-1 py-4 font-black transition-colors text-slate-400">KRW (₩)</button>
                     </div>
 
                     <div class="bg-white dark:bg-[#1e293b] p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 space-y-8">
@@ -271,7 +271,7 @@
                 </div>
                 
                 <div class="flex justify-center mt-8">
-                    <button onclick="goToStep(2)" class="px-12 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 transition-all">다음 단계로 ➔</button>
+                    <button id="btn-step1-next" class="px-12 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 transition-all">다음 단계로 ➔</button>
                 </div>
             </div>
 
@@ -298,8 +298,8 @@
                     </div>
                 </div>
                 <div class="flex justify-center gap-4 mt-8">
-                    <button onclick="goToStep(1)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-[2rem] text-slate-500">이전</button>
-                    <button onclick="goToStep(3)" class="px-12 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-[2rem] shadow-xl transition-all">다음 단계로 ➔</button>
+                    <button id="btn-step2-prev" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-[2rem] text-slate-500">이전</button>
+                    <button id="btn-step2-next" class="px-12 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-[2rem] shadow-xl transition-all">다음 단계로 ➔</button>
                 </div>
             </div>
 
@@ -332,13 +332,13 @@
                             <span class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">원</span>
                         </div>
                         <div class="mt-2 flex justify-end">
-                            <button onclick="resetToLiveExchangeRate()" class="text-[10px] font-bold text-blue-500 hover:underline">실시간 환율 적용 🔄</button>
+                            <button id="btn-step3-reset-rate" class="text-[10px] font-bold text-blue-500 hover:underline">실시간 환율 적용 🔄</button>
                         </div>
                     </div>
                 </div>
                 <div class="flex justify-center gap-4 mt-8">
-                    <button onclick="goToStep(2)" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-[2rem] text-slate-500">이전</button>
-                    <button onclick="calculateAndShowResult()" class="px-16 py-5 bg-blue-600 text-white font-black rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 transition-all">결과 보기 🚀</button>
+                    <button id="btn-step3-prev" class="px-8 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-[2rem] text-slate-500">이전</button>
+                    <button id="btn-step3-calculate" class="px-16 py-5 bg-blue-600 text-white font-black rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 transition-all">결과 보기 🚀</button>
                 </div>
             </div>
 
@@ -351,13 +351,13 @@
                     <p id="gradeDesc" class="text-white/90 text-lg md:text-2xl font-medium max-w-xl mx-auto leading-relaxed">준비 중...</p>
                     <div class="mt-12 flex flex-wrap justify-center gap-4">
                         <button id="showStrategyBtn" class="px-8 py-4 rounded-2xl bg-white text-indigo-600 font-black shadow-xl hover:bg-indigo-50 transition-all active:scale-95">🎯 맞춤 전략 확인</button>
-                        <button onclick="copySimulationResult()" class="px-8 py-4 rounded-2xl bg-indigo-700 text-white font-bold shadow-xl hover:bg-indigo-800 transition-all active:scale-95 flex items-center gap-2">
+                        <button id="btn-step4-copy" class="px-8 py-4 rounded-2xl bg-indigo-700 text-white font-bold shadow-xl hover:bg-indigo-800 transition-all active:scale-95 flex items-center gap-2">
                             <span>📋 결과 복사</span>
                         </button>
-                        <button onclick="downloadResultImage()" class="px-8 py-4 rounded-2xl bg-emerald-600 text-white font-bold shadow-xl hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-2">
+                        <button id="btn-step4-download" class="px-8 py-4 rounded-2xl bg-emerald-600 text-white font-bold shadow-xl hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-2">
                             <span>🖼️ 이미지 저장</span>
                         </button>
-                        <button onclick="goToStep(1)" class="px-8 py-4 rounded-2xl bg-white/20 text-white font-bold backdrop-blur-md border border-white/30 hover:bg-white/30 transition-all">🔄 다시 하기</button>
+                        <button id="btn-step4-retry" class="px-8 py-4 rounded-2xl bg-white/20 text-white font-bold backdrop-blur-md border border-white/30 hover:bg-white/30 transition-all">🔄 다시 하기</button>
                     </div>
                 </div>
 
@@ -371,7 +371,7 @@
                     <h3 class="text-xl font-bold mb-10">📉 자산 성장 추이</h3>
                     <div class="relative h-[300px] md:h-[400px]"><canvas id="wealthChart"></canvas></div>
                     <div class="mt-12">
-                        <button onclick="toggleYearlyTable()" class="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-blue-600 transition-colors mb-6"><span>📊 상세 데이터 보기</span><svg id="table-arrow" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
+                        <button id="btn-step4-toggle-table" class="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-blue-600 transition-colors mb-6"><span>📊 상세 데이터 보기</span><svg id="table-arrow" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
                         <div id="yearly-table-container" class="hidden overflow-x-auto no-scrollbar"><table class="w-full text-left border-collapse"><thead><tr class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b dark:border-slate-800"><th class="py-4 px-2">연차</th><th class="py-4 px-2">예상 연봉</th><th class="py-4 px-2">투자 수익</th><th class="py-4 px-2 text-right">기말 자산</th></tr></thead><tbody id="yearlyTableBody" class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300"></tbody></table></div>
                     </div>
                 </div>
