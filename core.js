@@ -51,11 +51,10 @@ export function setupAuthUI() {
         await initExchangeRate();
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
-            const loginBtn = document.getElementById('loginBtn');
-            const userProfile = document.getElementById('userProfile');
-            const userPhoto = document.getElementById('userPhoto');
-
             if (user) {
+                const loginBtn = document.getElementById('loginBtn');
+                const userProfile = document.getElementById('userProfile');
+                const userPhoto = document.getElementById('userPhoto');
                 if (loginBtn) loginBtn.classList.add('hidden');
                 if (userProfile) userProfile.classList.remove('hidden');
                 if (userPhoto) userPhoto.src = user.photoURL || '';
@@ -68,6 +67,8 @@ export function setupAuthUI() {
                     console.log("[Core] Progress Sync:", userProgress);
                 }
             } else {
+                const loginBtn = document.getElementById('loginBtn');
+                const userProfile = document.getElementById('userProfile');
                 if (loginBtn) loginBtn.classList.remove('hidden');
                 if (userProfile) userProfile.classList.add('hidden');
             }
@@ -105,12 +106,6 @@ export function checkAuthAndGo(path) {
     location.href = path;
 }
 
-// Global Event Listeners for Auth Buttons
-document.addEventListener('click', (e) => {
-    if (e.target.id === 'loginBtn') signInWithGoogle();
-    if (e.target.id === 'logoutBtn') logout();
-});
-
 export async function saveProgress(stepId, additionalData = {}, immediate = false) {
     userProgress = Math.max(userProgress, stepId);
     localStorage.setItem('roadmapProgress', userProgress);
@@ -125,12 +120,11 @@ export async function saveProgress(stepId, additionalData = {}, immediate = fals
             const docRef = doc(db, "simulations", currentUser.uid);
             const payload = {
                 roadmapProgress: userProgress,
-                lastUpdated: new Date(),
-                steps: {}
+                lastUpdated: new Date()
             };
             
             if (Object.keys(additionalData).length > 0) {
-                payload.steps[`step${stepId}`] = additionalData;
+                payload[`steps.step${stepId}`] = additionalData;
             }
 
             await setDoc(docRef, payload, { merge: true });
@@ -186,5 +180,11 @@ export function showToast(msg, type = 'info') {
     t.className = `show ${type}`;
     setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// Global Event Listeners for Auth Buttons
+document.addEventListener('click', (e) => {
+    if (e.target.id === 'loginBtn') signInWithGoogle();
+    if (e.target.id === 'logoutBtn') logout();
+});
 
 document.addEventListener('DOMContentLoaded', setupAuthUI);
