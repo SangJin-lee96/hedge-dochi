@@ -1,8 +1,18 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can only read/write their own document
+    // 1. 유저 기본 프로필 (사용 중인 경우)
     match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 2. 헤지도치 시뮬레이션 데이터 (핵심)
+    match /simulations/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 3. 포트폴리오 데이터 (레거시 지원)
+    match /portfolios/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
