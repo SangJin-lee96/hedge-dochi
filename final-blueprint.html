@@ -17,6 +17,10 @@
         .audit-bar { height: 12px; border-radius: 9999px; background: #f1f5f9; position: relative; }
         html.dark .audit-bar { background: #0f172a; }
         .audit-progress { height: 100%; border-radius: 9999px; transition: width 1s ease-out; }
+        .weight-input { width: 60px; text-align: center; border-radius: 0.75rem; border: 1px solid #e2e8f0; padding: 0.25rem; font-weight: 800; }
+        html.dark .weight-input { background: #0f172a; border-color: #334155; color: white; }
+        .lock-btn { transition: all 0.2s; opacity: 0.3; cursor: pointer; }
+        .lock-btn.active { opacity: 1; color: #3b82f6; }
         @media print { .no-print { display: none; } body { background: white; } .report-card { border: 1px solid #eee; box-shadow: none; } }
     </style>
 </head>
@@ -91,16 +95,23 @@
             </div>
         </div>
 
-        <!-- Section 3: Today's Rebalancing Action -->
-        <div class="report-card p-10 md:p-12 mb-12 bg-white dark:bg-slate-800">
-            <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-10">Today's Rebalancing Action</h3>
+        <!-- Section 3: Interactive Rebalancing Action (Simulated) -->
+        <div class="report-card p-10 md:p-12 mb-12 bg-white dark:bg-slate-800 border-2 border-blue-500/20">
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">Today's Rebalancing Action</h3>
+                <div class="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-xl">
+                    <span class="text-[10px] font-black text-blue-600">비중 합계</span>
+                    <span id="totalWeightDisplay" class="font-black text-blue-600">100%</span>
+                </div>
+            </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="text-[10px] font-black text-slate-400 uppercase border-b dark:border-slate-700">
                             <th class="py-4 px-2">자산 종목</th>
                             <th class="py-4 px-2">현재 비중</th>
-                            <th class="py-4 px-2">목표 비중</th>
+                            <th class="py-4 px-2">목표 비중 (%)</th>
+                            <th class="py-4 px-2">잠금</th>
                             <th class="py-4 px-2 text-right">매매 실행 제안</th>
                         </tr>
                     </thead>
@@ -108,6 +119,9 @@
                         <!-- Action rows injected here -->
                     </tbody>
                 </table>
+            </div>
+            <div class="mt-8 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl text-[11px] text-slate-500 font-medium leading-relaxed">
+                💡 <b>사용자 가이드:</b> 목표 비중을 직접 수정해보세요. 자물쇠 아이콘을 클릭하여 특정 자산을 고정하면, 고정되지 않은 나머지 자산들이 자동으로 비율을 맞춰 항상 100%가 유지됩니다.
             </div>
         </div>
 
