@@ -49,7 +49,26 @@ document.addEventListener('coreDataReady', async (e) => {
 function setCurrency(code) {
     baseCurrency = code;
     const glider = document.getElementById('currency-glider');
+    const btnUsd = document.getElementById('btn-currency-usd');
+    const btnKrw = document.getElementById('btn-currency-krw');
+
     if (glider) glider.style.left = (code === 'USD') ? '4px' : 'calc(50% - 4px)';
+    
+    // 버튼 색상 클래스 업데이트
+    if (btnUsd && btnKrw) {
+        if (code === 'USD') {
+            btnUsd.classList.replace('text-slate-400', 'text-blue-600');
+            btnUsd.classList.add('dark:text-blue-400');
+            btnKrw.classList.replace('text-blue-600', 'text-slate-400');
+            btnKrw.classList.remove('dark:text-blue-400');
+        } else {
+            btnKrw.classList.replace('text-slate-400', 'text-blue-600');
+            btnKrw.classList.add('dark:text-blue-400');
+            btnUsd.classList.replace('text-blue-600', 'text-slate-400');
+            btnUsd.classList.remove('dark:text-blue-400');
+        }
+    }
+    
     autoSaveData();
 }
 
