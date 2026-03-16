@@ -13,7 +13,7 @@
         .article-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
         .model-card { background: white; border-radius: 2rem; padding: 2.5rem; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); margin-bottom: 2rem; transition: all 0.3s; cursor: pointer; }
         html.dark .model-card { background: #1e293b; border-color: #334155; }
-        .model-card.selected { border-color: #3b82f6; ring: 4px; ring-color: rgba(59, 130, 246, 0.5); background: rgba(59, 130, 246, 0.02); }
+        .model-card.selected { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); background: rgba(59, 130, 246, 0.02); }
         .tag { font-size: 0.7rem; font-weight: 800; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase; }
     </style>
 </head>
@@ -23,82 +23,60 @@
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
                 <span class="text-xl">💎</span><span class="font-bold text-lg tracking-tight">Hedge Dochi</span>
             </div>
-            <div id="authContainer">
-                <span id="userStatus" class="text-xs font-bold text-slate-400">데이터 동기화 중...</span>
-            </div>
+            <div id="authContainer"><span id="userStatus" class="text-xs font-bold text-slate-400">데이터 동기화 중...</span></div>
         </div>
     </header>
 
     <main class="article-container pt-12 pb-24">
         <header class="mb-16 text-center">
             <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight mb-6">나의 투자 전략 선택</h1>
-            <p class="text-slate-500 text-lg">성향에 맞는 검증된 포트폴리오 모델 중 하나를 선택하세요.</p>
+            <p class="text-slate-500 text-lg font-medium">성향에 맞는 검증된 포트폴리오 모델 중 하나를 선택하세요.</p>
         </header>
 
         <div id="models-list" class="space-y-6">
-            <!-- All Weather -->
             <div class="model-card" id="card-AllWeather" onclick="selectStrategy('All Weather')">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-black">레이 달리오의 올웨더</h2>
-                    <span class="tag bg-emerald-100 text-emerald-600">안정형</span>
-                </div>
+                <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-black">레이 달리오의 올웨더</h2><span class="tag bg-emerald-100 text-emerald-600">안정형</span></div>
                 <p class="text-sm text-slate-500 mb-6">성장, 침체, 인플레이션 등 모든 경제 계절을 견디는 전략</p>
                 <div class="grid grid-cols-4 gap-2 text-center text-[10px] font-bold">
-                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">주식 30%</div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">중기채 15%</div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">장기채 40%</div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">원자재 15%</div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">주식 30%</div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">중기채 15%</div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">장기채 40%</div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">원자재 15%</div>
                 </div>
             </div>
 
-            <!-- 60/40 -->
             <div class="model-card" id="card-6040" onclick="selectStrategy('60/40')">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-black">전통적인 60/40</h2>
-                    <span class="tag bg-blue-100 text-blue-600">균형형</span>
-                </div>
+                <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-black">전통적인 60/40</h2><span class="tag bg-blue-100 text-blue-600">균형형</span></div>
                 <p class="text-sm text-slate-500 mb-6">가장 대중적이고 검증된 주식과 채권의 황금 비율</p>
                 <div class="grid grid-cols-2 gap-2 text-center text-[10px] font-bold">
-                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">주식 60%</div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">채권 40%</div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">주식 60%</div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">채권 40%</div>
                 </div>
             </div>
 
-            <!-- Permanent -->
             <div class="model-card" id="card-Permanent" onclick="selectStrategy('Permanent')">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-black">영구 포트폴리오</h2>
-                    <span class="tag bg-purple-100 text-purple-600">방어형</span>
-                </div>
+                <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-black">영구 포트폴리오</h2><span class="tag bg-purple-100 text-purple-600">방어형</span></div>
                 <p class="text-sm text-slate-500 mb-6">어떤 상황에서도 원금을 잃지 않도록 설계된 4분할 전략</p>
                 <div class="grid grid-cols-4 gap-2 text-center text-[10px] font-bold">
-                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">주식 25%</div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">채권 25%</div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">금 25%</div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">현금 25%</div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">주식 25%</div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">채권 25%</div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">금 25%</div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">현금 25%</div>
                 </div>
             </div>
         </div>
 
         <div class="mt-12 text-center space-y-4">
-            <button id="nextBtn" onclick="goToNextStep(5)" class="hidden w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:scale-[1.02] transition-all text-lg">
-                전략 선택 완료! 다음으로 진행 ➔
-            </button>
-            <div id="selectedInfo" class="hidden text-sm font-bold text-blue-600">전략이 선택되었습니다.</div>
+            <button id="nextBtn" onclick="goToNextStep(5)" class="hidden w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:scale-[1.02] transition-all text-lg">전략 선택 완료! 다음으로 진행 ➔</button>
+            <div id="selectedInfo" class="hidden text-sm font-bold text-blue-600">전략이 클라우드에 동기화되었습니다.</div>
         </div>
     </main>
 
     <footer class="border-t border-slate-100 dark:border-slate-800 py-12 px-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-            <div class="flex items-center gap-2">
-                <span class="text-xl">💎</span>
-                <span class="font-bold text-slate-900 dark:text-white">Hedge Dochi</span>
-            </div>
+            <div class="flex items-center gap-2"><span class="text-xl">💎</span><span class="font-bold text-slate-900 dark:text-white">Hedge Dochi</span></div>
             <nav class="flex flex-wrap justify-center gap-6 text-sm font-medium text-slate-500 dark:text-slate-400">
-                <a href="about.html" class="hover:text-blue-600 transition-colors">회사 소개</a>
-                <a href="privacy.html" class="hover:text-blue-600 transition-colors">개인정보처리방침</a>
-                <a href="tos.html" class="hover:text-blue-600 transition-colors">이용약관</a>
-                <a href="contact-form.html" class="hover:text-blue-600 transition-colors">문의하기</a>
+                <a href="about.html" class="hover:text-blue-600 transition-colors">회사 소개</a><a href="privacy.html" class="hover:text-blue-600 transition-colors">개인정보처리방침</a><a href="tos.html" class="hover:text-blue-600 transition-colors">이용약관</a><a href="contact-form.html" class="hover:text-blue-600 transition-colors">문의하기</a>
             </nav>
             <p class="text-xs text-slate-400">© 2026 Hedge Dochi. All rights reserved.</p>
         </div>
@@ -112,26 +90,33 @@
         window.goToNextStep = goToNextStep;
 
         window.selectStrategy = async function(name) {
-            console.log("[Step 5] Selecting Strategy:", name);
-            document.querySelectorAll('.model-card').forEach(c => c.classList.remove('ring-4', 'ring-blue-500', 'border-blue-500', 'selected'));
-            const safeId = 'card-' + name.replace('/', '').replace(' ', '');
-            document.getElementById(safeId)?.classList.add('selected', 'ring-4', 'ring-blue-500');
+            console.log("[Step 5] Strategy Choice Started:", name);
             
-            // 즉시 저장 (True 옵션으로 클라우드 동기화 보장)
+            // UI 반영
+            document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+            const safeId = 'card-' + name.replace('/', '').replace(' ', '');
+            document.getElementById(safeId)?.classList.add('selected');
+            
+            // Cloud 저장 - 완료될 때까지 대기
+            document.getElementById('userStatus').innerText = "데이터 저장 중...";
             await saveProgress(5, { selectedModel: name }, true);
             
             document.getElementById('nextBtn').classList.remove('hidden');
             document.getElementById('selectedInfo').classList.remove('hidden');
-            document.getElementById('selectedInfo').innerText = `✓ ${name} 전략이 선택되었습니다.`;
-            showToast(`${name} 전략이 저장되었습니다.`, "success");
+            document.getElementById('userStatus').innerText = "저장 완료";
+            showToast(`${name} 전략으로 변경되었습니다.`, "success");
         };
 
         document.addEventListener('coreDataReady', async (e) => {
-            if (e.detail.user) document.getElementById('userStatus').innerText = `${e.detail.user.displayName}님 환영합니다.`;
+            if (e.detail.user) document.getElementById('userStatus').innerText = `${e.detail.user.displayName}님 동기화 완료`;
             const data = await getStepData(5);
             if (data && data.selectedModel) {
-                console.log("[Step 5] Restoring selected model:", data.selectedModel);
-                window.selectStrategy(data.selectedModel);
+                console.log("[Step 5] Restoring Cloud Data:", data.selectedModel);
+                // 복원 시에는 토스트 없이 UI만 선택 상태로 변경
+                document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+                const safeId = 'card-' + data.selectedModel.replace('/', '').replace(' ', '');
+                document.getElementById(safeId)?.classList.add('selected');
+                document.getElementById('nextBtn').classList.remove('hidden');
             }
         });
     </script>

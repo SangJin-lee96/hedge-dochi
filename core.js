@@ -1,7 +1,7 @@
-// core.js - Centralized Firebase, Auth, and Roadmap Logic
+// core.js - Centralized Bulletproof Data Logic
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCgGZuf6q4rxNWmR7SOOLtRu-KPfwJJ9tQ",
@@ -18,8 +18,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 
 export let currentUser = null;
-export let userProgress = parseInt(localStorage.getItem('roadmapProgress')) || 1;
-export let isCoreReady = false;
+export let userProgress = 1;
 export let exchangeRate = 1350; 
 
 export const ROADMAP_STEPS = [
@@ -41,9 +40,9 @@ export async function initExchangeRate() {
         const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
         if (rate) {
             exchangeRate = rate;
-            console.log("[Core] Exchange Rate:", exchangeRate);
+            console.log("[Core] Real-time rate:", exchangeRate);
         }
-    } catch (e) { console.error("[Core] Exchange Rate Error", e); }
+    } catch (e) { console.error("[Core] Rate Error", e); }
 }
 
 export function setupAuthUI() {
@@ -59,79 +58,54 @@ export function setupAuthUI() {
                 if (userProfile) userProfile.classList.remove('hidden');
                 if (userPhoto) userPhoto.src = user.photoURL || '';
                 
+                // Cloud Data Fetch & Force Sync to Local
                 const snap = await getDoc(doc(db, "simulations", user.uid));
                 if (snap.exists()) {
                     const data = snap.data();
-                    userProgress = Math.max(userProgress, data.roadmapProgress || 1);
+                    userProgress = data.roadmapProgress || 1;
                     localStorage.setItem('roadmapProgress', userProgress);
-                    console.log("[Core] Progress Sync:", userProgress);
+                    
+                    // Cloud의 모든 Step 데이터를 로컬에 강제 동기화
+                    if (data.steps) {
+                        Object.keys(data.steps).forEach(key => {
+                            localStorage.setItem(`${key}Data`, JSON.stringify(data.steps[key]));
+                        });
+                    }
+                    console.log("[Core] Cloud -> Local Sync Complete.");
                 }
-            } else {
-                const loginBtn = document.getElementById('loginBtn');
-                const userProfile = document.getElementById('userProfile');
-                if (loginBtn) loginBtn.classList.remove('hidden');
-                if (userProfile) userProfile.classList.add('hidden');
             }
-            isCoreReady = true;
             document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress, exchangeRate } }));
             resolve({ user, userProgress, exchangeRate });
         });
     });
 }
 
-export async function signInWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    try {
-        await signInWithPopup(auth, provider);
-        showToast("로그인되었습니다.", "success");
-    } catch (e) {
-        console.error("Login error", e);
-        showToast("로그인에 실패했습니다.", "info");
-    }
-}
-
-export async function logout() {
-    try {
-        await signOut(auth);
-        localStorage.clear();
-        location.href = 'index.html';
-    } catch (e) { console.error("Logout error", e); }
-}
-
-export function checkAuthAndGo(path) {
-    if (!currentUser) {
-        showToast("로그인이 필요한 서비스입니다.", "info");
-        return;
-    }
-    location.href = path;
-}
-
 export async function saveProgress(stepId, additionalData = {}, immediate = false) {
     userProgress = Math.max(userProgress, stepId);
     localStorage.setItem('roadmapProgress', userProgress);
+    
+    // 로컬 즉시 저장
     if (Object.keys(additionalData).length > 0) {
         localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
     }
 
     if (!currentUser) return;
-const performSave = async () => {
-    try {
-        const docRef = doc(db, "simulations", currentUser.uid);
-        // 점 표기법(steps.stepN)을 사용하여 특정 단계만 부분 업데이트
-        const payload = {
-            roadmapProgress: userProgress,
-            lastUpdated: new Date()
-        };
 
-        if (Object.keys(additionalData).length > 0) {
-            payload[`steps.step${stepId}`] = additionalData;
-        }
+    const performSave = async () => {
+        try {
+            const docRef = doc(db, "simulations", currentUser.uid);
+            // 명확한 중첩 구조(Object Literal)로 저장하여 구조 파손 방지
+            const updateObj = {
+                roadmapProgress: userProgress,
+                lastUpdated: new Date(),
+                steps: {}
+            };
+            updateObj.steps[`step${stepId}`] = additionalData;
 
-        await setDoc(docRef, payload, { merge: true });
-        console.log(`[Core] Step ${stepId} Saved to Cloud:`, additionalData);
-    } catch (e) { console.error("[Core] Save Error", e); }
-};
-
+            await setDoc(docRef, updateObj, { merge: true });
+            console.log(`[Core] Step ${stepId} Cloud Sync Success:`, additionalData);
+        } catch (e) { console.error("[Core] Save Error", e); }
+    };
 
     if (immediate) await performSave();
     else {
@@ -141,24 +115,27 @@ const performSave = async () => {
 }
 
 export async function getStepData(stepId) {
-    console.log(`[Core] Fetching Step ${stepId} data...`);
-    if (currentUser) {
-        try {
-            const snap = await getDoc(doc(db, "simulations", currentUser.uid));
-            if (snap.exists()) {
-                const data = snap.data();
-                const stepData = (data.steps && data.steps[`step${stepId}`]) || data[`steps.step${stepId}`];
-                if (stepData) {
-                    console.log(`[Core] Step ${stepId} (Cloud):`, stepData);
-                    return stepData;
-                }
-            }
-        } catch (e) { console.error(`[Core] Load Error Step ${stepId}`, e); }
-    }
+    // 로컬 데이터를 우선 신뢰 (setupAuthUI에서 이미 최신 클라우드 데이터를 로컬에 부었으므로)
     const localData = localStorage.getItem(`step${stepId}Data`);
     const parsed = localData ? JSON.parse(localData) : null;
-    console.log(`[Core] Step ${stepId} (Local):`, parsed);
+    console.log(`[Core] Getting Step ${stepId} Data:`, parsed);
     return parsed;
+}
+
+export function checkAuthAndGo(path) {
+    if (!currentUser) { showToast("로그인이 필요한 서비스입니다."); return; }
+    location.href = path;
+}
+
+export async function signInWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    try { await signInWithPopup(auth, provider); showToast("로그인되었습니다.", "success"); }
+    catch (e) { console.error("Login error", e); }
+}
+
+export async function logout() {
+    try { await signOut(auth); localStorage.clear(); location.href = 'index.html'; }
+    catch (e) { console.error("Logout error", e); }
 }
 
 export function goToNextStep(currentId) {
@@ -182,7 +159,6 @@ export function showToast(msg, type = 'info') {
     setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// Global Event Listeners for Auth Buttons
 document.addEventListener('click', (e) => {
     if (e.target.id === 'loginBtn') signInWithGoogle();
     if (e.target.id === 'logoutBtn') logout();
