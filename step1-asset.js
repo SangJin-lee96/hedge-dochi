@@ -67,34 +67,41 @@ function updateCalculation() {
     const salary = parseFloat(document.getElementById('annualSalary').value) || 0;
     const seed = parseFloat(document.getElementById('initialSeed').value) || 0;
     const expense = parseFloat(document.getElementById('monthlyExpense').value) || 0;
+    const salaryGrowth = (parseFloat(document.getElementById('salaryGrowth').value) || 0) / 100;
     const returns = (parseFloat(document.getElementById('investmentReturn').value) || 0) / 100;
     const inflation = (parseFloat(document.getElementById('inflationRate').value) || 0) / 100;
 
     let currentWealth = seed;
+    let currentSalary = salary;
+    let currentExpense = expense;
     const yearlyData = [seed];
     const realYearlyData = [seed];
     const tableBody = document.getElementById('yearlyTableBody');
     if (tableBody) tableBody.innerHTML = '';
 
     for (let year = 1; year <= 10; year++) {
-        const annualSavings = (salary - (expense * 12));
+        const annualSavings = (currentSalary - (currentExpense * 12));
         const profit = currentWealth * returns;
         currentWealth = currentWealth + annualSavings + profit;
         
         yearlyData.push(Math.round(currentWealth));
-        realYearlyData.push(Math.round(currentWealth / Math.pow(1 + 0.03, year)));
+        realYearlyData.push(Math.round(currentWealth / Math.pow(1 + inflation, year)));
 
         if (tableBody) {
             const tr = document.createElement('tr');
             tr.className = "border-b dark:border-slate-800";
             tr.innerHTML = `
                 <td class="py-4 px-2">${year}년차</td>
-                <td class="py-4 px-2">${formatValue(salary)}</td>
+                <td class="py-4 px-2">${formatValue(currentSalary)}</td>
                 <td class="py-4 px-2 text-emerald-500">+${formatValue(profit)}</td>
                 <td class="py-4 px-2 text-right font-black">${formatValue(currentWealth)}</td>
             `;
             tableBody.appendChild(tr);
         }
+
+        // 연봉 및 지출 상승 반영
+        currentSalary *= (1 + salaryGrowth);
+        currentExpense *= (1 + inflation);
     }
 
     document.getElementById('finalWealthText').innerText = formatValue(yearlyData[10]);
