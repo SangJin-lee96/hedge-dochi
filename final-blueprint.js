@@ -8,6 +8,10 @@ document.addEventListener('coreDataReady', async (e) => {
         document.getElementById('userName').innerText = user.displayName || '투자자';
         document.getElementById('userPhoto').src = user.photoURL || '';
         document.getElementById('currentDate').innerText = new Date().toLocaleDateString();
+        
+        // --- 진행률 저장 추가 ---
+        await saveProgress(9, { completedAt: new Date() }, true);
+        
         await generateComprehensiveReport();
     } else {
         location.href = 'index.html';
