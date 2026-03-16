@@ -9,9 +9,20 @@ let exchangeRate = 1350;
 let assets = [];
 let chart = null;
 
-// Re-expose core functions to window for HTML onclick access
-window.goToNextStep = goToNextStep;
-window.showToast = showToast;
+// Re-expose for backward compatibility if needed, but prefer addEventListener
+window.goToStep = function(step) {
+    document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
+    const target = document.getElementById(`step-${step}`);
+    if (target) target.classList.remove('hidden');
+    
+    document.querySelectorAll('.step-dot').forEach((dot, idx) => {
+        dot.className = `step-dot w-3 h-3 rounded-full transition-all ${idx + 1 <= step ? 'bg-blue-600' : 'bg-slate-200'}`;
+    });
+
+    if (step === 3) renderWeights();
+    currentStep = step;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 async function autoSaveData(immediate = false) {
     const totalInvestment = document.getElementById('totalInvestment')?.value || 0;
@@ -49,7 +60,7 @@ document.addEventListener('coreDataReady', async (e) => {
         baseCurrency = step8Data.baseCurrency || 'USD';
         exchangeRate = step8Data.manualExchangeRate || liveExchangeRate;
         if (input) input.value = Math.round(exchangeRate);
-        window.setCurrency(baseCurrency);
+        setCurrency(baseCurrency);
     }
 
     const totalInvestInput = document.getElementById('totalInvestment');
@@ -57,27 +68,12 @@ document.addEventListener('coreDataReady', async (e) => {
         totalInvestInput.value = (step8Data?.totalInvestment) || (step1Data?.initialSeed) || 3000;
     }
 
-    if (assets.length === 0) window.addAsset();
+    if (assets.length === 0) addAsset();
     renderAssets();
 });
 
-// --- Wizard Navigation ---
-window.goToStep = function(step) {
-    document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
-    const target = document.getElementById(`step-${step}`);
-    if (target) target.classList.remove('hidden');
-    
-    document.querySelectorAll('.step-dot').forEach((dot, idx) => {
-        dot.className = `step-dot w-3 h-3 rounded-full transition-all ${idx + 1 <= step ? 'bg-blue-600' : 'bg-slate-200'}`;
-    });
-
-    if (step === 3) renderWeights();
-    currentStep = step;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
-// --- Currency Management ---
-window.setCurrency = function(code) {
+// --- Actions ---
+function setCurrency(code) {
     baseCurrency = code;
     const glider = document.getElementById('currency-glider');
     const btnUsd = document.getElementById('btn-currency-usd');
@@ -93,9 +89,9 @@ window.setCurrency = function(code) {
         btnUsd?.classList.remove('text-blue-600');
     }
     autoSaveData();
-};
+}
 
-window.resetToLiveExchangeRate = function() {
+function resetToLiveExchangeRate() {
     const input = document.getElementById('manualExchangeRate');
     if (input) {
         input.value = Math.round(liveExchangeRate);
@@ -105,20 +101,64 @@ window.resetToLiveExchangeRate = function() {
         autoSaveData(true);
         showToast("실시간 환율이 적용되었습니다.", "success");
     }
-};
+}
+
+function addAsset(initialData = { ticker: '', qty: 0, price: 0 }) {
+    const id = Date.now() + Math.random();
+    assets.push({ id, ...initialData });
+    renderAssets();
+    autoSaveData();
+}
+
+async function quickAdd(ticker) {
+    try {
+        const res = await fetch(`/api/price?ticker=${ticker}`);
+        const data = await res.json();
+        const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice || 0;
+        addAsset({ ticker, qty: 1, price: price });
+    } catch (e) { addAsset({ ticker, qty: 1, price: 0 }); }
+}
+
+// --- UI Binding ---
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. 실시간 환율 적용 버튼
+    document.getElementById('btn-reset-rate')?.addEventListener('click', resetToLiveExchangeRate);
+
+    // 2. 단계 이동 버튼 (STEP 1 -> 2)
+    document.getElementById('btn-start-asset')?.addEventListener('click', () => window.goToStep(2));
+
+    // 3. 자산 추가 버튼들
+    document.getElementById('quick-add-voo')?.addEventListener('click', () => quickAdd('VOO'));
+    document.getElementById('quick-add-qqq')?.addEventListener('click', () => quickAdd('QQQ'));
+    document.getElementById('quick-add-btc')?.addEventListener('click', () => quickAdd('BTC-USD'));
+    document.getElementById('quick-add-samsung')?.addEventListener('click', () => quickAdd('005930.KS'));
+    document.getElementById('btn-add-asset-manual')?.addEventListener('click', () => addAsset());
+    document.getElementById('btn-open-search')?.addEventListener('click', () => window.toggleSearchModal(true));
+
+    // 4. 통화 선택 버튼
+    document.getElementById('btn-currency-usd')?.addEventListener('click', () => setCurrency('USD'));
+    document.getElementById('btn-currency-krw')?.addEventListener('click', () => setCurrency('KRW'));
+
+    // 5. 입력 필드 자동 저장 (위임)
+    document.body.addEventListener('change', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+            autoSaveData(false);
+        }
+    });
+});
 
 // --- Search & Modal ---
 window.toggleSearchModal = function(show) {
     const modal = document.getElementById('searchModal');
     const container = document.getElementById('searchModalContainer');
+    if (!modal || !container) return;
     if (show) {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         setTimeout(() => {
             container.classList.remove('scale-95', 'opacity-0');
             container.classList.add('scale-100', 'opacity-100');
-            const searchInput = document.getElementById('assetSearchInput');
-            if (searchInput) searchInput.focus();
+            document.getElementById('assetSearchInput')?.focus();
         }, 10);
     } else {
         container.classList.remove('scale-100', 'opacity-100');
@@ -142,7 +182,7 @@ window.searchAsset = async function() {
         if (quotes.length === 0) { if (resContainer) resContainer.innerHTML = '<p class="text-xs text-center py-8">결과가 없습니다.</p>'; return; }
         if (resContainer) {
             resContainer.innerHTML = quotes.map(item => `
-                <div onclick="selectAndAddAsset('${item.symbol}')" class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:border-blue-500 border border-transparent cursor-pointer transition-all flex justify-between items-center group">
+                <div onclick="window.selectAndAddAsset('${item.symbol}')" class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:border-blue-500 border border-transparent cursor-pointer transition-all flex justify-between items-center group">
                     <div><p class="font-black group-hover:text-blue-600">${item.symbol}</p><p class="text-[10px] text-slate-400">${item.shortname || ''}</p></div>
                     <span class="text-xs font-bold text-blue-500 opacity-0 group-hover:opacity-100">+ 추가</span>
                 </div>
@@ -153,37 +193,20 @@ window.searchAsset = async function() {
 
 window.selectAndAddAsset = async function(ticker) {
     window.toggleSearchModal(false);
-    await window.quickAdd(ticker);
+    await quickAdd(ticker);
     const searchInput = document.getElementById('assetSearchInput');
     if (searchInput) searchInput.value = '';
 };
 
-// --- Asset Management ---
-window.addAsset = function(initialData = { ticker: '', qty: 0, price: 0 }) {
-    const id = Date.now() + Math.random();
-    assets.push({ id, ...initialData });
-    renderAssets();
+window.updateAsset = function(id, key, val) {
+    const asset = assets.find(a => a.id === id);
+    if (asset) asset[key] = key === 'ticker' ? val.toUpperCase() : parseFloat(val);
     autoSaveData();
 };
 
 window.removeAsset = function(id) {
     assets = assets.filter(a => a.id !== id);
     renderAssets();
-    autoSaveData();
-};
-
-window.quickAdd = async function(ticker) {
-    try {
-        const res = await fetch(`/api/price?ticker=${ticker}`);
-        const data = await res.json();
-        const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice || 0;
-        window.addAsset({ ticker, qty: 1, price: price });
-    } catch (e) { window.addAsset({ ticker, qty: 1, price: 0 }); }
-};
-
-window.updateAsset = function(id, key, val) {
-    const asset = assets.find(a => a.id === id);
-    if (asset) asset[key] = key === 'ticker' ? val.toUpperCase() : parseFloat(val);
     autoSaveData();
 };
 
@@ -195,10 +218,10 @@ function renderAssets() {
         const div = document.createElement('div');
         div.className = "p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-wrap items-center gap-4 animate-fade-in-up";
         div.innerHTML = `
-            <div class="flex-1 min-w-[120px]"><label class="block text-[10px] font-bold text-slate-400 mb-1">TICKER</label><input type="text" value="${asset.ticker}" onchange="updateAsset(${asset.id}, 'ticker', this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 font-bold uppercase"></div>
-            <div class="w-32"><label class="block text-[10px] font-bold text-slate-400 mb-1">QTY</label><input type="number" value="${asset.qty}" onchange="updateAsset(${asset.id}, 'qty', this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 font-bold"></div>
-            <div class="w-32"><label class="block text-[10px] font-bold text-slate-400 mb-1">PRICE</label><input type="number" value="${asset.price}" onchange="updateAsset(${asset.id}, 'price', this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 font-bold"></div>
-            <button onclick="removeAsset(${asset.id})" class="mt-4 p-3 text-red-400 hover:bg-red-50 rounded-xl transition-colors">✕</button>
+            <div class="flex-1 min-w-[120px]"><label class="block text-[10px] font-bold text-slate-400 mb-1">TICKER</label><input type="text" value="${asset.ticker}" onchange="window.updateAsset(${asset.id}, 'ticker', this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 font-bold uppercase"></div>
+            <div class="w-32"><label class="block text-[10px] font-bold text-slate-400 mb-1">QTY</label><input type="number" value="${asset.qty}" onchange="window.updateAsset(${asset.id}, 'qty', this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 font-bold"></div>
+            <div class="w-32"><label class="block text-[10px] font-bold text-slate-400 mb-1">PRICE</label><input type="number" value="${asset.price}" onchange="window.updateAsset(${asset.id}, 'price', this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 font-bold"></div>
+            <button onclick="window.removeAsset(${asset.id})" class="mt-4 p-3 text-red-400 hover:bg-red-50 rounded-xl transition-colors">✕</button>
         `;
         container.appendChild(div);
     });
@@ -265,7 +288,6 @@ function updateTotalWeight() {
     }
 }
 
-// --- Calculation ---
 window.calculateRebalance = async function() {
     const btnText = document.getElementById('btn-text');
     const btnSpinner = document.getElementById('btn-spinner');
@@ -363,10 +385,3 @@ window.copyRebalanceResult = function() {
     const text = `⚖️ Hedge Dochi 리밸런싱 리포트 ⚖️\n📊 포트폴리오 건강 점수: ${score}점\n\n📍 실시간 환율 반영, 나의 포트폴리오 진단하기\n👉 https://sangjin-lee96.github.io/hedge-dochi/`;
     navigator.clipboard.writeText(text).then(() => showToast("결과가 복사되었습니다! 🚀", "success"));
 };
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Standardize input event listeners
-    document.body.addEventListener('change', (e) => {
-        if (e.target.tagName === 'INPUT') autoSaveData(false);
-    });
-});

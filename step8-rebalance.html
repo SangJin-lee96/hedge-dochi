@@ -199,11 +199,11 @@
                             <span class="text-slate-300">|</span>
                             <span class="text-slate-400">Update: <span id="lastUpdateRebalance">--:--</span></span>
                         </div>
-                        <button onclick="resetToLiveExchangeRate()" class="text-blue-500 hover:underline">실시간 적용 🔄</button>
+                        <button id="btn-reset-rate" class="text-blue-500 hover:underline">실시간 적용 🔄</button>
                     </div>
                 </div>
 
-                <button onclick="goToStep(2)" class="w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">자산 입력 시작 ➔</button>
+                <button id="btn-start-asset" class="w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">자산 입력 시작 ➔</button>
             </div>
         </div>
 
@@ -212,18 +212,18 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                 <h2 class="text-2xl font-black">📝 보유 자산 입력</h2>
                 <div class="flex flex-wrap gap-2">
-                    <button onclick="quickAdd('VOO')" class="text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-blue-800">+VOO</button>
-                    <button onclick="quickAdd('QQQ')" class="text-[10px] font-black bg-purple-50 dark:bg-purple-900/30 text-purple-600 px-3 py-1.5 rounded-lg border border-purple-100 dark:border-purple-800">+QQQ</button>
-                    <button onclick="quickAdd('BTC-USD')" class="text-[10px] font-black bg-orange-50 dark:bg-orange-900/30 text-orange-600 px-3 py-1.5 rounded-lg border border-orange-100 dark:border-orange-800">+BTC</button>
-                    <button onclick="quickAdd('005930.KS')" class="text-[10px] font-black bg-slate-50 dark:bg-slate-800 text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">+삼성전자</button>
+                    <button id="quick-add-voo" class="text-[10px] font-black bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-blue-800">+VOO</button>
+                    <button id="quick-add-qqq" class="text-[10px] font-black bg-purple-50 dark:bg-purple-900/30 text-purple-600 px-3 py-1.5 rounded-lg border border-purple-100 dark:border-purple-800">+QQQ</button>
+                    <button id="quick-add-btc" class="text-[10px] font-black bg-orange-50 dark:bg-orange-900/30 text-orange-600 px-3 py-1.5 rounded-lg border border-orange-100 dark:border-orange-800">+BTC</button>
+                    <button id="quick-add-samsung" class="text-[10px] font-black bg-slate-50 dark:bg-slate-800 text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">+삼성전자</button>
                 </div>
             </div>
             
             <div id="assetContainer" class="space-y-4"></div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                <button onclick="addAsset()" class="py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 font-bold hover:border-blue-500 hover:text-blue-500 transition-all">+ 직접 추가</button>
-                <button onclick="toggleSearchModal(true)" class="py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all">🔍 종목 검색 후 추가</button>
+                <button id="btn-add-asset-manual" class="py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 font-bold hover:border-blue-500 hover:text-blue-500 transition-all">+ 직접 추가</button>
+                <button id="btn-open-search" class="py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all">🔍 종목 검색 후 추가</button>
             </div>
 
             <div class="flex justify-center gap-4 mt-12">
