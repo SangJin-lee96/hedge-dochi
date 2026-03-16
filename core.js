@@ -1,6 +1,6 @@
-// core.js - Centralized Bulletproof Data Logic with Heavy Logging
+// core.js - Centralized Bulletproof Data Logic with Redirect Auth
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -33,34 +33,53 @@ export const ROADMAP_STEPS = [
     { id: 9, title: "마스터 플랜 실행", path: "final-blueprint.html", desc: "최종 요약 및 실전 투자 실행 가이드", icon: "🏁" }
 ];
 
+export async function initExchangeRate() {
+    try {
+        const res = await fetch('/api/price?ticker=USDKRW=X');
+        const data = await res.json();
+        const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+        if (rate) exchangeRate = rate;
+    } catch (e) { console.error("[Core] Rate Error", e); }
+}
+
 export function setupAuthUI() {
     return new Promise(async (resolve) => {
+        await initExchangeRate();
+
+        // 리다이렉트 로그인 결과 확인
+        getRedirectResult(auth).catch((error) => {
+            console.error("[Auth] Redirect Result Error:", error);
+        });
+
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
+            const loginBtn = document.getElementById('loginBtn');
+            const userProfile = document.getElementById('userProfile');
+            const userPhoto = document.getElementById('userPhoto');
+
             if (user) {
                 console.log("%c[Auth] User Logged In:", "color: #3b82f6; font-weight: bold;", user.email);
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (userProfile) userProfile.classList.remove('hidden');
+                if (userPhoto) userPhoto.src = user.photoURL || '';
                 
-                // Cloud Data Fetch
+                // Cloud Sync
                 const docRef = doc(db, "simulations", user.uid);
                 const snap = await getDoc(docRef);
-                
                 if (snap.exists()) {
                     const data = snap.data();
-                    console.log("%c[Cloud] Full Data Received:", "color: #10b981; font-weight: bold;", data);
-                    
+                    console.log("%c[Cloud] Data Received:", "color: #10b981;", data);
                     userProgress = data.roadmapProgress || 1;
                     localStorage.setItem('roadmapProgress', userProgress);
-                    
                     if (data.steps) {
                         Object.keys(data.steps).forEach(key => {
-                            const stepValue = data.steps[key];
-                            localStorage.setItem(`${key}Data`, JSON.stringify(stepValue));
-                            console.log(`%c[Sync] LocalStorage Updated for ${key}:`, "color: #8b5cf6;", stepValue);
+                            localStorage.setItem(`${key}Data`, JSON.stringify(data.steps[key]));
                         });
                     }
-                } else {
-                    console.log("%c[Cloud] No simulation data found for this user.", "color: #f59e0b;");
                 }
+            } else {
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (userProfile) userProfile.classList.add('hidden');
             }
             document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress, exchangeRate } }));
             resolve({ user, userProgress, exchangeRate });
@@ -68,9 +87,31 @@ export function setupAuthUI() {
     });
 }
 
+export async function signInWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    // 팝업 대신 리다이렉트 방식 사용 (보안 충돌 해결)
+    try {
+        await signInWithRedirect(auth, provider);
+    } catch (e) {
+        console.error("Login redirect error", e);
+        showToast("로그인 시도 중 오류가 발생했습니다.");
+    }
+}
+
+export async function logout() {
+    try {
+        await signOut(auth);
+        localStorage.clear();
+        location.href = 'index.html';
+    } catch (e) { console.error("Logout error", e); }
+}
+
+export function checkAuthAndGo(path) {
+    if (!currentUser) { showToast("로그인이 필요한 서비스입니다."); return; }
+    location.href = path;
+}
+
 export async function saveProgress(stepId, additionalData = {}, immediate = false) {
-    console.log(`%c[Save Request] Step ${stepId}:`, "color: #ef4444; font-weight: bold;", additionalData);
-    
     userProgress = Math.max(userProgress, stepId);
     localStorage.setItem('roadmapProgress', userProgress);
     localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
@@ -80,54 +121,29 @@ export async function saveProgress(stepId, additionalData = {}, immediate = fals
     const performSave = async () => {
         try {
             const docRef = doc(db, "simulations", currentUser.uid);
-            const updateObj = {
+            const snap = await getDoc(docRef);
+            let finalSteps = snap.exists() ? (snap.data().steps || {}) : {};
+            finalSteps[`step${stepId}`] = additionalData;
+
+            await setDoc(docRef, {
                 roadmapProgress: userProgress,
                 lastUpdated: new Date(),
-                steps: {}
-            };
-            
-            // 기존 steps 데이터를 보존하기 위해 기존 스냅샷을 먼저 읽음 (병합 강화)
-            const snap = await getDoc(docRef);
-            let finalSteps = {};
-            if (snap.exists()) {
-                finalSteps = snap.data().steps || {};
-            }
-            finalSteps[`step${stepId}`] = additionalData;
-            updateObj.steps = finalSteps;
-
-            await setDoc(docRef, updateObj, { merge: true });
-            console.log(`%c[Cloud Save] Step ${stepId} Success ✅`, "color: #10b981; font-weight: bold;");
+                steps: finalSteps
+            }, { merge: true });
+            console.log(`%c[Cloud Save] Step ${stepId} Success ✅`, "color: #10b981;");
         } catch (e) { console.error("[Cloud Save] Error:", e); }
     };
 
     if (immediate) await performSave();
     else {
-        if (window.saveTimer) clearTimeout(window.saveTimer);
-        window.saveTimer = setTimeout(performSave, 1000);
+        if (window.saveProgressTimer) clearTimeout(window.saveProgressTimer);
+        window.saveProgressTimer = setTimeout(performSave, 1000);
     }
 }
 
 export async function getStepData(stepId) {
     const localData = localStorage.getItem(`step${stepId}Data`);
-    const parsed = localData ? JSON.parse(localData) : null;
-    console.log(`%c[Data Fetch] Step ${stepId}:`, "color: #6366f1;", parsed);
-    return parsed;
-}
-
-export function checkAuthAndGo(path) {
-    if (!currentUser) { showToast("로그인이 필요한 서비스입니다."); return; }
-    location.href = path;
-}
-
-export async function signInWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    try { await signInWithPopup(auth, provider); }
-    catch (e) { console.error("Login error", e); }
-}
-
-export async function logout() {
-    try { await signOut(auth); localStorage.clear(); location.href = 'index.html'; }
-    catch (e) { console.error("Logout error", e); }
+    return localData ? JSON.parse(localData) : null;
 }
 
 export function goToNextStep(currentId) {
