@@ -114,23 +114,24 @@ export async function saveProgress(stepId, additionalData = {}, immediate = fals
     }
 
     if (!currentUser) return;
+const performSave = async () => {
+    try {
+        const docRef = doc(db, "simulations", currentUser.uid);
+        // 점 표기법(steps.stepN)을 사용하여 특정 단계만 부분 업데이트
+        const payload = {
+            roadmapProgress: userProgress,
+            lastUpdated: new Date()
+        };
 
-    const performSave = async () => {
-        try {
-            const docRef = doc(db, "simulations", currentUser.uid);
-            const payload = {
-                roadmapProgress: userProgress,
-                lastUpdated: new Date()
-            };
-            
-            if (Object.keys(additionalData).length > 0) {
-                payload[`steps.step${stepId}`] = additionalData;
-            }
+        if (Object.keys(additionalData).length > 0) {
+            payload[`steps.step${stepId}`] = additionalData;
+        }
 
-            await setDoc(docRef, payload, { merge: true });
-            console.log(`[Core] Step ${stepId} Saved:`, additionalData);
-        } catch (e) { console.error("[Core] Save Error", e); }
-    };
+        await setDoc(docRef, payload, { merge: true });
+        console.log(`[Core] Step ${stepId} Saved to Cloud:`, additionalData);
+    } catch (e) { console.error("[Core] Save Error", e); }
+};
+
 
     if (immediate) await performSave();
     else {

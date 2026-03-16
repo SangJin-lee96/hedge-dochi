@@ -112,22 +112,26 @@
         window.goToNextStep = goToNextStep;
 
         window.selectStrategy = async function(name) {
+            console.log("[Step 5] Selecting Strategy:", name);
             document.querySelectorAll('.model-card').forEach(c => c.classList.remove('ring-4', 'ring-blue-500', 'border-blue-500', 'selected'));
             const safeId = 'card-' + name.replace('/', '').replace(' ', '');
             document.getElementById(safeId)?.classList.add('selected', 'ring-4', 'ring-blue-500');
             
-            await saveProgress(5, { selectedModel: name });
+            // 즉시 저장 (True 옵션으로 클라우드 동기화 보장)
+            await saveProgress(5, { selectedModel: name }, true);
+            
             document.getElementById('nextBtn').classList.remove('hidden');
             document.getElementById('selectedInfo').classList.remove('hidden');
             document.getElementById('selectedInfo').innerText = `✓ ${name} 전략이 선택되었습니다.`;
-            showToast(`${name} 전략이 저장되었습니다.`);
+            showToast(`${name} 전략이 저장되었습니다.`, "success");
         };
 
         document.addEventListener('coreDataReady', async (e) => {
             if (e.detail.user) document.getElementById('userStatus').innerText = `${e.detail.user.displayName}님 환영합니다.`;
             const data = await getStepData(5);
             if (data && data.selectedModel) {
-                selectStrategy(data.selectedModel);
+                console.log("[Step 5] Restoring selected model:", data.selectedModel);
+                window.selectStrategy(data.selectedModel);
             }
         });
     </script>
