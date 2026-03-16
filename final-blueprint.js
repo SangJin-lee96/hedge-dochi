@@ -1,4 +1,4 @@
-import { db, currentUser, getStepData, exchangeRate as coreExchangeRate } from './core.js';
+import { db, currentUser, getStepData, saveProgress, exchangeRate as coreExchangeRate } from './core.js';
 
 let auditChart = null;
 
