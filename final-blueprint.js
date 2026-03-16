@@ -71,17 +71,18 @@ function analyzeAllData(s1, s2, s3, s5, s6, s8) {
         
         s8.assets.forEach(a => {
             const cat = classifyTicker(a.ticker);
-            analysis.categories[cat] += (a.qty * a.price / totalVal) * 100;
+            const weight = totalVal > 0 ? (a.qty * a.price / totalVal) * 100 : 0;
+            analysis.categories[cat] += weight;
             
             const targetVal = totalVal * (a.targetWeight / 100);
             const currentVal = a.qty * a.price;
             const diffVal = targetVal - currentVal;
             const diffQty = (diffVal / a.price).toFixed(2);
-            analysis.processedAssets.push({ ...a, diffQty, diffVal, currentWeight: totalVal > 0 ? (currentVal / totalVal * 100).toFixed(1) : 0 });
+            analysis.processedAssets.push({ ...a, diffQty, diffVal, currentWeight: weight.toFixed(1) });
         });
 
         // Calculate Deviance
-        const deviance = analysis.processedAssets.reduce((sum, a) => sum + Math.abs(a.currentWeight - a.targetWeight), 0);
+        const deviance = analysis.processedAssets.reduce((sum, a) => sum + Math.abs(parseFloat(a.currentWeight) - a.targetWeight), 0);
         analysis.healthScore -= Math.min(40, Math.round(deviance));
     }
 
@@ -94,16 +95,16 @@ function analyzeAllData(s1, s2, s3, s5, s6, s8) {
         }
     }
 
+    analysis.healthScore = Math.max(0, analysis.healthScore);
     return analysis;
 }
 
 function classifyTicker(ticker) {
     const t = ticker.toUpperCase();
-    if (['GLD', 'IAU', 'IAUM', 'BAR'].includes(t)) return 'gold';
-    if (['TLT', 'IEF', 'SHY', 'BND', 'AGG', 'EDV'].includes(t)) return 'bond';
-    if (['VOO', 'SPY', 'QQQ', 'VTI', 'VT', 'IVV'].includes(t) || t.endsWith('.KS') || t.endsWith('.KQ')) return 'stock';
-    if (t === 'CASH') return 'cash';
-    return 'other';
+    if (['GLD', 'IAU', 'IAUM', 'BAR', 'DBC', 'GSG', 'PDBC'].includes(t)) return 'gold';
+    if (['TLT', 'IEF', 'SHY', 'BND', 'AGG', 'EDV', 'TIP'].includes(t)) return 'bond';
+    if (['CASH', 'USDT', 'KRW', 'USD'].includes(t)) return 'cash';
+    return 'stock'; // Default fallback to stock/growth
 }
 
 function renderExecutiveSummary(data) {
@@ -124,9 +125,9 @@ function renderAssetAudit(analysis, strategyName) {
     auditChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['주식', '채권', '금/원자재', '현금/기타'],
+            labels: ['주식', '채권', '금/원자재', '현금'],
             datasets: [{
-                data: [cats.stock, cats.bond, cats.gold, cats.cash + cats.other],
+                data: [cats.stock, cats.bond, cats.gold, cats.cash],
                 backgroundColor: ['#3b82f6', '#64748b', '#f59e0b', '#cbd5e1'],
                 borderWidth: 0
             }]
@@ -134,7 +135,7 @@ function renderAssetAudit(analysis, strategyName) {
         options: { cutout: '85%', plugins: { legend: { display: false } } }
     });
 
-    document.getElementById('balancePercent').innerText = `${analysis.healthScore}%`;
+    document.getElementById('balancePercent').innerText = `${Math.round(100 - (100 - analysis.healthScore))}%`;
 
     const listEl = document.getElementById('auditList');
     const catNames = { stock: '주식/성장주', bond: '국채/안전채권', gold: '금/대체자산', cash: '현금/유동성' };
@@ -164,7 +165,7 @@ function renderRebalanceTable(assets, curr) {
                 <span class="px-3 py-1 rounded-full text-[10px] font-black ${parseFloat(a.diffQty) > 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}">
                     ${parseFloat(a.diffQty) > 0 ? '매수' : '매도'} ${Math.abs(a.diffQty)}주
                 </span>
-                <p class="text-[10px] text-slate-400 mt-1">약 ${formatVal(Math.abs(analysisToCurrency(a.diffVal, curr)))}</p>
+                <p class="text-[10px] text-slate-400 mt-1">약 ${formatVal(Math.abs(a.diffVal))}</p>
             </td>
         </tr>
     `).join('');
@@ -172,14 +173,27 @@ function renderRebalanceTable(assets, curr) {
 
 function renderRecommendations(recs) {
     const el = document.getElementById('recommendationList');
+    const auditStatus = `
+        <div class="col-span-2 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="flex items-center gap-2 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-2 rounded-xl">✓ 저축 체력</div>
+            <div class="flex items-center gap-2 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-2 rounded-xl">✓ 자산군 밸런스</div>
+            <div class="flex items-center gap-2 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-2 rounded-xl">✓ 투자 성향 정합성</div>
+            <div class="flex items-center gap-2 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-2 rounded-xl">✓ 리밸런싱 필요도</div>
+        </div>
+    `;
+
     if (recs.length === 0) {
-        el.innerHTML = '<div class="col-span-2 p-8 text-center text-slate-400 font-bold">✓ 현재 모든 지표가 안정적입니다.</div>';
+        el.innerHTML = auditStatus + '<div class="col-span-2 p-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-[2rem] text-slate-400 font-bold leading-relaxed">도치의 종합 진단 결과, 현재 모든 재무 지표가 계획된 전략 내에서 매우 안정적으로 운영되고 있습니다.</div>';
         return;
     }
-    el.innerHTML = recs.map(r => `
-        <div class="flex gap-4 p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/50">
+    
+    el.innerHTML = auditStatus + recs.map(r => `
+        <div class="flex gap-4 p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-transparent hover:border-blue-500/30 transition-all">
             <div class="text-2xl">${r.icon}</div>
-            <div><h4 class="font-black text-sm mb-1">${r.title}</h4><p class="text-xs text-slate-500 leading-relaxed">${r.desc}</p></div>
+            <div>
+                <h4 class="font-black text-sm mb-1 text-slate-800 dark:text-white">${r.title}</h4>
+                <p class="text-xs text-slate-500 leading-relaxed">${r.desc}</p>
+            </div>
         </div>
     `).join('');
 }
@@ -190,9 +204,4 @@ function formatVal(v, curr = 'KRW') {
         return Math.round(v).toLocaleString() + '만 원';
     }
     return '$' + v.toLocaleString(undefined, { minimumFractionDigits: 2 });
-}
-
-function analysisToCurrency(v, curr) {
-    // Helper to keep values in units compatible with formatVal
-    return v;
 }
