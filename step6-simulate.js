@@ -84,11 +84,11 @@ window.calculateCompound = async function() {
         monthlySavings: monthly,
         compoundRate: rate * 100,
         compoundPeriod: period,
+        totalPrincipal: totalPrincipal,
         finalProjectedWealth: currentWealth
     };
     
-    // FIX: 7이 아니라 6번에 저장
-    await saveProgress(6, compoundData);
+    await saveProgress(6, compoundData, true);
     showToast("복리 시뮬레이션 결과가 저장되었습니다. ⏳", "success");
 
     const actionContainer = document.querySelector('#step-3 .flex.flex-col') || document.querySelector('#step-3 .flex.justify-center');

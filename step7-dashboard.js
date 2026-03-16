@@ -85,15 +85,30 @@ function updateFireUI(s2) {
 function updateCompoundUI(s6) {
     const container = document.getElementById('compoundSummary');
     if (!container) return;
-    if (!s6) { container.innerHTML = `<div class="py-6 text-slate-300 text-xs text-center">Step 6 미완료</div>`; return; }
+    
+    if (!s6 || (!s6.finalProjectedWealth && !s6.compoundSeed)) { 
+        container.innerHTML = `<div class="py-6 text-slate-300 text-xs text-center">Step 6 미완료</div>`; 
+        return; 
+    }
+
+    // 6단계에서 계산되어 저장된 최종 자산(만원 단위)을 가져옴
+    const finalWealth = s6.finalProjectedWealth || 0;
+    // 6단계에서 저장된 총 투입 원금을 우선 사용, 없으면 초기 시드 사용
+    const principal = s6.totalPrincipal || s6.compoundSeed || 0;
+    const period = s6.compoundPeriod || 10;
+
     container.innerHTML = `
         <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
             <span class="text-xs font-bold text-slate-400 uppercase">최종 자산 목표</span>
-            <span class="font-black text-emerald-500">${formatVal(s6.finalProjectedWealth / 10000, 'KRW')}</span>
+            <span class="font-black text-emerald-500">${formatVal(finalWealth / 10000, 'KRW')}</span>
         </div>
         <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl mt-3">
-            <span class="text-xs font-bold text-slate-400 uppercase">투자 기간</span>
-            <span class="font-black">${s6.compoundPeriod}년</span>
+            <span class="text-xs font-bold text-slate-400 uppercase">총 투입 원금</span>
+            <span class="font-black text-slate-600 dark:text-slate-300">${formatVal(principal, 'KRW')}</span>
+        </div>
+        <div class="mt-2 px-2 flex justify-between items-center">
+            <span class="text-[10px] font-bold text-slate-400">투자 기간: ${period}년</span>
+            <span class="text-[10px] font-bold text-blue-500">${s6.compoundRate || 0}% 수익률 기준</span>
         </div>
     `;
 }
