@@ -18,39 +18,40 @@ window.goToStep = function(step) {
 };
 
 // --- Action Functions ---
-async function autoSaveData(immediate = false) {
+async function autoSaveData(immediate = false, extraData = {}) {
     const salary = parseFloat(document.getElementById('annualSalary')?.value) || 0;
     const seed = parseFloat(document.getElementById('initialSeed')?.value) || 0;
     const expense = parseFloat(document.getElementById('monthlyExpense')?.value) || 0;
+    const salaryGrowth = parseFloat(document.getElementById('salaryGrowth')?.value) || 0;
     const returns = parseFloat(document.getElementById('investmentReturn')?.value) || 5;
-    
-    // 현재 입력값 기준으로 등급 실시간 계산
-    let current = seed;
-    for (let i = 1; i <= 10; i++) {
-        current = current + (salary - (expense * 12)) + (current * (returns / 100));
-    }
-    const realWealth = current / Math.pow(1 + 0.03, 10);
-    const tierResult = getTierInfo(realWealth);
+    const inflation = parseFloat(document.getElementById('inflationRate')?.value) || 2.5;
 
     const data = {
         annualSalary: salary,
         initialSeed: seed,
         monthlyExpense: expense,
         monthlySavings: Math.max(0, Math.round((salary / 12) - expense)),
-        salaryGrowth: parseFloat(document.getElementById('salaryGrowth')?.value) || 0,
+        salaryGrowth: salaryGrowth,
         investmentReturn: returns,
-        inflationRate: parseFloat(document.getElementById('inflationRate')?.value) || 0,
+        inflationRate: inflation,
         baseCurrency: baseCurrency,
         manualExchangeRate: parseFloat(document.getElementById('manualExchangeRate')?.value) || exchangeRate,
-        finalRealWealth: realWealth,
-        tier: tierResult.tier
+        ...extraData
     };
     
-    await saveProgress(1, data, immediate);
+    // 유의미한 데이터가 있을 때만 저장
+    if (salary > 0 || seed > 0) {
+        await saveProgress(1, data, immediate);
+    }
     return data;
 }
 
-function updateCalculation() {
+async function calculateAndShowResult() {
+    await updateCalculation(); // Await storage sync
+    window.goToStep(4);
+}
+
+async function updateCalculation() {
     const salary = parseFloat(document.getElementById('annualSalary').value) || 0;
     const seed = parseFloat(document.getElementById('initialSeed').value) || 0;
     const expense = parseFloat(document.getElementById('monthlyExpense').value) || 0;
@@ -80,8 +81,8 @@ function updateCalculation() {
             tr.className = "border-b dark:border-slate-800";
             tr.innerHTML = `
                 <td class="py-4 px-2">${year}년차</td>
-                <td class="py-4 px-2 text-slate-900 dark:text-slate-100 font-bold">${formatValue(currentSalary)}</td>
-                <td class="py-4 px-2 text-emerald-500 font-medium">+${formatValue(profit)}</td>
+                <td class="py-4 px-2 font-bold">${formatValue(currentSalary)}</td>
+                <td class="py-4 px-2 text-emerald-500">+${formatValue(profit)}</td>
                 <td class="py-4 px-2 text-right font-black text-blue-600">${formatValue(currentWealth)}</td>
             `;
             tableBody.appendChild(tr);
@@ -89,12 +90,13 @@ function updateCalculation() {
     }
 
     const finalRealWealth = realYearlyData[10];
-    const tierInfo = getTierInfo(finalRealWealth);
+    const tierResult = getTierInfo(finalRealWealth);
     
-    document.getElementById('gradeTitle').innerText = tierInfo.tier;
-    document.getElementById('gradeBadgeIcon').innerText = tierInfo.icon;
-    document.getElementById('gradeDesc').innerText = tierInfo.desc;
-    document.getElementById('gradeSection').className = `capture-area bg-gradient-to-br ${tierInfo.color} p-10 md:p-16 rounded-[2.5rem] shadow-2xl text-center text-white relative overflow-hidden`;
+    // UI 반영
+    document.getElementById('gradeTitle').innerText = tierResult.tier;
+    document.getElementById('gradeBadgeIcon').innerText = tierResult.icon;
+    document.getElementById('gradeDesc').innerText = tierResult.desc;
+    document.getElementById('gradeSection').className = `capture-area bg-gradient-to-br ${tierResult.color} p-10 md:p-16 rounded-[2.5rem] shadow-2xl text-center text-white relative overflow-hidden`;
 
     document.getElementById('finalWealthText').innerText = formatValue(yearlyData[10]);
     document.getElementById('realValueText').innerText = formatValue(realYearlyData[10]);
@@ -103,7 +105,12 @@ function updateCalculation() {
     renderChart(yearlyData, realYearlyData);
     generateAIInsight(yearlyData[10], finalRealWealth);
     
-    autoSaveData(true);
+    // 최종 결과 클라우드 강제 동기화 (등급 정보 포함)
+    console.log("[Step 1] Force Cloud Sync with Tier:", tierResult.tier);
+    await autoSaveData(true, {
+        tier: tierResult.tier,
+        finalRealWealth: finalRealWealth
+    });
 }
 
 function getTierInfo(realWealth) {
@@ -126,10 +133,10 @@ function renderChart(nominalData, realData) {
             labels: Array.from({length: 11}, (_, i) => `${i}년`),
             datasets: [
                 { label: '명목 목표', data: nominalData, borderColor: '#3b82f6', borderWidth: 4, pointRadius: 6, pointBackgroundColor: '#3b82f6', fill: false, tension: 0.3 },
-                { label: '실질 가치 (물가 반영)', data: realData, borderColor: '#94a3b8', borderDash: [5, 5], pointRadius: 0, fill: false, tension: 0.3 }
+                { label: '실질 가치', data: realData, borderColor: '#94a3b8', borderDash: [5, 5], pointRadius: 0, fill: false, tension: 0.3 }
             ]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { font: { weight: 'bold', size: 11 } } } }, scales: { y: { beginAtZero: false, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } } }
     });
 }
 
@@ -140,8 +147,7 @@ function formatValue(val) {
 
 function generateAIInsight(nominal, real) {
     const el = document.getElementById('aiInsight');
-    if (!el) return;
-    el.innerHTML = `10년 후 당신의 자산은 <b>${formatValue(nominal)}</b>에 도달하지만, 실제 구매력은 <b>${formatValue(real)}</b> 수준입니다. 전략적 자산 배분이 필수적입니다.`;
+    if (el) el.innerHTML = `10년 후 당신의 자산은 <b>${formatValue(nominal)}</b>에 도달하지만, 실제 구매력은 <b>${formatValue(real)}</b> 수준입니다.`;
 }
 
 function setCurrency(code) {
@@ -195,45 +201,27 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-step2-prev')?.addEventListener('click', () => window.goToStep(1));
     document.getElementById('btn-step2-next')?.addEventListener('click', () => window.goToStep(3));
     document.getElementById('btn-step3-prev')?.addEventListener('click', () => window.goToStep(2));
-    document.getElementById('btn-step3-calculate')?.addEventListener('click', () => { updateCalculation(); window.goToStep(4); });
+    document.getElementById('btn-step3-calculate')?.addEventListener('click', calculateAndShowResult);
     document.getElementById('btn-step3-reset-rate')?.addEventListener('click', resetToLiveExchangeRate);
     document.getElementById('btn-step4-copy')?.addEventListener('click', () => {
         const tier = document.getElementById('gradeTitle').innerText;
         const wealth = document.getElementById('finalWealthText').innerText;
-        const text = `📊 Hedge Dochi 자산 시뮬레이션 결과\n📍 나의 10년 후 등급: ${tier}\n📍 예상 자산: ${wealth}\n\n👉 지금 바로 확인하기: https://sangjin-lee96.github.io/hedge-dochi/`;
-        navigator.clipboard.writeText(text).then(() => showToast("결과가 복사되었습니다!", "success"));
+        const text = `📊 Hedge Dochi 자산 시뮬레이션 결과\n📍 등급: ${tier}\n📍 자산: ${wealth}\nhttps://sangjin-lee96.github.io/hedge-dochi/`;
+        navigator.clipboard.writeText(text).then(() => showToast("복사되었습니다!", "success"));
     });
     document.getElementById('btn-step4-download')?.addEventListener('click', () => {
         const area = document.querySelector('.capture-area');
         if (!area) return;
-        showToast("이미지를 생성 중입니다...", "info");
         html2canvas(area, { useCORS: true, scale: 2 }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `HedgeDochi_Asset_Report.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-            showToast("저장이 완료되었습니다!", "success");
+            const link = document.createElement('a'); link.download = `Report.png`; link.href = canvas.toDataURL(); link.click();
         });
     });
     document.getElementById('btn-step4-retry')?.addEventListener('click', () => window.goToStep(1));
     document.getElementById('btn-step4-toggle-table')?.addEventListener('click', () => {
         const container = document.getElementById('yearly-table-container');
-        const arrow = document.getElementById('table-arrow');
-        if (container.classList.contains('hidden')) { container.classList.remove('hidden'); arrow.style.transform = 'rotate(180deg)'; }
-        else { container.classList.add('hidden'); arrow.style.transform = 'rotate(0deg)'; }
+        if (container.classList.contains('hidden')) container.classList.remove('hidden');
+        else container.classList.add('hidden');
     });
     document.getElementById('btn-step1-to-step2')?.addEventListener('click', () => goToNextStep(1));
-    document.getElementById('showStrategyBtn')?.addEventListener('click', () => {
-        const modal = document.getElementById('strategyModal');
-        const content = document.getElementById('modalContent');
-        const tier = document.getElementById('gradeTitle').innerText;
-        content.innerHTML = `<p class="font-bold text-blue-600">${tier} 등급 조언:</p><ul class="list-disc ml-5 space-y-2"><li>지출 5% 절감이 핵심입니다.</li><li>지수 ETF 배분을 추천합니다.</li></ul>`;
-        modal.classList.remove('hidden');
-        setTimeout(() => document.getElementById('modalContainer').classList.add('scale-100', 'opacity-100'), 10);
-    });
-    document.getElementById('closeModal')?.addEventListener('click', () => {
-        document.getElementById('modalContainer').classList.remove('scale-100', 'opacity-100');
-        setTimeout(() => document.getElementById('strategyModal').classList.add('hidden'), 300);
-    });
     document.querySelectorAll('input').forEach(i => i.addEventListener('input', () => autoSaveData(false)));
 });

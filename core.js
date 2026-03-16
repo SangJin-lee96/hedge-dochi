@@ -1,4 +1,4 @@
-// core.js - Centralized Bulletproof Data Logic
+// core.js - Centralized Bulletproof Data Logic with Heavy Logging
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -33,45 +33,33 @@ export const ROADMAP_STEPS = [
     { id: 9, title: "마스터 플랜 실행", path: "final-blueprint.html", desc: "최종 요약 및 실전 투자 실행 가이드", icon: "🏁" }
 ];
 
-export async function initExchangeRate() {
-    try {
-        const res = await fetch('/api/price?ticker=USDKRW=X');
-        const data = await res.json();
-        const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-        if (rate) {
-            exchangeRate = rate;
-            console.log("[Core] Real-time rate:", exchangeRate);
-        }
-    } catch (e) { console.error("[Core] Rate Error", e); }
-}
-
 export function setupAuthUI() {
     return new Promise(async (resolve) => {
-        await initExchangeRate();
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
-                const loginBtn = document.getElementById('loginBtn');
-                const userProfile = document.getElementById('userProfile');
-                const userPhoto = document.getElementById('userPhoto');
-                if (loginBtn) loginBtn.classList.add('hidden');
-                if (userProfile) userProfile.classList.remove('hidden');
-                if (userPhoto) userPhoto.src = user.photoURL || '';
+                console.log("%c[Auth] User Logged In:", "color: #3b82f6; font-weight: bold;", user.email);
                 
-                // Cloud Data Fetch & Force Sync to Local
-                const snap = await getDoc(doc(db, "simulations", user.uid));
+                // Cloud Data Fetch
+                const docRef = doc(db, "simulations", user.uid);
+                const snap = await getDoc(docRef);
+                
                 if (snap.exists()) {
                     const data = snap.data();
+                    console.log("%c[Cloud] Full Data Received:", "color: #10b981; font-weight: bold;", data);
+                    
                     userProgress = data.roadmapProgress || 1;
                     localStorage.setItem('roadmapProgress', userProgress);
                     
-                    // Cloud의 모든 Step 데이터를 로컬에 강제 동기화
                     if (data.steps) {
                         Object.keys(data.steps).forEach(key => {
-                            localStorage.setItem(`${key}Data`, JSON.stringify(data.steps[key]));
+                            const stepValue = data.steps[key];
+                            localStorage.setItem(`${key}Data`, JSON.stringify(stepValue));
+                            console.log(`%c[Sync] LocalStorage Updated for ${key}:`, "color: #8b5cf6;", stepValue);
                         });
                     }
-                    console.log("[Core] Cloud -> Local Sync Complete.");
+                } else {
+                    console.log("%c[Cloud] No simulation data found for this user.", "color: #f59e0b;");
                 }
             }
             document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress, exchangeRate } }));
@@ -81,44 +69,48 @@ export function setupAuthUI() {
 }
 
 export async function saveProgress(stepId, additionalData = {}, immediate = false) {
+    console.log(`%c[Save Request] Step ${stepId}:`, "color: #ef4444; font-weight: bold;", additionalData);
+    
     userProgress = Math.max(userProgress, stepId);
     localStorage.setItem('roadmapProgress', userProgress);
-    
-    // 로컬 즉시 저장
-    if (Object.keys(additionalData).length > 0) {
-        localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
-    }
+    localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
 
     if (!currentUser) return;
 
     const performSave = async () => {
         try {
             const docRef = doc(db, "simulations", currentUser.uid);
-            // 명확한 중첩 구조(Object Literal)로 저장하여 구조 파손 방지
             const updateObj = {
                 roadmapProgress: userProgress,
                 lastUpdated: new Date(),
                 steps: {}
             };
-            updateObj.steps[`step${stepId}`] = additionalData;
+            
+            // 기존 steps 데이터를 보존하기 위해 기존 스냅샷을 먼저 읽음 (병합 강화)
+            const snap = await getDoc(docRef);
+            let finalSteps = {};
+            if (snap.exists()) {
+                finalSteps = snap.data().steps || {};
+            }
+            finalSteps[`step${stepId}`] = additionalData;
+            updateObj.steps = finalSteps;
 
             await setDoc(docRef, updateObj, { merge: true });
-            console.log(`[Core] Step ${stepId} Cloud Sync Success:`, additionalData);
-        } catch (e) { console.error("[Core] Save Error", e); }
+            console.log(`%c[Cloud Save] Step ${stepId} Success ✅`, "color: #10b981; font-weight: bold;");
+        } catch (e) { console.error("[Cloud Save] Error:", e); }
     };
 
     if (immediate) await performSave();
     else {
-        if (window.saveProgressTimer) clearTimeout(window.saveProgressTimer);
-        window.saveProgressTimer = setTimeout(performSave, 1000);
+        if (window.saveTimer) clearTimeout(window.saveTimer);
+        window.saveTimer = setTimeout(performSave, 1000);
     }
 }
 
 export async function getStepData(stepId) {
-    // 로컬 데이터를 우선 신뢰 (setupAuthUI에서 이미 최신 클라우드 데이터를 로컬에 부었으므로)
     const localData = localStorage.getItem(`step${stepId}Data`);
     const parsed = localData ? JSON.parse(localData) : null;
-    console.log(`[Core] Getting Step ${stepId} Data:`, parsed);
+    console.log(`%c[Data Fetch] Step ${stepId}:`, "color: #6366f1;", parsed);
     return parsed;
 }
 
@@ -129,7 +121,7 @@ export function checkAuthAndGo(path) {
 
 export async function signInWithGoogle() {
     const provider = new GoogleAuthProvider();
-    try { await signInWithPopup(auth, provider); showToast("로그인되었습니다.", "success"); }
+    try { await signInWithPopup(auth, provider); }
     catch (e) { console.error("Login error", e); }
 }
 
