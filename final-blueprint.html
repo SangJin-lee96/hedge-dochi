@@ -3,27 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마스터 플랜 리포트 | Hedge Dochi</title>
+    <title>파이낸셜 마스터 플랜 리포트 | Hedge Dochi</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>
-        body { font-family: 'Pretendard', sans-serif; word-break: keep-all; }
-        .blueprint-card { background: white; border-radius: 3rem; border: 1px solid #f1f5f9; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); }
-        html.dark .blueprint-card { background: #1e293b; border-color: #334155; }
-        .action-item { transition: all 0.3s; border-left: 4px solid transparent; }
-        .action-item:hover { transform: translateX(8px); border-left-color: #3b82f6; background: rgba(59, 130, 246, 0.03); }
-        @keyframes confetti { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
-        .confetti { position: absolute; width: 10px; height: 10px; background: #3b82f6; animation: confetti 3s ease-out forwards; }
+        body { font-family: 'Pretendard', sans-serif; word-break: keep-all; background-color: #f8fafc; }
+        html.dark body { background-color: #020617; }
+        .report-card { background: white; border-radius: 2rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden; }
+        html.dark .report-card { background: #1e293b; border-color: #334155; }
+        .audit-bar { height: 12px; border-radius: 9999px; background: #f1f5f9; position: relative; }
+        html.dark .audit-bar { background: #0f172a; }
+        .audit-progress { height: 100%; border-radius: 9999px; transition: width 1s ease-out; }
+        @media print { .no-print { display: none; } body { background: white; } .report-card { border: 1px solid #eee; box-shadow: none; } }
     </style>
 </head>
-<body class="bg-[#f8fafc] dark:bg-[#020617] text-slate-900 dark:text-slate-100 min-h-screen pb-20">
-    <header class="sticky top-0 z-50 w-full backdrop-blur-md border-b bg-white/70 dark:bg-slate-900/70 border-slate-100 dark:border-slate-800">
-        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+<body class="text-slate-900 dark:text-slate-100 min-h-screen pb-20">
+    <header class="no-print sticky top-0 z-50 w-full backdrop-blur-md border-b bg-white/70 dark:bg-slate-900/70 border-slate-100 dark:border-slate-800">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index.html'">
-                <span class="text-xl">💎</span><span class="font-bold text-lg tracking-tight">Hedge Dochi Master Plan</span>
+                <span class="text-xl">💎</span><span class="font-bold text-lg tracking-tight">Hedge Dochi AI Advisor</span>
             </div>
             <div id="userProfile" class="flex items-center gap-3">
                 <span id="userName" class="text-sm font-bold text-slate-600 dark:text-slate-400">Loading...</span>
@@ -32,120 +33,100 @@
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 py-12 relative">
-        <div id="confetti-container" class="fixed inset-0 pointer-events-none z-0"></div>
-
-        <div class="text-center mb-16 animate-fade-in-up">
-            <div class="inline-block px-4 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest mb-6">Curriculum Completed</div>
-            <h1 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">축하합니다! 플랜이 완성되었습니다.</h1>
-            <p class="text-xl text-slate-500 font-medium">이제 분석을 넘어 실행으로 옮길 시간입니다.</p>
+    <main class="max-w-5xl mx-auto px-4 py-12">
+        <!-- Report Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 border-b border-slate-200 dark:border-slate-800 pb-12">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600 text-white text-[10px] font-black uppercase tracking-tighter mb-4">Official Master Plan</div>
+                <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-2">종합 재무 진단 보고서</h1>
+                <p class="text-slate-500 font-medium">관리자: AI 도치 | 발행일: <span id="currentDate">2026.03.15</span></p>
+            </div>
+            <div class="text-right hidden md:block">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-1">Portfolio Health</p>
+                <div id="totalHealthScore" class="text-6xl font-black text-blue-600">--</div>
+            </div>
         </div>
 
-        <!-- Section 1: Financial ID Card -->
-        <div class="blueprint-card p-10 md:p-16 mb-12 relative overflow-hidden">
-            <div class="absolute top-0 right-0 p-8 text-8xl opacity-10 grayscale" id="personaIconBig">🦔</div>
-            <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-10">01. Financial Identity</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <!-- Section 1: Executive Summary -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div class="lg:col-span-2 report-card p-10">
+                <h3 class="text-sm font-black text-blue-600 uppercase tracking-widest mb-6">Executive Summary</h3>
+                <div id="advisorVerdict" class="text-xl md:text-2xl font-bold leading-relaxed text-slate-800 dark:text-slate-200">
+                    데이터를 분석하여 당신을 위한 맞춤형 총평을 생성 중입니다...
+                </div>
+            </div>
+            <div class="report-card p-10 bg-slate-900 text-white border-none">
+                <h3 class="text-sm font-black text-blue-400 uppercase tracking-widest mb-6">Financial Velocity</h3>
                 <div class="space-y-6">
-                    <h2 class="text-3xl font-black leading-tight"><span id="riskTypeDisplay" class="text-blue-600">---</span> 성향의<br><span id="tierDisplay">---</span> 등급 투자자</h2>
-                    <p id="identityDesc" class="text-slate-500 leading-relaxed font-medium">데이터 로딩 중...</p>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="p-6 rounded-3xl bg-slate-50 dark:bg-slate-900/50 text-center">
-                        <p class="text-[10px] font-bold text-slate-400 mb-1 uppercase">은퇴 목표</p>
-                        <p id="fireYear" class="text-xl font-black">--년 후</p>
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold mb-1 uppercase">현재 저축 체력</p>
+                        <p id="currentSavingsText" class="text-2xl font-black">0원</p>
                     </div>
-                    <div class="p-6 rounded-3xl bg-slate-50 dark:bg-slate-900/50 text-center">
-                        <p class="text-[10px] font-bold text-slate-400 mb-1 uppercase">월 저축액</p>
-                        <p id="monthlySavings" class="text-xl font-black text-emerald-500">0원</p>
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold mb-1 uppercase">목표 달성 가시성</p>
+                        <div class="audit-bar mt-2"><div id="velocityBar" class="audit-progress bg-blue-500" style="width: 0%"></div></div>
+                        <p id="velocityFeedback" class="text-[10px] font-bold mt-2 text-slate-400">데이터를 분석 중입니다.</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Section 2: Economic Season Shield (NEW) -->
-        <div class="blueprint-card p-10 md:p-16 mb-12">
-            <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-10">02. Economic Defense Shield</h3>
-            <p class="text-slate-500 mb-10 font-medium leading-relaxed">선택하신 <span id="selectedModelName" class="text-blue-600 font-black">---</span> 전략은 다음 경제 상황에서 당신을 보호합니다.</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="shieldGrid">
-                <div class="p-6 rounded-3xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 text-center">
-                    <span class="text-2xl mb-2 block">🔥</span>
-                    <p class="text-[10px] font-black text-amber-600 uppercase mb-1">Inflation</p>
-                    <p class="text-xs font-bold text-slate-600 dark:text-slate-400" id="shield-inflation">금/원자재</p>
+        <!-- Section 2: Asset Allocation Audit -->
+        <div class="report-card p-10 md:p-12 mb-12">
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">Asset Allocation Audit</h3>
+                <span id="selectedStrategyTag" class="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-black text-slate-500 uppercase">Strategy: ---</span>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="relative aspect-square max-w-[300px] mx-auto">
+                    <canvas id="auditChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Balance</span>
+                        <span id="balancePercent" class="text-3xl font-black">0%</span>
+                    </div>
                 </div>
-                <div class="p-6 rounded-3xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 text-center">
-                    <span class="text-2xl mb-2 block">❄️</span>
-                    <p class="text-[10px] font-black text-blue-600 uppercase mb-1">Deflation</p>
-                    <p class="text-xs font-bold text-slate-600 dark:text-slate-400" id="shield-deflation">장기채권</p>
-                </div>
-                <div class="p-6 rounded-3xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 text-center">
-                    <span class="text-2xl mb-2 block">🌱</span>
-                    <p class="text-[10px] font-black text-emerald-600 uppercase mb-1">Growth</p>
-                    <p class="text-xs font-bold text-slate-600 dark:text-slate-400" id="shield-growth">주식/코인</p>
-                </div>
-                <div class="p-6 rounded-3xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-center">
-                    <span class="text-2xl mb-2 block">📉</span>
-                    <p class="text-[10px] font-black text-slate-600 uppercase mb-1">Recession</p>
-                    <p class="text-xs font-bold text-slate-600 dark:text-slate-400" id="shield-recession">중기채권</p>
+                <div id="auditList" class="space-y-6">
+                    <!-- Category audit items will be injected here -->
                 </div>
             </div>
         </div>
 
-        <!-- Section 3: Today's Action Checklist -->
-        <div class="blueprint-card p-10 md:p-16 mb-12 bg-slate-900 text-white border-none shadow-blue-500/20">
-            <h3 class="text-sm font-black text-blue-400 uppercase tracking-widest mb-10">03. Today's Execution List</h3>
-            <div id="actionList" class="space-y-6">
-                <!-- Action items will be injected here -->
-            </div>
-            
-            <!-- Recommendations for missing asset classes (NEW) -->
-            <div id="recommendationArea" class="mt-10 pt-10 border-t border-white/10 space-y-6">
-                <!-- Asset class recommendations will be injected here -->
-            </div>
-            
-            <div class="mt-12 p-8 rounded-[2rem] bg-white/5 border border-white/10">
-                <h4 class="font-black mb-4 flex items-center gap-2"><span class="text-xl">💡</span> 초보자를 위한 실전 가이드</h4>
-                <ul class="space-y-3 text-sm text-slate-400 font-medium">
-                    <li class="flex gap-3 items-start"><span class="text-blue-400 font-black">1.</span> 해외 주식용 증권사 앱(영웅문S#, m.Stock 등)을 실행하세요.</li>
-                    <li class="flex gap-3 items-start"><span class="text-blue-400 font-black">2.</span> '환전' 메뉴에서 원화를 달러로 바꿉니다. (원화 주문 서비스도 가능)</li>
-                    <li class="flex gap-3 items-start"><span class="text-blue-400 font-black">3.</span> 위 리스트의 종목을 검색하고 '지정가' 또는 '시장가'로 주문하세요.</li>
-                    <li class="flex gap-3 items-start"><span class="text-blue-400 font-black">4.</span> 주문이 체결되면 당신의 '헤지도치' 로드맵이 공식 시작됩니다!</li>
-                </ul>
+        <!-- Section 3: Today's Rebalancing Action -->
+        <div class="report-card p-10 md:p-12 mb-12 bg-white dark:bg-slate-800">
+            <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-10">Today's Rebalancing Action</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-[10px] font-black text-slate-400 uppercase border-b dark:border-slate-700">
+                            <th class="py-4 px-2">자산 종목</th>
+                            <th class="py-4 px-2">현재 비중</th>
+                            <th class="py-4 px-2">목표 비중</th>
+                            <th class="py-4 px-2 text-right">매매 실행 제안</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rebalanceTableBody">
+                        <!-- Action rows injected here -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Section 3: 10 Year Vision -->
-        <div class="blueprint-card p-10 md:p-16 mb-12">
-            <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-10">03. 10-Year Vision</h3>
-            <div class="h-[250px] mb-8">
-                <canvas id="visionChart"></canvas>
+        <!-- Section 4: Advisor's Recommendation -->
+        <div class="report-card p-10 md:p-12 mb-12 border-l-8 border-l-blue-600">
+            <h3 class="text-sm font-black text-blue-600 uppercase tracking-widest mb-8">Asset Manager's Recommendation</h3>
+            <div id="recommendationList" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Recommendations will be injected here -->
             </div>
-            <p id="visionText" class="text-center text-slate-500 font-bold">10년 후 당신의 예상 자산은 <span class="text-blue-600 text-2xl font-black" id="finalWealth">0원</span> 입니다.</p>
         </div>
 
-        <div class="flex flex-col md:flex-row gap-4">
-            <button onclick="window.printReport()" class="flex-1 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl shadow-xl flex items-center justify-center gap-3">
-                <span>📄 리포트 PDF 저장</span>
+        <!-- Footer Actions -->
+        <div class="no-print flex flex-col md:flex-row gap-4">
+            <button onclick="window.print()" class="flex-1 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-3xl shadow-xl flex items-center justify-center gap-3">
+                <span>📄 PDF 보고서 저장하기</span>
             </button>
-            <button onclick="location.href='index.html'" class="flex-1 py-5 bg-slate-100 dark:bg-slate-800 font-bold rounded-2xl text-slate-500">대시보드로 돌아가기</button>
+            <button onclick="location.href='index.html'" class="flex-1 py-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold rounded-3xl text-slate-500 transition-all hover:bg-slate-50">로드맵 홈으로 이동</button>
         </div>
     </main>
-
-    <footer class="border-t border-slate-100 dark:border-slate-800 py-12 px-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-            <div class="flex items-center gap-2">
-                <span class="text-xl">💎</span>
-                <span class="font-bold text-slate-900 dark:text-white">Hedge Dochi</span>
-            </div>
-            <nav class="flex flex-wrap justify-center gap-6 text-sm font-medium text-slate-500 dark:text-slate-400">
-                <a href="about.html" class="hover:text-blue-600 transition-colors">회사 소개</a>
-                <a href="privacy.html" class="hover:text-blue-600 transition-colors">개인정보처리방침</a>
-                <a href="tos.html" class="hover:text-blue-600 transition-colors">이용약관</a>
-                <a href="contact-form.html" class="hover:text-blue-600 transition-colors">문의하기</a>
-            </nav>
-            <p class="text-xs text-slate-400">© 2026 Hedge Dochi. All rights reserved.</p>
-        </div>
-    </footer>
 
     <script src="dark-mode.js"></script>
     <script type="module" src="final-blueprint.js"></script>
