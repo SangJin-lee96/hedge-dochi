@@ -4,6 +4,7 @@ import { db, currentUser, goToNextStep, saveProgress, showToast, getStepData, ex
 let wealthChart = null;
 let baseCurrency = 'KRW';
 let exchangeRate = 1350;
+let liveExchangeRate = 1350;
 
 // --- Debugging Helper ---
 function logClick(btnName, data = {}) {
