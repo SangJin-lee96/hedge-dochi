@@ -51,10 +51,11 @@ export function setupAuthUI() {
         await initExchangeRate();
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
+            const loginBtn = document.getElementById('loginBtn');
+            const userProfile = document.getElementById('userProfile');
+            const userPhoto = document.getElementById('userPhoto');
+
             if (user) {
-                const loginBtn = document.getElementById('loginBtn');
-                const userProfile = document.getElementById('userProfile');
-                const userPhoto = document.getElementById('userPhoto');
                 if (loginBtn) loginBtn.classList.add('hidden');
                 if (userProfile) userProfile.classList.remove('hidden');
                 if (userPhoto) userPhoto.src = user.photoURL || '';
@@ -66,6 +67,9 @@ export function setupAuthUI() {
                     localStorage.setItem('roadmapProgress', userProgress);
                     console.log("[Core] Progress Sync:", userProgress);
                 }
+            } else {
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (userProfile) userProfile.classList.add('hidden');
             }
             isCoreReady = true;
             document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress, exchangeRate } }));
@@ -73,6 +77,39 @@ export function setupAuthUI() {
         });
     });
 }
+
+export async function signInWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    try {
+        await signInWithPopup(auth, provider);
+        showToast("로그인되었습니다.", "success");
+    } catch (e) {
+        console.error("Login error", e);
+        showToast("로그인에 실패했습니다.", "info");
+    }
+}
+
+export async function logout() {
+    try {
+        await signOut(auth);
+        localStorage.clear();
+        location.href = 'index.html';
+    } catch (e) { console.error("Logout error", e); }
+}
+
+export function checkAuthAndGo(path) {
+    if (!currentUser) {
+        showToast("로그인이 필요한 서비스입니다.", "info");
+        return;
+    }
+    location.href = path;
+}
+
+// Global Event Listeners for Auth Buttons
+document.addEventListener('click', (e) => {
+    if (e.target.id === 'loginBtn') signInWithGoogle();
+    if (e.target.id === 'logoutBtn') logout();
+});
 
 export async function saveProgress(stepId, additionalData = {}, immediate = false) {
     userProgress = Math.max(userProgress, stepId);
@@ -86,7 +123,6 @@ export async function saveProgress(stepId, additionalData = {}, immediate = fals
     const performSave = async () => {
         try {
             const docRef = doc(db, "simulations", currentUser.uid);
-            // 점 표기법 대신 명확한 객체 구조 사용 (중요)
             const payload = {
                 roadmapProgress: userProgress,
                 lastUpdated: new Date(),
@@ -104,8 +140,8 @@ export async function saveProgress(stepId, additionalData = {}, immediate = fals
 
     if (immediate) await performSave();
     else {
-        if (window.saveTimer) clearTimeout(window.saveProgressTimer);
-        window.saveTimer = setTimeout(performSave, 1000);
+        if (window.saveProgressTimer) clearTimeout(window.saveProgressTimer);
+        window.saveProgressTimer = setTimeout(performSave, 1000);
     }
 }
 
@@ -116,7 +152,6 @@ export async function getStepData(stepId) {
             const snap = await getDoc(doc(db, "simulations", currentUser.uid));
             if (snap.exists()) {
                 const data = snap.data();
-                // 평면 구조와 객체 구조 모두 대응
                 const stepData = (data.steps && data.steps[`step${stepId}`]) || data[`steps.step${stepId}`];
                 if (stepData) {
                     console.log(`[Core] Step ${stepId} (Cloud):`, stepData);
