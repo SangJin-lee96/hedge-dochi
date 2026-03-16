@@ -100,7 +100,7 @@ function updateCompoundUI(s6) {
     container.innerHTML = `
         <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
             <span class="text-xs font-bold text-slate-400 uppercase">최종 자산 목표</span>
-            <span class="font-black text-emerald-500">${formatVal(finalWealth / 10000, 'KRW')}</span>
+            <span class="font-black text-emerald-500">${formatVal(finalWealth, 'KRW')}</span>
         </div>
         <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl mt-3">
             <span class="text-xs font-bold text-slate-400 uppercase">총 투입 원금</span>
