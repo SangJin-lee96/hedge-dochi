@@ -80,6 +80,10 @@ function updateCalculation() {
     if (tableBody) tableBody.innerHTML = '';
 
     for (let year = 1; year <= 10; year++) {
+        // 매년 시작 시 연봉과 지출을 상승시킴 (사용자가 '1년차'에 상승된 연봉을 보길 원함)
+        currentSalary *= (1 + salaryGrowth);
+        currentExpense *= (1 + inflation);
+
         const annualSavings = (currentSalary - (currentExpense * 12));
         const profit = currentWealth * returns;
         currentWealth = currentWealth + annualSavings + profit;
@@ -92,16 +96,12 @@ function updateCalculation() {
             tr.className = "border-b dark:border-slate-800";
             tr.innerHTML = `
                 <td class="py-4 px-2">${year}년차</td>
-                <td class="py-4 px-2">${formatValue(currentSalary)}</td>
-                <td class="py-4 px-2 text-emerald-500">+${formatValue(profit)}</td>
-                <td class="py-4 px-2 text-right font-black">${formatValue(currentWealth)}</td>
+                <td class="py-4 px-2 text-slate-900 dark:text-slate-100 font-bold">${formatValue(currentSalary)}</td>
+                <td class="py-4 px-2 text-emerald-500 font-medium">+${formatValue(profit)}</td>
+                <td class="py-4 px-2 text-right font-black text-blue-600">${formatValue(currentWealth)}</td>
             `;
             tableBody.appendChild(tr);
         }
-
-        // 연봉 및 지출 상승 반영
-        currentSalary *= (1 + salaryGrowth);
-        currentExpense *= (1 + inflation);
     }
 
     document.getElementById('finalWealthText').innerText = formatValue(yearlyData[10]);
@@ -118,16 +118,16 @@ function updateWealthTier(realWealth) {
     const val = realWealth / (baseCurrency === 'KRW' ? 1 : (1/exchangeRate * 10000));
 
     if (val >= 200000) { 
-        tier = "다이아몬드"; icon = "💎"; color = "from-indigo-500 via-purple-500 to-pink-500"; 
+        tier = "다이아몬드"; icon = "💎"; color = "from-slate-900 to-slate-800 dark:from-blue-950 dark:to-slate-900"; 
         desc = "상위 0.1%의 압도적인 자산가입니다. 이제 자산 수명을 늘리는 인출 전략에 집중하세요.";
     } else if (val >= 100000) { 
-        tier = "플래티넘"; icon = "💍"; color = "from-blue-400 to-indigo-600";
+        tier = "플래티넘"; icon = "💍"; color = "from-blue-600 to-indigo-800";
         desc = "경제적 자유를 목전에 둔 자산가입니다. 공격적인 투자보다 리스크 관리가 중요한 시점입니다.";
     } else if (val >= 50000) { 
-        tier = "골드"; icon = "🥇"; color = "from-amber-400 to-orange-600";
+        tier = "골드"; icon = "🥇"; color = "from-amber-500 to-orange-700";
         desc = "탄탄한 중산층 이상의 자산을 구축했습니다. 복리의 가속도가 붙기 시작하는 단계입니다.";
     } else if (val >= 20000) { 
-        tier = "실버"; icon = "🥈"; color = "from-slate-300 to-slate-500";
+        tier = "실버"; icon = "🥈"; color = "from-slate-400 to-slate-600";
         desc = "기초 자산 형성을 완료했습니다. 이제 본격적인 자산 배분을 통해 성장을 꾀할 때입니다.";
     } else {
         desc = "자산 형성의 초기 단계입니다. 투자 수익률보다 '저축액'을 늘리는 것이 가장 빠른 지름길입니다.";
@@ -136,7 +136,7 @@ function updateWealthTier(realWealth) {
     document.getElementById('gradeTitle').innerText = tier;
     document.getElementById('gradeBadgeIcon').innerText = icon;
     document.getElementById('gradeDesc').innerText = desc;
-    document.getElementById('gradeSection').className = `capture-area bg-gradient-to-br ${color} p-10 md:p-16 rounded-[3rem] shadow-2xl text-center text-white relative overflow-hidden`;
+    document.getElementById('gradeSection').className = `capture-area bg-gradient-to-br ${color} p-10 md:p-16 rounded-[2.5rem] shadow-2xl text-center text-white relative overflow-hidden`;
 }
 
 function renderChart(nominalData, realData) {
@@ -156,10 +156,10 @@ function renderChart(nominalData, realData) {
         options: { 
             responsive: true, 
             maintainAspectRatio: false, 
-            plugins: { legend: { display: true, position: 'bottom', labels: { font: { weight: 'bold' } } } }, 
+            plugins: { legend: { display: true, position: 'bottom', labels: { font: { weight: 'bold', size: 11 } } } }, 
             scales: { 
-                y: { beginAtZero: false, grid: { color: 'rgba(0,0,0,0.05)' } }, 
-                x: { grid: { display: false } } 
+                y: { beginAtZero: false, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 } } }, 
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } } 
             } 
         }
     });
@@ -174,20 +174,18 @@ function generateAIInsight(nominal, real) {
     const el = document.getElementById('aiInsight');
     if (!el) return;
     const diff = nominal - real;
-    el.innerHTML = `10년 후 당신의 자산은 <b>${formatValue(nominal)}</b>에 도달하지만, 물가 상승을 고려한 실제 구매력은 <b>${formatValue(real)}</b> 수준입니다. 즉, 인플레이션으로 인해 약 <b>${formatValue(diff)}</b>의 가치가 희석됩니다. 이를 방어하기 위해 최소 연 5% 이상의 수익률을 내는 자산 배분이 필수적입니다.`;
+    el.innerHTML = `10년 후 당신의 자산은 <b>${formatValue(nominal)}</b>에 도달하지만, 물가 상승을 고려한 실제 구매력은 <b>${formatValue(real)}</b> 수준입니다. 인플레이션으로 인해 약 <b>${formatValue(diff)}</b>의 가치가 희석되므로, 이를 방어하기 위한 전략적 자산 배분이 필수적입니다.`;
 }
 
 // --- Event Handlers ---
 function setCurrency(code) {
     baseCurrency = code;
-    logClick(`통화 설정: ${code}`);
     const glider = document.getElementById('currency-glider');
     const btnUsd = document.getElementById('btn-set-usd');
     const btnKrw = document.getElementById('btn-set-krw');
 
-    if (glider) glider.style.left = (code === 'USD') ? '4px' : '50%';
+    if (glider) glider.style.left = (code === 'USD') ? '4px' : 'calc(50% - 4px)';
     
-    // 버튼 색상 업데이트
     if (btnUsd && btnKrw) {
         if (code === 'USD') {
             btnUsd.classList.replace('text-slate-400', 'text-blue-600');
@@ -209,7 +207,6 @@ function setCurrency(code) {
 }
 
 function resetToLiveExchangeRate() {
-    logClick('실시간 환율 리셋');
     const input = document.getElementById('manualExchangeRate');
     if (input) {
         input.value = Math.round(liveExchangeRate);
@@ -220,7 +217,6 @@ function resetToLiveExchangeRate() {
 }
 
 window.copySimulationResult = function() {
-    logClick('결과 복사');
     const tier = document.getElementById('gradeTitle').innerText;
     const wealth = document.getElementById('finalWealthText').innerText;
     const text = `📊 Hedge Dochi 자산 시뮬레이션 결과\n📍 나의 10년 후 등급: ${tier}\n📍 예상 자산: ${wealth}\n\n👉 지금 바로 확인하기: https://sangjin-lee96.github.io/hedge-dochi/`;
@@ -228,7 +224,6 @@ window.copySimulationResult = function() {
 };
 
 window.downloadResultImage = function() {
-    logClick('이미지 저장');
     const area = document.querySelector('.capture-area');
     if (!area) return;
     showToast("이미지를 생성 중입니다...", "info");
@@ -276,39 +271,25 @@ async function restoreData() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 통화 스위처
     document.getElementById('btn-set-usd')?.addEventListener('click', () => setCurrency('USD'));
     document.getElementById('btn-set-krw')?.addEventListener('click', () => setCurrency('KRW'));
-
-    // 2. 단계 이동
-    document.getElementById('btn-step1-next')?.addEventListener('click', () => { logClick('Step 1 -> 2'); window.goToStep(2); });
-    document.getElementById('btn-step2-prev')?.addEventListener('click', () => { logClick('Step 2 -> 1'); window.goToStep(1); });
-    document.getElementById('btn-step2-next')?.addEventListener('click', () => { logClick('Step 2 -> 3'); window.goToStep(3); });
-    document.getElementById('btn-step3-prev')?.addEventListener('click', () => { logClick('Step 3 -> 2'); window.goToStep(2); });
-
-    // 3. 계산 및 리셋
+    document.getElementById('btn-step1-next')?.addEventListener('click', () => window.goToStep(2));
+    document.getElementById('btn-step2-prev')?.addEventListener('click', () => window.goToStep(1));
+    document.getElementById('btn-step2-next')?.addEventListener('click', () => window.goToStep(3));
+    document.getElementById('btn-step3-prev')?.addEventListener('click', () => window.goToStep(2));
     document.getElementById('btn-step3-calculate')?.addEventListener('click', calculateAndShowResult);
     document.getElementById('btn-step3-reset-rate')?.addEventListener('click', resetToLiveExchangeRate);
-
-    // 4. 결과 페이지 도구
     document.getElementById('btn-step4-copy')?.addEventListener('click', window.copySimulationResult);
     document.getElementById('btn-step4-download')?.addEventListener('click', window.downloadResultImage);
-    document.getElementById('btn-step4-retry')?.addEventListener('click', () => { logClick('다시하기'); window.goToStep(1); });
+    document.getElementById('btn-step4-retry')?.addEventListener('click', () => window.goToStep(1));
     document.getElementById('btn-step4-toggle-table')?.addEventListener('click', window.toggleYearlyTable);
-    
-    // 핵심 버튼: 2단계 은퇴 설계로 이동
-    document.getElementById('btn-step1-to-step2')?.addEventListener('click', () => {
-        logClick('Step 1 -> Step 2 Curriculum');
-        goToNextStep(1);
-    });
+    document.getElementById('btn-step1-to-step2')?.addEventListener('click', () => goToNextStep(1));
 
-    // 5. 모달 제어
     const modal = document.getElementById('strategyModal');
     document.getElementById('showStrategyBtn')?.addEventListener('click', () => {
-        logClick('전략 모달 열기');
         const content = document.getElementById('modalContent');
         const tier = document.getElementById('gradeTitle').innerText;
-        content.innerHTML = `<p class="font-bold text-indigo-600">${tier} 등급을 위한 맞춤 조언:</p><ul class="list-disc ml-5 space-y-2"><li>월 지출 중 불필요한 구독료나 고정비를 5%만 줄여도 10년 후 자산은 1,500만원 이상 늘어납니다.</li><li>현재 수익률 설정치(5%)는 시장 평균 수준입니다. 자산의 30%를 지수 ETF(VOO, QQQ)에 배분하는 것을 고려해보세요.</li></ul>`;
+        content.innerHTML = `<p class="font-bold text-blue-600">${tier} 등급을 위한 맞춤 조언:</p><ul class="list-disc ml-5 space-y-2 text-slate-600 dark:text-slate-400"><li>지출을 5%만 줄여도 10년 후 자산은 약 1,500만원 이상 증가합니다.</li><li>현재 수익률 설정은 적절하며, 자산의 30%를 지수 ETF에 배분하는 전략을 추천합니다.</li></ul>`;
         modal.classList.remove('hidden');
         setTimeout(() => document.getElementById('modalContainer').classList.add('scale-100', 'opacity-100'), 10);
     });
@@ -319,6 +300,5 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('closeModal')?.addEventListener('click', closeModal);
     document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
 
-    // 6. 실시간 저장
     document.querySelectorAll('input').forEach(i => i.addEventListener('input', () => autoSaveData(false)));
 });
