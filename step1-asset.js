@@ -175,8 +175,26 @@ function setCurrency(code) {
     baseCurrency = code;
     logClick(`통화 설정: ${code}`);
     const glider = document.getElementById('currency-glider');
+    const btnUsd = document.getElementById('btn-set-usd');
+    const btnKrw = document.getElementById('btn-set-krw');
+
     if (glider) glider.style.left = (code === 'USD') ? '4px' : '50%';
     
+    // 버튼 색상 업데이트
+    if (btnUsd && btnKrw) {
+        if (code === 'USD') {
+            btnUsd.classList.replace('text-slate-400', 'text-blue-600');
+            btnUsd.classList.add('dark:text-blue-400');
+            btnKrw.classList.replace('text-blue-600', 'text-slate-400');
+            btnKrw.classList.remove('dark:text-blue-400');
+        } else {
+            btnKrw.classList.replace('text-slate-400', 'text-blue-600');
+            btnKrw.classList.add('dark:text-blue-400');
+            btnUsd.classList.replace('text-blue-600', 'text-slate-400');
+            btnUsd.classList.remove('dark:text-blue-400');
+        }
+    }
+
     const labels = document.querySelectorAll('.currency-label');
     labels.forEach(l => l.innerText = (code === 'KRW' ? '만원' : '달러'));
     
