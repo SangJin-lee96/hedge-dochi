@@ -27,10 +27,11 @@ export const ROADMAP_STEPS = [
     { id: 2, title: "은퇴 목표 설정", path: "step2-fire.html", desc: "내가 꿈꾸는 노후를 위한 자산 설계", icon: "🏖️" },
     { id: 3, title: "투자 그릇 파악", path: "step3-risk.html", desc: "하락장을 견디는 나의 심리 상태 테스트", icon: "🧠" },
     { id: 4, title: "투자 기초 지식", path: "step4-guide.html", desc: "복리와 자산 배분의 기본 원리 이해", icon: "📚" },
-    { id: 2, title: "투자 전략 선택", path: "step5-models.html", desc: "올웨더, 영구 포트폴리오 등 전략 선택", icon: "♟️" },
+    { id: 5, title: "투자 전략 선택", path: "step5-models.html", desc: "올웨더, 영구 포트폴리오 등 전략 선택", icon: "♟️" },
     { id: 6, title: "수익 시뮬레이션", path: "step6-simulate.html", desc: "배당 및 복리 수익 구체적 계산", icon: "📈" },
     { id: 7, title: "포트폴리오 구축", path: "step7-dashboard.html", desc: "실제 자산 등록 및 실시간 관리 시작", icon: "💼" },
-    { id: 8, title: "주기적 리밸런싱", path: "step8-rebalance.html", desc: "시장 변화에 따른 자산 비중 최적화", icon: "⚖️" }
+    { id: 8, title: "주기적 리밸런싱", path: "step8-rebalance.html", desc: "시장 변화에 따른 자산 비중 최적화", icon: "⚖️" },
+    { id: 9, title: "마스터 플랜 실행", path: "final-blueprint.html", desc: "최종 요약 및 실전 투자 실행 가이드", icon: "🏁" }
 ];
 
 export async function initExchangeRate() {
@@ -128,10 +129,10 @@ export async function saveProgress(stepId, additionalData = {}, immediate = fals
     if (!currentUser) return;
 
     const performSave = async () => {
+        if (!currentUser || !currentUser.uid) return;
+        
         try {
             const docRef = doc(db, "simulations", currentUser.uid);
-            const snap = await getDoc(docRef);
-            
             const payload = {
                 roadmapProgress: userProgress,
                 lastUpdated: new Date()
@@ -141,17 +142,15 @@ export async function saveProgress(stepId, additionalData = {}, immediate = fals
                 payload[`steps.step${stepId}`] = additionalData;
             }
 
-            if (!snap.exists()) {
-                await setDoc(docRef, {
-                    roadmapProgress: userProgress,
-                    steps: { [`step${stepId}`]: additionalData },
-                    lastUpdated: new Date()
-                });
-            } else {
-                await updateDoc(docRef, payload);
-            }
+            // Using setDoc with merge: true is generally safer for partial updates
+            await setDoc(docRef, payload, { merge: true });
             console.log(`[Core] Step ${stepId} sync complete.`);
-        } catch (e) { console.error("[Core] Cloud save error:", e); }
+        } catch (e) { 
+            console.error("[Core] Cloud save error:", e);
+            if (e.code === 'permission-denied') {
+                console.warn("⚠️ Firestore 보안 규칙 위반: Firebase Console에서 Rules가 최신인지 확인하세요.");
+            }
+        }
     };
 
     if (immediate) {

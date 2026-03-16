@@ -9,52 +9,32 @@ let exchangeRate = 1350;
 let assets = [];
 let chart = null;
 
-// Re-expose for backward compatibility if needed, but prefer addEventListener
 window.goToStep = function(step) {
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
     const target = document.getElementById(`step-${step}`);
     if (target) target.classList.remove('hidden');
-    
     document.querySelectorAll('.step-dot').forEach((dot, idx) => {
         dot.className = `step-dot w-3 h-3 rounded-full transition-all ${idx + 1 <= step ? 'bg-blue-600' : 'bg-slate-200'}`;
     });
-
     if (step === 3) renderWeights();
     currentStep = step;
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 async function autoSaveData(immediate = false) {
-    const totalInvestment = document.getElementById('totalInvestment')?.value || 0;
     const manualRate = parseFloat(document.getElementById('manualExchangeRate')?.value) || exchangeRate;
-    
-    const portfolioData = { 
-        assets, 
-        baseCurrency, 
-        totalInvestment, 
-        manualExchangeRate: manualRate,
-        lastUpdated: new Date() 
-    };
-    
+    const portfolioData = { assets, baseCurrency, manualExchangeRate: manualRate, lastUpdated: new Date() };
     await saveProgress(8, portfolioData, immediate);
 }
 
 document.addEventListener('coreDataReady', async (e) => {
-    const user = e.detail.user;
     liveExchangeRate = e.detail.exchangeRate || coreExchangeRate;
-    
     const display = document.getElementById('exchangeRateDisplay');
     if (display) display.innerText = `현재 환율: ₩${liveExchangeRate.toLocaleString()}`;
     const input = document.getElementById('manualExchangeRate');
     if (input && !input.value) input.value = Math.round(liveExchangeRate);
     
-    const now = new Date();
-    const updateEl = document.getElementById('lastUpdateRebalance');
-    if (updateEl) updateEl.innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-
     const step8Data = await getStepData(8);
-    const step1Data = await getStepData(1);
-
     if (step8Data) {
         assets = step8Data.assets || [];
         baseCurrency = step8Data.baseCurrency || 'USD';
@@ -62,32 +42,14 @@ document.addEventListener('coreDataReady', async (e) => {
         if (input) input.value = Math.round(exchangeRate);
         setCurrency(baseCurrency);
     }
-
-    const totalInvestInput = document.getElementById('totalInvestment');
-    if (totalInvestInput && (!totalInvestInput.value || totalInvestInput.value == 0)) {
-        totalInvestInput.value = (step8Data?.totalInvestment) || (step1Data?.initialSeed) || 3000;
-    }
-
     if (assets.length === 0) addAsset();
     renderAssets();
 });
 
-// --- Actions ---
 function setCurrency(code) {
     baseCurrency = code;
     const glider = document.getElementById('currency-glider');
-    const btnUsd = document.getElementById('btn-currency-usd');
-    const btnKrw = document.getElementById('btn-currency-krw');
-
-    if (code === 'USD') {
-        if (glider) glider.style.left = '4px';
-        btnUsd?.classList.add('text-blue-600');
-        btnKrw?.classList.remove('text-blue-600');
-    } else {
-        if (glider) glider.style.left = 'calc(50% - 4px)';
-        btnKrw?.classList.add('text-blue-600');
-        btnUsd?.classList.remove('text-blue-600');
-    }
+    if (glider) glider.style.left = (code === 'USD') ? '4px' : 'calc(50% - 4px)';
     autoSaveData();
 }
 
@@ -96,8 +58,6 @@ function resetToLiveExchangeRate() {
     if (input) {
         input.value = Math.round(liveExchangeRate);
         exchangeRate = liveExchangeRate;
-        const display = document.getElementById('exchangeRateDisplay');
-        if (display) display.innerText = `현재 환율: ₩${liveExchangeRate.toLocaleString()}`;
         autoSaveData(true);
         showToast("실시간 환율이 적용되었습니다.", "success");
     }
@@ -119,7 +79,6 @@ async function quickAdd(ticker) {
     } catch (e) { addAsset({ ticker, qty: 1, price: 0 }); }
 }
 
-// --- UI Binding ---
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-reset-rate')?.addEventListener('click', resetToLiveExchangeRate);
     document.getElementById('btn-start-asset')?.addEventListener('click', () => window.goToStep(2));
@@ -131,19 +90,23 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-open-search')?.addEventListener('click', () => window.toggleSearchModal(true));
     document.getElementById('btn-currency-usd')?.addEventListener('click', () => setCurrency('USD'));
     document.getElementById('btn-currency-krw')?.addEventListener('click', () => setCurrency('KRW'));
+    
+    // 최종 마스터 플랜 버튼 연결
+    document.getElementById('btn-to-blueprint')?.addEventListener('click', () => {
+        location.href = 'final-blueprint.html';
+    });
+
     document.body.addEventListener('change', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') autoSaveData(false);
     });
 });
 
-// --- Search & Modal ---
 window.toggleSearchModal = function(show) {
     const modal = document.getElementById('searchModal');
     const container = document.getElementById('searchModalContainer');
     if (!modal || !container) return;
     if (show) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        modal.classList.remove('hidden'); modal.classList.add('flex');
         setTimeout(() => { container.classList.remove('scale-95', 'opacity-0'); container.classList.add('scale-100', 'opacity-100'); document.getElementById('assetSearchInput')?.focus(); }, 10);
     } else {
         container.classList.remove('scale-100', 'opacity-100'); container.classList.add('scale-95', 'opacity-0');
@@ -175,8 +138,7 @@ window.searchAsset = async function() {
 window.selectAndAddAsset = async function(ticker) {
     window.toggleSearchModal(false);
     await quickAdd(ticker);
-    const searchInput = document.getElementById('assetSearchInput');
-    if (searchInput) searchInput.value = '';
+    document.getElementById('assetSearchInput').value = '';
 };
 
 window.updateAsset = function(id, key, val) {
@@ -187,8 +149,7 @@ window.updateAsset = function(id, key, val) {
 
 window.removeAsset = function(id) {
     assets = assets.filter(a => a.id !== id);
-    renderAssets();
-    autoSaveData();
+    renderAssets(); autoSaveData();
 };
 
 function renderAssets() {
@@ -208,7 +169,6 @@ function renderAssets() {
     });
 }
 
-// --- Weight Management ---
 function renderWeights() {
     const container = document.getElementById('weightContainer');
     if (!container) return;
@@ -230,116 +190,90 @@ function renderWeights() {
 window.updateWeight = function(id, val) {
     const asset = assets.find(a => a.id === id);
     if (asset) asset.targetWeight = parseInt(val);
-    renderWeights();
-    autoSaveData();
+    renderWeights(); autoSaveData();
 };
 
 window.applyModel = function(modelType) {
-    if (assets.length === 0) { showToast("먼저 자산을 하나 이상 추가해주세요."); return; }
+    if (assets.length === 0) { showToast("자산을 추가해주세요."); return; }
     if (modelType === 'ALL_WEATHER') { const counts = [0.3, 0.55, 0.15]; assets.forEach((a, i) => a.targetWeight = Math.round(counts[i % 3] / Math.ceil(assets.length/3) * 100)); }
     else if (modelType === '6040') { const counts = [0.6, 0.4]; assets.forEach((a, i) => a.targetWeight = Math.round(counts[i % 2] / Math.ceil(assets.length/2) * 100)); }
     else if (modelType === 'PERMANENT') { const weight = Math.floor(100 / assets.length); assets.forEach(a => a.targetWeight = weight); }
-    let currentTotal = assets.reduce((sum, a) => sum + (a.targetWeight || 0), 0);
-    if (currentTotal !== 100 && assets.length > 0) assets[assets.length - 1].targetWeight += (100 - currentTotal);
-    renderWeights();
-    autoSaveData();
-    showToast(`'${modelType}' 모델 비중이 적용되었습니다. 🎯`, "success");
+    let total = assets.reduce((sum, a) => sum + (a.targetWeight || 0), 0);
+    if (total !== 100 && assets.length > 0) assets[assets.length - 1].targetWeight += (100 - total);
+    renderWeights(); autoSaveData();
 };
 
 function updateTotalWeight() {
     const total = assets.reduce((sum, a) => sum + (a.targetWeight || 0), 0);
     const display = document.getElementById('totalWeight');
     const btn = document.getElementById('btn-final-step');
-    if (display) display.innerText = total + '%';
-    if (btn) {
-        if (total === 100) { btn.disabled = false; btn.classList.remove('opacity-50'); if(display) display.className = "text-2xl font-black text-emerald-500"; }
-        else { btn.disabled = true; btn.classList.add('opacity-50'); if(display) display.className = "text-2xl font-black text-red-500"; }
-    }
+    if (display) { display.innerText = total + '%'; display.className = `text-2xl font-black ${total === 100 ? 'text-emerald-500' : 'text-red-500'}`; }
+    if (btn) btn.disabled = (total !== 100);
 }
 
 window.calculateRebalance = async function() {
-    const btnText = document.getElementById('btn-text');
-    const btnSpinner = document.getElementById('btn-spinner');
-    if (btnText && btnSpinner) { btnText.classList.add('hidden'); btnSpinner.classList.remove('hidden'); }
-    const manualRate = parseFloat(document.getElementById('manualExchangeRate')?.value);
-    if (manualRate) exchangeRate = manualRate;
     const resultsContainer = document.getElementById('rebalanceResults');
     if (resultsContainer) resultsContainer.innerHTML = '<div class="text-center py-8 animate-pulse font-bold text-slate-400">분석 중...</div>';
-    let totalValueInBase = 0;
-    const processedAssets = assets.map(a => {
-        const isKRWAsset = a.ticker.endsWith('.KS') || a.ticker.endsWith('.KQ');
-        let currentPriceInBase = a.price;
-        if (baseCurrency === 'USD' && isKRWAsset) currentPriceInBase = a.price / exchangeRate;
-        else if (baseCurrency === 'KRW' && !isKRWAsset && a.ticker !== 'CASH') currentPriceInBase = a.price * exchangeRate;
-        const valueInBase = a.qty * currentPriceInBase;
-        totalValueInBase += valueInBase;
-        return { ...a, currentPriceInBase, valueInBase };
+    
+    let totalVal = assets.reduce((sum, a) => sum + (a.qty * a.price), 0);
+    const processed = assets.map(a => {
+        const targetVal = totalVal * (a.targetWeight / 100);
+        const currentVal = a.qty * a.price;
+        const diffVal = targetVal - currentVal;
+        const diffQty = (diffVal / a.price).toFixed(2);
+        return { ...a, diffQty, diffVal, currentWeight: totalVal > 0 ? (currentVal / totalVal * 100).toFixed(1) : 0 };
     });
+
     setTimeout(() => {
         if (resultsContainer) {
-            resultsContainer.innerHTML = '';
-            processedAssets.forEach(a => {
-                const targetValue = totalValueInBase * (a.targetWeight / 100);
-                const diffValue = targetValue - a.valueInBase;
-                const diffQty = a.currentPriceInBase > 0 ? (diffValue / a.currentPriceInBase).toFixed(2) : 0;
-                const div = document.createElement('div');
-                div.className = "p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center animate-fade-in-up";
-                let actionHTML = parseFloat(diffQty) > 0.01 ? `<div class="text-right"><span class="text-emerald-500 font-black">매수 ${diffQty}주</span><p class="text-[10px] text-slate-400">약 ${formatValue(Math.abs(diffValue))}</p></div>` : 
-                                 parseFloat(diffQty) < -0.01 ? `<div class="text-right"><span class="text-red-500 font-black">매도 ${Math.abs(diffQty)}주</span><p class="text-[10px] text-slate-400">약 ${formatValue(Math.abs(diffValue))}</p></div>` : 
-                                 `<span class="text-slate-400 font-black">유지</span>`;
-                div.innerHTML = `<div class="flex flex-col"><span class="font-bold">${a.ticker}</span><span class="text-[10px] text-slate-400">${totalValueInBase > 0 ? ((a.valueInBase/totalValueInBase)*100).toFixed(1) : 0}% → ${a.targetWeight}%</span></div>${actionHTML}`;
-                resultsContainer.appendChild(div);
-            });
+            resultsContainer.innerHTML = processed.map(a => `
+                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center">
+                    <div class="flex flex-col"><span class="font-bold">${a.ticker}</span><span class="text-[10px] text-slate-400">${a.currentWeight}% → ${a.targetWeight}%</span></div>
+                    <div class="text-right">
+                        <span class="font-black ${a.diffQty > 0 ? 'text-emerald-500' : 'text-red-500'}">${a.diffQty > 0 ? '매수' : '매도'} ${Math.abs(a.diffQty)}주</span>
+                        <p class="text-[10px] text-slate-400">약 ${formatVal(Math.abs(a.diffVal))}</p>
+                    </div>
+                </div>
+            `).join('');
         }
-        renderChart(processedAssets);
-        updateHealthScore(processedAssets, totalValueInBase);
+        renderChart(processed);
+        updateHealthScore(processed);
         window.goToStep(4);
         autoSaveData(true);
-        if (btnText && btnSpinner) { btnText.classList.remove('hidden'); btnSpinner.classList.add('hidden'); }
     }, 800);
 };
 
-function formatValue(val) {
+function formatVal(v) {
     if (baseCurrency === 'KRW') {
-        const won = Math.round(val);
-        if (won >= 100000000) return (won / 100000000).toFixed(1) + '억 원';
-        if (won >= 10000) return (won / 10000).toFixed(1) + '만 원';
-        return won.toLocaleString() + '원';
+        if (v >= 100000000) return (v / 100000000).toFixed(1) + '억 원';
+        if (v >= 10000) return (v / 10000).toFixed(1) + '만 원';
+        return Math.round(v).toLocaleString() + '원';
     }
-    return '$' + val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return '$' + v.toLocaleString(undefined, { minimumFractionDigits: 2 });
 }
 
 window.downloadRebalanceImage = function() {
     const area = document.querySelector('.capture-area');
     if (!area) return;
-    showToast("진단 리포트 이미지를 생성하고 있습니다... 🖼️");
-    html2canvas(area, { useCORS: true, backgroundColor: null, scale: 2, logging: false }).then(canvas => {
-        const link = document.createElement('a'); link.download = `HedgeDochi_Portfolio_Report.png`; link.href = canvas.toDataURL('image/png'); link.click();
-        showToast("이미지 저장이 완료되었습니다! ✨", "success");
-    }).catch(() => { showToast("이미지 생성 중 오류가 발생했습니다."); });
+    html2canvas(area, { useCORS: true, scale: 2 }).then(canvas => {
+        const link = document.createElement('a'); link.download = `HedgeDochi_Report.png`; link.href = canvas.toDataURL(); link.click();
+    });
 };
 
-function renderChart(processedAssets) {
+function renderChart(data) {
     const ctx = document.getElementById('currentChart')?.getContext('2d');
     if (!ctx) return;
     if (chart) chart.destroy();
     chart = new Chart(ctx, {
         type: 'doughnut',
-        data: { labels: processedAssets.map(a => a.ticker), datasets: [{ data: processedAssets.map(a => a.valueInBase), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'], borderWidth: 0 }] },
+        data: { labels: data.map(a => a.ticker), datasets: [{ data: data.map(a => Math.max(0, a.qty * a.price)), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'], borderWidth: 0 }] },
         options: { cutout: '75%', plugins: { legend: { display: false } } }
     });
 }
 
-function updateHealthScore(processedAssets, totalValueInBase) {
-    let totalDeviance = 0;
-    processedAssets.forEach(a => { const currentWeight = totalValueInBase > 0 ? (a.valueInBase / totalValueInBase) * 100 : 0; totalDeviance += Math.abs(currentWeight - a.targetWeight); });
-    const score = Math.max(0, 100 - Math.round(totalDeviance));
-    const scoreEl = document.getElementById('healthScore');
-    if (scoreEl) { scoreEl.innerText = score; scoreEl.className = `text-5xl font-black ${score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500'}`; }
+function updateHealthScore(data) {
+    const deviance = data.reduce((sum, a) => sum + Math.abs(a.currentWeight - a.targetWeight), 0);
+    const score = Math.max(0, 100 - Math.round(deviance));
+    const el = document.getElementById('healthScore');
+    if (el) { el.innerText = score; el.className = `text-6xl font-black ${score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500'}`; }
 }
-
-window.copyRebalanceResult = function() {
-    const score = document.getElementById('healthScore')?.innerText;
-    const text = `⚖️ Hedge Dochi 리밸런싱 리포트 ⚖️\n📊 포트폴리오 건강 점수: ${score}점\n\n📍 실시간 환율 반영, 나의 포트폴리오 진단하기\n👉 https://sangjin-lee96.github.io/hedge-dochi/`;
-    navigator.clipboard.writeText(text).then(() => showToast("결과가 복사되었습니다! 🚀", "success"));
-};
