@@ -9,6 +9,10 @@ let exchangeRate = 1350;
 let assets = [];
 let chart = null;
 
+// Re-expose core functions to window for HTML onclick access
+window.goToNextStep = goToNextStep;
+window.showToast = showToast;
+
 async function autoSaveData(immediate = false) {
     const totalInvestment = document.getElementById('totalInvestment')?.value || 0;
     const manualRate = parseFloat(document.getElementById('manualExchangeRate')?.value) || exchangeRate;
@@ -21,7 +25,6 @@ async function autoSaveData(immediate = false) {
         lastUpdated: new Date() 
     };
     
-    // Save only to the centralized simulations document
     await saveProgress(8, portfolioData, immediate);
 }
 
@@ -29,7 +32,6 @@ document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
     liveExchangeRate = e.detail.exchangeRate || coreExchangeRate;
     
-    // Update UI with latest exchange rate
     const display = document.getElementById('exchangeRateDisplay');
     if (display) display.innerText = `현재 환율: ₩${liveExchangeRate.toLocaleString()}`;
     const input = document.getElementById('manualExchangeRate');
@@ -39,7 +41,6 @@ document.addEventListener('coreDataReady', async (e) => {
     const updateEl = document.getElementById('lastUpdateRebalance');
     if (updateEl) updateEl.innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
 
-    // Restore data regardless of user login (localStorage support)
     const step8Data = await getStepData(8);
     const step1Data = await getStepData(1);
 
@@ -48,7 +49,7 @@ document.addEventListener('coreDataReady', async (e) => {
         baseCurrency = step8Data.baseCurrency || 'USD';
         exchangeRate = step8Data.manualExchangeRate || liveExchangeRate;
         if (input) input.value = Math.round(exchangeRate);
-        setCurrency(baseCurrency);
+        window.setCurrency(baseCurrency);
     }
 
     const totalInvestInput = document.getElementById('totalInvestment');
@@ -56,14 +57,15 @@ document.addEventListener('coreDataReady', async (e) => {
         totalInvestInput.value = (step8Data?.totalInvestment) || (step1Data?.initialSeed) || 3000;
     }
 
-    if (assets.length === 0) addAsset();
+    if (assets.length === 0) window.addAsset();
     renderAssets();
 });
 
 // --- Wizard Navigation ---
 window.goToStep = function(step) {
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
-    document.getElementById(`step-${step}`).classList.remove('hidden');
+    const target = document.getElementById(`step-${step}`);
+    if (target) target.classList.remove('hidden');
     
     document.querySelectorAll('.step-dot').forEach((dot, idx) => {
         dot.className = `step-dot w-3 h-3 rounded-full transition-all ${idx + 1 <= step ? 'bg-blue-600' : 'bg-slate-200'}`;
@@ -101,6 +103,7 @@ window.resetToLiveExchangeRate = function() {
         const display = document.getElementById('exchangeRateDisplay');
         if (display) display.innerText = `현재 환율: ₩${liveExchangeRate.toLocaleString()}`;
         autoSaveData(true);
+        showToast("실시간 환율이 적용되었습니다.", "success");
     }
 };
 
@@ -114,7 +117,8 @@ window.toggleSearchModal = function(show) {
         setTimeout(() => {
             container.classList.remove('scale-95', 'opacity-0');
             container.classList.add('scale-100', 'opacity-100');
-            document.getElementById('assetSearchInput').focus();
+            const searchInput = document.getElementById('assetSearchInput');
+            if (searchInput) searchInput.focus();
         }, 10);
     } else {
         container.classList.remove('scale-100', 'opacity-100');
@@ -127,28 +131,31 @@ window.toggleSearchModal = function(show) {
 };
 
 window.searchAsset = async function() {
-    const q = document.getElementById('assetSearchInput').value.trim();
+    const q = document.getElementById('assetSearchInput')?.value.trim();
     if (!q) return;
     const resContainer = document.getElementById('searchResults');
-    resContainer.innerHTML = '<div class="text-center py-8 animate-pulse text-xs text-slate-400">검색 중...</div>';
+    if (resContainer) resContainer.innerHTML = '<div class="text-center py-8 animate-pulse text-xs text-slate-400">검색 중...</div>';
     try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         const quotes = data?.quotes || [];
-        if (quotes.length === 0) { resContainer.innerHTML = '<p class="text-xs text-center py-8">결과가 없습니다.</p>'; return; }
-        resContainer.innerHTML = quotes.map(item => `
-            <div onclick="selectAndAddAsset('${item.symbol}')" class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:border-blue-500 border border-transparent cursor-pointer transition-all flex justify-between items-center group">
-                <div><p class="font-black group-hover:text-blue-600">${item.symbol}</p><p class="text-[10px] text-slate-400">${item.shortname || ''}</p></div>
-                <span class="text-xs font-bold text-blue-500 opacity-0 group-hover:opacity-100">+ 추가</span>
-            </div>
-        `).join('');
-    } catch (e) { resContainer.innerHTML = '<p class="text-xs text-red-400 text-center py-8">오류 발생</p>'; }
+        if (quotes.length === 0) { if (resContainer) resContainer.innerHTML = '<p class="text-xs text-center py-8">결과가 없습니다.</p>'; return; }
+        if (resContainer) {
+            resContainer.innerHTML = quotes.map(item => `
+                <div onclick="selectAndAddAsset('${item.symbol}')" class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:border-blue-500 border border-transparent cursor-pointer transition-all flex justify-between items-center group">
+                    <div><p class="font-black group-hover:text-blue-600">${item.symbol}</p><p class="text-[10px] text-slate-400">${item.shortname || ''}</p></div>
+                    <span class="text-xs font-bold text-blue-500 opacity-0 group-hover:opacity-100">+ 추가</span>
+                </div>
+            `).join('');
+        }
+    } catch (e) { if (resContainer) resContainer.innerHTML = '<p class="text-xs text-red-400 text-center py-8">오류 발생</p>'; }
 };
 
 window.selectAndAddAsset = async function(ticker) {
-    toggleSearchModal(false);
-    await quickAdd(ticker);
-    document.getElementById('assetSearchInput').value = '';
+    window.toggleSearchModal(false);
+    await window.quickAdd(ticker);
+    const searchInput = document.getElementById('assetSearchInput');
+    if (searchInput) searchInput.value = '';
 };
 
 // --- Asset Management ---
@@ -170,8 +177,8 @@ window.quickAdd = async function(ticker) {
         const res = await fetch(`/api/price?ticker=${ticker}`);
         const data = await res.json();
         const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice || 0;
-        addAsset({ ticker, qty: 1, price: price });
-    } catch (e) { addAsset({ ticker, qty: 1, price: 0 }); }
+        window.addAsset({ ticker, qty: 1, price: price });
+    } catch (e) { window.addAsset({ ticker, qty: 1, price: 0 }); }
 };
 
 window.updateAsset = function(id, key, val) {
@@ -200,6 +207,7 @@ function renderAssets() {
 // --- Weight Management ---
 function renderWeights() {
     const container = document.getElementById('weightContainer');
+    if (!container) return;
     container.innerHTML = '';
     const avgWeight = assets.length > 0 ? Math.floor(100 / assets.length) : 0;
     assets.forEach((asset, idx) => {
@@ -208,7 +216,7 @@ function renderWeights() {
         div.className = "space-y-2";
         div.innerHTML = `
             <div class="flex justify-between items-end px-2"><span class="font-black text-slate-800 dark:text-white">${asset.ticker || '자산 ' + (idx+1)}</span><span class="text-blue-600 font-black">${asset.targetWeight}%</span></div>
-            <input type="range" value="${asset.targetWeight}" oninput="updateWeight(${asset.id}, this.value)" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600">
+            <input type="range" value="${asset.targetWeight}" oninput="window.updateWeight(${asset.id}, this.value)" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600">
         `;
         container.appendChild(div);
     });
@@ -243,7 +251,7 @@ window.applyModel = function(modelType) {
 
     renderWeights();
     autoSaveData();
-    showToast(`'${modelType}' 모델 비중이 적용되었습니다. 🎯`);
+    showToast(`'${modelType}' 모델 비중이 적용되었습니다. 🎯`, "success");
 };
 
 function updateTotalWeight() {
@@ -252,8 +260,8 @@ function updateTotalWeight() {
     const btn = document.getElementById('btn-final-step');
     if (display) display.innerText = total + '%';
     if (btn) {
-        if (total === 100) { btn.disabled = false; btn.classList.remove('opacity-50'); display.className = "text-2xl font-black text-emerald-500"; }
-        else { btn.disabled = true; btn.classList.add('opacity-50'); display.className = "text-2xl font-black text-red-500"; }
+        if (total === 100) { btn.disabled = false; btn.classList.remove('opacity-50'); if(display) display.className = "text-2xl font-black text-emerald-500"; }
+        else { btn.disabled = true; btn.classList.add('opacity-50'); if(display) display.className = "text-2xl font-black text-red-500"; }
     }
 }
 
@@ -267,7 +275,7 @@ window.calculateRebalance = async function() {
     if (manualRate) exchangeRate = manualRate;
 
     const resultsContainer = document.getElementById('rebalanceResults');
-    resultsContainer.innerHTML = '<div class="text-center py-8 animate-pulse font-bold text-slate-400">분석 중...</div>';
+    if (resultsContainer) resultsContainer.innerHTML = '<div class="text-center py-8 animate-pulse font-bold text-slate-400">분석 중...</div>';
 
     let totalValueInBase = 0;
     const processedAssets = assets.map(a => {
@@ -281,22 +289,24 @@ window.calculateRebalance = async function() {
     });
 
     setTimeout(() => {
-        resultsContainer.innerHTML = '';
-        processedAssets.forEach(a => {
-            const targetValue = totalValueInBase * (a.targetWeight / 100);
-            const diffValue = targetValue - a.valueInBase;
-            const diffQty = a.currentPriceInBase > 0 ? (diffValue / a.currentPriceInBase).toFixed(2) : 0;
-            const div = document.createElement('div');
-            div.className = "p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center animate-fade-in-up";
-            let actionHTML = parseFloat(diffQty) > 0 ? `<div class="text-right"><span class="text-emerald-500 font-black">매수 ${diffQty}주</span><p class="text-[10px] text-slate-400">약 ${formatValue(Math.abs(diffValue))}</p></div>` : 
-                             parseFloat(diffQty) < 0 ? `<div class="text-right"><span class="text-red-500 font-black">매도 ${Math.abs(diffQty)}주</span><p class="text-[10px] text-slate-400">약 ${formatValue(Math.abs(diffValue))}</p></div>` : 
-                             `<span class="text-slate-400 font-black">유지</span>`;
-            div.innerHTML = `<div class="flex flex-col"><span class="font-bold">${a.ticker}</span><span class="text-[10px] text-slate-400">${((a.valueInBase/totalValueInBase)*100).toFixed(1)}% → ${a.targetWeight}%</span></div>${actionHTML}`;
-            resultsContainer.appendChild(div);
-        });
+        if (resultsContainer) {
+            resultsContainer.innerHTML = '';
+            processedAssets.forEach(a => {
+                const targetValue = totalValueInBase * (a.targetWeight / 100);
+                const diffValue = targetValue - a.valueInBase;
+                const diffQty = a.currentPriceInBase > 0 ? (diffValue / a.currentPriceInBase).toFixed(2) : 0;
+                const div = document.createElement('div');
+                div.className = "p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center animate-fade-in-up";
+                let actionHTML = parseFloat(diffQty) > 0 ? `<div class="text-right"><span class="text-emerald-500 font-black">매수 ${diffQty}주</span><p class="text-[10px] text-slate-400">약 ${formatValue(Math.abs(diffValue))}</p></div>` : 
+                                 parseFloat(diffQty) < 0 ? `<div class="text-right"><span class="text-red-500 font-black">매도 ${Math.abs(diffQty)}주</span><p class="text-[10px] text-slate-400">약 ${formatValue(Math.abs(diffValue))}</p></div>` : 
+                                 `<span class="text-slate-400 font-black">유지</span>`;
+                div.innerHTML = `<div class="flex flex-col"><span class="font-bold">${a.ticker}</span><span class="text-[10px] text-slate-400">${((a.valueInBase/totalValueInBase)*100).toFixed(1)}% → ${a.targetWeight}%</span></div>${actionHTML}`;
+                resultsContainer.appendChild(div);
+            });
+        }
         renderChart(processedAssets);
         updateHealthScore(processedAssets, totalValueInBase);
-        goToStep(4);
+        window.goToStep(4);
         autoSaveData(true);
         if (btnText && btnSpinner) { btnText.classList.remove('hidden'); btnSpinner.classList.add('hidden'); }
     }, 800);
@@ -316,12 +326,13 @@ window.downloadRebalanceImage = function() {
         link.download = `HedgeDochi_Portfolio_Report.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-        showToast("이미지 저장이 완료되었습니다! ✨");
+        showToast("이미지 저장이 완료되었습니다! ✨", "success");
     }).catch(() => { showToast("이미지 생성 중 오류가 발생했습니다."); });
 };
 
 function renderChart(processedAssets) {
-    const ctx = document.getElementById('currentChart').getContext('2d');
+    const ctx = document.getElementById('currentChart')?.getContext('2d');
+    if (!ctx) return;
     if (chart) chart.destroy();
     chart = new Chart(ctx, {
         type: 'doughnut',
@@ -347,18 +358,15 @@ function updateHealthScore(processedAssets, totalValueInBase) {
     }
 }
 
-window.proceedToCurriculumStepHub = function() {
-    goToNextStep(8);
-};
-
 window.copyRebalanceResult = function() {
-    const score = document.getElementById('healthScore').innerText;
-    const text = `⚖️ Hedge Dochi 리밸런싱 리포트 ⚖️\n📊 포트폴리오 건강 점수: ${score}점\n\n📍 실시간 환율 반영, 나의 포트폴리오 진단하기\n👉 https://hedge-dochi-live.pages.dev/`;
-    navigator.clipboard.writeText(text).then(() => showToast("결과가 복사되었습니다! 🚀"));
+    const score = document.getElementById('healthScore')?.innerText;
+    const text = `⚖️ Hedge Dochi 리밸런싱 리포트 ⚖️\n📊 포트폴리오 건강 점수: ${score}점\n\n📍 실시간 환율 반영, 나의 포트폴리오 진단하기\n👉 https://sangjin-lee96.github.io/hedge-dochi/`;
+    navigator.clipboard.writeText(text).then(() => showToast("결과가 복사되었습니다! 🚀", "success"));
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('input').forEach(input => {
-        input.addEventListener('change', () => autoSaveData(false));
+    // Standardize input event listeners
+    document.body.addEventListener('change', (e) => {
+        if (e.target.tagName === 'INPUT') autoSaveData(false);
     });
 });
