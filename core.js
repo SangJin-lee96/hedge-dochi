@@ -20,7 +20,7 @@ export const db = getFirestore(app);
 export let currentUser = null;
 export let userProgress = parseInt(localStorage.getItem('roadmapProgress')) || 1;
 export let isCoreReady = false;
-export let exchangeRate = 1350; // Default fallback
+export let exchangeRate = 1350; 
 
 export const ROADMAP_STEPS = [
     { id: 1, title: "나의 현재 위치 파악", path: "step1-asset.html", desc: "10년 후 내 자산 등급 시뮬레이션", icon: "📊" },
@@ -29,7 +29,6 @@ export const ROADMAP_STEPS = [
     { id: 4, title: "투자 기초 지식", path: "step4-guide.html", desc: "복리와 자산 배분의 기본 원리 이해", icon: "📚" },
     { id: 5, title: "투자 전략 선택", path: "step5-models.html", desc: "올웨더, 영구 포트폴리오 등 전략 선택", icon: "♟️" },
     { id: 6, title: "수익 시뮬레이션", path: "step6-simulate.html", desc: "배당 및 복리 수익 구체적 계산", icon: "📈" },
-
     { id: 7, title: "포트폴리오 구축", path: "step7-dashboard.html", desc: "실제 자산 등록 및 실시간 관리 시작", icon: "💼" },
     { id: 8, title: "주기적 리밸런싱", path: "step8-rebalance.html", desc: "시장 변화에 따른 자산 비중 최적화", icon: "⚖️" },
     { id: 9, title: "마스터 플랜 실행", path: "final-blueprint.html", desc: "최종 요약 및 실전 투자 실행 가이드", icon: "🏁" }
@@ -42,38 +41,31 @@ export async function initExchangeRate() {
         const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
         if (rate) {
             exchangeRate = rate;
-            console.log("[Core] Real-time exchange rate loaded:", exchangeRate);
+            console.log("[Core] Exchange Rate:", exchangeRate);
         }
-    } catch (e) {
-        console.error("[Core] Failed to load exchange rate, using fallback:", exchangeRate);
-    }
+    } catch (e) { console.error("[Core] Exchange Rate Error", e); }
 }
 
 export function setupAuthUI() {
     return new Promise(async (resolve) => {
-        // Exchange rate must be loaded first
         await initExchangeRate();
-
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
-            const loginBtn = document.getElementById('loginBtn');
-            const userProfile = document.getElementById('userProfile');
-            const userPhoto = document.getElementById('userPhoto');
-
             if (user) {
+                const loginBtn = document.getElementById('loginBtn');
+                const userProfile = document.getElementById('userProfile');
+                const userPhoto = document.getElementById('userPhoto');
                 if (loginBtn) loginBtn.classList.add('hidden');
                 if (userProfile) userProfile.classList.remove('hidden');
-                if (userPhoto) userPhoto.src = user.photoURL || 'https://via.placeholder.com/32';
+                if (userPhoto) userPhoto.src = user.photoURL || '';
                 
                 const snap = await getDoc(doc(db, "simulations", user.uid));
                 if (snap.exists()) {
                     const data = snap.data();
                     userProgress = Math.max(userProgress, data.roadmapProgress || 1);
                     localStorage.setItem('roadmapProgress', userProgress);
+                    console.log("[Core] Progress Sync:", userProgress);
                 }
-            } else {
-                if (loginBtn) loginBtn.classList.remove('hidden');
-                if (userProfile) userProfile.classList.add('hidden');
             }
             isCoreReady = true;
             document.dispatchEvent(new CustomEvent('coreDataReady', { detail: { user, userProgress, exchangeRate } }));
@@ -82,47 +74,9 @@ export function setupAuthUI() {
     });
 }
 
-export async function signInWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    try {
-        await signInWithPopup(auth, provider);
-        showToast("로그인되었습니다.", "success");
-    } catch (e) {
-        console.error("Login error", e);
-        showToast("로그인에 실패했습니다.", "info");
-    }
-}
-
-export async function logout() {
-    try {
-        await signOut(auth);
-        localStorage.clear();
-        location.href = 'index.html';
-    } catch (e) {
-        console.error("Logout error", e);
-    }
-}
-
-export function checkAuthAndGo(path) {
-    if (!currentUser) {
-        showToast("로그인이 필요한 서비스입니다.", "info");
-        return;
-    }
-    location.href = path;
-}
-
-// Global Event Listeners for Auth Buttons
-document.addEventListener('click', (e) => {
-    if (e.target.id === 'loginBtn') signInWithGoogle();
-    if (e.target.id === 'logoutBtn') logout();
-});
-
-const saveTimeouts = {};
-
 export async function saveProgress(stepId, additionalData = {}, immediate = false) {
     userProgress = Math.max(userProgress, stepId);
     localStorage.setItem('roadmapProgress', userProgress);
-    
     if (Object.keys(additionalData).length > 0) {
         localStorage.setItem(`step${stepId}Data`, JSON.stringify(additionalData));
     }
@@ -130,61 +84,59 @@ export async function saveProgress(stepId, additionalData = {}, immediate = fals
     if (!currentUser) return;
 
     const performSave = async () => {
-        if (!currentUser || !currentUser.uid) return;
-        
         try {
             const docRef = doc(db, "simulations", currentUser.uid);
+            // 점 표기법 대신 명확한 객체 구조 사용 (중요)
             const payload = {
                 roadmapProgress: userProgress,
-                lastUpdated: new Date()
+                lastUpdated: new Date(),
+                steps: {}
             };
-
+            
             if (Object.keys(additionalData).length > 0) {
-                payload[`steps.step${stepId}`] = additionalData;
+                payload.steps[`step${stepId}`] = additionalData;
             }
 
-            // Using setDoc with merge: true is generally safer for partial updates
             await setDoc(docRef, payload, { merge: true });
-            console.log(`[Core] Step ${stepId} sync complete.`);
-        } catch (e) { 
-            console.error("[Core] Cloud save error:", e);
-            if (e.code === 'permission-denied') {
-                console.warn("⚠️ Firestore 보안 규칙 위반: Firebase Console에서 Rules가 최신인지 확인하세요.");
-            }
-        }
+            console.log(`[Core] Step ${stepId} Saved:`, additionalData);
+        } catch (e) { console.error("[Core] Save Error", e); }
     };
 
-    if (immediate) {
-        if (saveTimeouts[stepId]) clearTimeout(saveTimeouts[stepId]);
-        await performSave();
-    } else {
-        if (saveTimeouts[stepId]) clearTimeout(saveTimeouts[stepId]);
-        saveTimeouts[stepId] = setTimeout(performSave, 1000); // 1 sec debounce for typing
+    if (immediate) await performSave();
+    else {
+        if (window.saveTimer) clearTimeout(window.saveProgressTimer);
+        window.saveTimer = setTimeout(performSave, 1000);
     }
 }
 
 export async function getStepData(stepId) {
+    console.log(`[Core] Fetching Step ${stepId} data...`);
     if (currentUser) {
         try {
             const snap = await getDoc(doc(db, "simulations", currentUser.uid));
             if (snap.exists()) {
                 const data = snap.data();
-                return (data.steps && data.steps[`step${stepId}`]) || data[`steps.step${stepId}`] || null;
+                // 평면 구조와 객체 구조 모두 대응
+                const stepData = (data.steps && data.steps[`step${stepId}`]) || data[`steps.step${stepId}`];
+                if (stepData) {
+                    console.log(`[Core] Step ${stepId} (Cloud):`, stepData);
+                    return stepData;
+                }
             }
-        } catch (e) { console.error(`[Core] Step ${stepId} load error`, e); }
+        } catch (e) { console.error(`[Core] Load Error Step ${stepId}`, e); }
     }
     const localData = localStorage.getItem(`step${stepId}Data`);
-    return localData ? JSON.parse(localData) : null;
+    const parsed = localData ? JSON.parse(localData) : null;
+    console.log(`[Core] Step ${stepId} (Local):`, parsed);
+    return parsed;
 }
 
 export function goToNextStep(currentId) {
     const nextStep = ROADMAP_STEPS.find(s => s.id === currentId + 1);
     if (nextStep) {
-        saveProgress(nextStep.id, {}, true); // Force save progress number
+        saveProgress(nextStep.id, {}, true);
         window.location.href = nextStep.path;
-    } else {
-        window.location.href = 'index.html';
-    }
+    } else { location.href = 'index.html'; }
 }
 
 export function showToast(msg, type = 'info') {

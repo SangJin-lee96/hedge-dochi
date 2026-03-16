@@ -20,10 +20,14 @@ document.addEventListener('coreDataReady', async (e) => {
 });
 
 async function refreshDashboard() {
+    console.log("[Dashboard] Refreshing data...");
     try {
         const [s1, s2, s3, s5, s6] = await Promise.all([
             getStepData(1), getStepData(2), getStepData(3), getStepData(5), getStepData(6)
         ]);
+
+        console.log("[Dashboard] Fetched Step 1:", s1);
+        console.log("[Dashboard] Fetched Step 3:", s3);
 
         updatePersonaUI(s1, s3);
         updateFireUI(s2);
@@ -35,27 +39,28 @@ async function refreshDashboard() {
 
     } catch (e) {
         console.error("Dashboard Error:", e);
-        if (document.getElementById('aiComment')) {
-            document.getElementById('aiComment').innerText = "데이터 분석 중 오류가 발생했습니다. 모든 단계를 완료하셨는지 확인해 주세요.";
-        }
     }
 }
 
 function updatePersonaUI(s1, s3) {
     const tierEl = document.getElementById('tierValue');
+    const iconEl = document.getElementById('personaIcon');
+    const nameEl = document.getElementById('personaName');
     const riskEl = document.getElementById('riskValue');
     const savingsEl = document.getElementById('savingsValue');
-    const nameEl = document.getElementById('personaName');
-    const iconEl = document.getElementById('personaIcon');
 
     if (s1) {
-        // 1단계에서 저장된 등급을 우선 사용, 없으면 재계산
-        const sim = s1.tier ? { tier: s1.tier, icon: getTierIcon(s1.tier) } : calculateWealthSummary(s1);
-        if (tierEl) tierEl.innerText = sim.tier;
-        if (iconEl) iconEl.innerText = sim.icon;
-        if (nameEl) nameEl.innerText = `${sim.tier} 등급 투자자`;
+        // Step 1에 저장된 등급이 있으면 그대로 사용
+        const tier = s1.tier || calculateTierFallback(s1);
+        const icon = getTierIcon(tier);
         
-        const monthlySave = s1.monthlySavings || Math.max(0, Math.round((s1.annualSalary / 12) - s1.monthlyExpense));
+        console.log(`[Dashboard] Applying Tier: ${tier}`);
+        
+        if (tierEl) tierEl.innerText = tier;
+        if (iconEl) iconEl.innerText = icon;
+        if (nameEl) nameEl.innerText = `${tier} 등급 투자자`;
+        
+        const monthlySave = s1.monthlySavings || 0;
         if (savingsEl) savingsEl.innerText = formatVal(monthlySave, 'KRW');
     }
 
@@ -72,10 +77,20 @@ function getTierIcon(tier) {
     return icons[tier] || "🥉";
 }
 
+// 만약 Tier 데이터가 없을 경우를 대비한 최소한의 계산 로직 (Step 1과 동일 기준)
+function calculateTierFallback(s1) {
+    const realWealth = s1.finalRealWealth || 0;
+    const val = realWealth / (s1.baseCurrency === 'KRW' ? 1 : (1/globalExchangeRate * 10000));
+    if (val >= 200000) return "다이아몬드";
+    if (val >= 100000) return "플래티넘";
+    if (val >= 50000) return "골드";
+    if (val >= 20000) return "실버";
+    return "브론즈";
+}
+
 function updateFireUI(s2) {
     const container = document.getElementById('fireSummary');
-    if (!container) return;
-    if (!s2) { container.innerHTML = `<div class="py-6 text-slate-300 text-xs text-center">Step 2 미완료</div>`; return; }
+    if (!container || !s2) return;
     container.innerHTML = `
         <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
             <span class="text-xs font-bold text-slate-400 uppercase">월 생활비 목표</span>
@@ -90,19 +105,9 @@ function updateFireUI(s2) {
 
 function updateCompoundUI(s6) {
     const container = document.getElementById('compoundSummary');
-    if (!container) return;
-    
-    if (!s6 || (!s6.finalProjectedWealth && !s6.compoundSeed)) { 
-        container.innerHTML = `<div class="py-6 text-slate-300 text-xs text-center">Step 6 미완료</div>`; 
-        return; 
-    }
-
-    // 6단계에서 계산되어 저장된 최종 자산(만원 단위)을 가져옴
+    if (!container || !s6) return;
     const finalWealth = s6.finalProjectedWealth || 0;
-    // 6단계에서 저장된 총 투입 원금을 우선 사용, 없으면 초기 시드 사용
     const principal = s6.totalPrincipal || s6.compoundSeed || 0;
-    const period = s6.compoundPeriod || 10;
-
     container.innerHTML = `
         <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
             <span class="text-xs font-bold text-slate-400 uppercase">최종 자산 목표</span>
@@ -112,35 +117,21 @@ function updateCompoundUI(s6) {
             <span class="text-xs font-bold text-slate-400 uppercase">총 투입 원금</span>
             <span class="font-black text-slate-600 dark:text-slate-300">${formatVal(principal, 'KRW')}</span>
         </div>
-        <div class="mt-2 px-2 flex justify-between items-center">
-            <span class="text-[10px] font-bold text-slate-400">투자 기간: ${period}년</span>
-            <span class="text-[10px] font-bold text-blue-500">${s6.compoundRate || 0}% 수익률 기준</span>
-        </div>
     `;
 }
 
 function updateStrategyUI(s5) {
-    const titleEl = document.getElementById('strategyTitle');
     const legendEl = document.getElementById('targetLegend');
-    if (!legendEl) return;
-
-    if (!s5 || !s5.selectedModel) {
-        legendEl.innerHTML = `<div class="py-6 text-slate-300 text-xs text-center">전략 미선택</div>`;
-        return;
-    }
-
-    if (titleEl) titleEl.innerText = s5.selectedModel;
+    if (!legendEl || !s5 || !s5.selectedModel) return;
+    document.getElementById('strategyTitle').innerText = s5.selectedModel;
     document.getElementById('strategyBadge')?.classList.remove('hidden');
-
     const models = {
         'All Weather': { labels: ['주식', '중기채', '장기채', '금/원자재'], data: [30, 15, 40, 15], colors: ['#3b82f6', '#60a5fa', '#1e40af', '#f59e0b'] },
         '60/40': { labels: ['주식', '채권'], data: [60, 40], colors: ['#3b82f6', '#94a3b8'] },
         'Permanent': { labels: ['주식', '채권', '현금', '금'], data: [25, 25, 25, 25], colors: ['#3b82f6', '#64748b', '#cbd5e1', '#f59e0b'] }
     };
-
     const config = models[s5.selectedModel] || models['All Weather'];
     renderDonutChart(config);
-
     legendEl.innerHTML = config.labels.map((l, i) => `
         <div class="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900/30">
             <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full" style="background: ${config.colors[i]}"></div><span class="text-xs font-bold">${l}</span></div>
@@ -162,93 +153,32 @@ function renderDonutChart(config) {
 
 function renderGrowthChart(s6, s1) {
     const ctx = document.getElementById('growthChart')?.getContext('2d');
-    if (!ctx) return;
+    if (!ctx || !s6) return;
     if (growthChart) growthChart.destroy();
-
-    const period = s6?.compoundPeriod || 10;
-    const seed = s1?.initialSeed || 0;
-    const rate = s6?.compoundRate / 100 || 0.05;
-    const monthly = s6?.monthlySavings || 50;
-    
+    const period = s6.compoundPeriod || 10, seed = s1?.initialSeed || 0, rate = s6.compoundRate / 100 || 0.05, monthly = s6.monthlySavings || 50;
     let current = seed;
-    const labels = Array.from({length: period + 1}, (_, i) => `${i}년`);
-    const data = [seed];
-    for (let i = 1; i <= period; i++) {
-        current = current * (1 + rate) + (monthly * 12);
-        data.push(Math.round(current));
-    }
-
+    const labels = Array.from({length: period + 1}, (_, i) => `${i}년`), data = [seed];
+    for (let i = 1; i <= period; i++) { current = current * (1 + rate) + (monthly * 12); data.push(Math.round(current)); }
     growthChart = new Chart(ctx, {
         type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                borderColor: '#3b82f6',
-                borderWidth: 3,
-                fill: true,
-                backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                tension: 0.4,
-                pointRadius: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { display: false },
-                x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
-            }
-        }
+        data: { labels: labels, datasets: [{ data: data, borderColor: '#3b82f6', borderWidth: 3, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)', tension: 0.4, pointRadius: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } } } }
     });
 }
 
 function generateAIComment(s1, s2, s3, s5, s6) {
     const commentEl = document.getElementById('aiComment');
-    if (!commentEl) return;
-
-    if (!s1 || !s3 || !s5) {
-        commentEl.innerHTML = "<b>분석 대기 중...</b><br>자산 정보, 투자 성향, 전략 선택을 완료하시면 AI 도치의 인사이트가 공개됩니다.";
-        return;
-    }
-
-    const sim = calculateWealthSummary(s1);
-    const savings = s1.monthlySavings || Math.max(0, Math.round((s1.annualSalary / 12) - s1.monthlyExpense));
-    
-    let msg = `<b>도치의 투자 제언:</b><br>`;
-    msg += `현재 <b>${sim.tier}</b> 등급의 자산을 운용 중인 <b>${s3.riskType}</b> 투자자시군요. `;
-    
-    if (s5.selectedModel === 'All Weather') msg += `선택하신 '올웨더' 전략은 성향과 관계없이 가장 완벽한 자산 방어막입니다. `;
-    
-    if (savings > 200) msg += `월 ${formatVal(savings, 'KRW')}의 저축액은 경제적 자유를 위한 핵심 동력입니다. `;
-    else msg += `현재 월 저축액(${formatVal(savings, 'KRW')})은 목표 달성을 위해 조금 더 늘릴 여지가 있습니다. `;
-
-    if (s6) msg += `<br>예상 자산 <b>${formatVal(s6.finalProjectedWealth / 10000, 'KRW')}</b>을 향해 8단계 실전 투자를 시작해 보세요! 🚀`;
-
+    if (!commentEl || !s1 || !s3 || !s5) return;
+    const tier = s1.tier || "브론즈";
+    const savings = s1.monthlySavings || 0;
+    let msg = `<b>AI 도치의 진단:</b><br>당신은 <b>${tier}</b> 등급의 자산을 운용 중인 <b>${s3.riskType}</b> 투자자입니다. `;
+    msg += s5.selectedModel === 'All Weather' ? `'올웨더' 전략은 어떤 시장 상황에서도 당신을 보호할 것입니다. ` : `선택하신 전략을 통해 목표를 향해 꾸준히 나아가세요. `;
+    if (s6) msg += `<br>10년 후 예상 자산 <b>${formatVal(s6.finalProjectedWealth, 'KRW')}</b> 달성을 위해 오늘부터 포트폴리오를 관리해 보세요! 🚀`;
     commentEl.innerHTML = msg;
 }
 
-function calculateWealthSummary(d) {
-    const salary = parseFloat(d.annualSalary) || 0, seed = parseFloat(d.initialSeed) || 0, expense = parseFloat(d.monthlyExpense) || 0;
-    const returns = (parseFloat(d.investmentReturn) || 0) / 100;
-    let current = seed;
-    for (let i = 1; i <= 10; i++) {
-        current = current + (salary - (expense * 12)) + (current * returns);
-    }
-    const realWealth = current / Math.pow(1 + 0.03, 10);
-    const exRate = globalExchangeRate;
-    let tier = "브론즈", icon = "🥉";
-    const val = realWealth / (d.baseCurrency === 'KRW' ? 1 : (1/exRate * 10000));
-    if (val >= 200000) { tier = "다이아몬드"; icon = "💎"; }
-    else if (val >= 100000) { tier = "플래티넘"; icon = "💍"; }
-    else if (val >= 50000) { tier = "골드"; icon = "🥇"; }
-    else if (val >= 20000) { tier = "실버"; icon = "🥈"; }
-    return { tier, icon };
-}
-
 function formatVal(v, curr) {
-    if (curr === 'KRW') return v >= 10000 ? (v / 10000).toFixed(1) + '억' : Math.round(v).toLocaleString() + '만';
+    if (curr === 'KRW') return v >= 10000 ? (v / 10000).toFixed(1) + '억' : Math.round(v).toLocaleString() + '만 원';
     return '$' + Math.round(v).toLocaleString();
 }
 
