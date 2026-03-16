@@ -7,9 +7,13 @@ let baseCurrency = 'USD';
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
     if (user) {
-        document.getElementById('userName').innerText = user.displayName || '투자자';
-        document.getElementById('userPhoto').src = user.photoURL || '';
-        document.getElementById('currentDate').innerText = new Date().toLocaleDateString();
+        const nameEl = document.getElementById('userName');
+        const photoEl = document.getElementById('userPhoto');
+        const dateEl = document.getElementById('currentDate');
+
+        if (nameEl) nameEl.innerText = user.displayName || '투자자';
+        if (photoEl) photoEl.src = user.photoURL || '';
+        if (dateEl) dateEl.innerText = new Date().toLocaleDateString();
         
         await generateComprehensiveReport();
     } else {
