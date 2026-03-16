@@ -1,20 +1,15 @@
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, goToNextStep, saveProgress, showToast, getStepData } from './core.js';
+import { db, currentUser, goToNextStep, saveProgress, showToast, getStepData, exchangeRate as coreExchangeRate } from './core.js';
 
 let wealthChart = null;
 let baseCurrency = 'KRW';
 let exchangeRate = 1350;
 
-async function initExchangeRate() {
-    try {
-        const res = await fetch('/api/price?ticker=USDKRW=X');
-        const data = await res.json();
-        const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-        if (rate) {
-            exchangeRate = rate;
-            console.log("[Step 1] 실시간 환율 로드:", exchangeRate);
-        }
-    } catch (e) { console.error("[Step 1] 환율 로드 실패"); }
+function syncWithCore(data) {
+    if (data.exchangeRate) {
+        exchangeRate = data.exchangeRate;
+        console.log("[Step 1] Synchronized with core exchange rate:", exchangeRate);
+    }
     restoreData();
 }
 
@@ -153,7 +148,7 @@ async function restoreData() {
     }
 }
 
-document.addEventListener('coreDataReady', initExchangeRate);
+document.addEventListener('coreDataReady', (e) => syncWithCore(e.detail));
 
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('input').forEach(i => i.addEventListener('input', () => autoSaveData(false)));

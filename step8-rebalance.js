@@ -1,5 +1,5 @@
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, showToast, saveProgress, goToNextStep, getStepData } from './core.js';
+import { db, currentUser, showToast, saveProgress, goToNextStep, getStepData, exchangeRate as coreExchangeRate } from './core.js';
 
 // --- State Management ---
 let currentStep = 1;
@@ -9,39 +9,55 @@ let exchangeRate = 1350;
 let assets = [];
 let chart = null;
 
-async function autoSaveData() {
-    if (!currentUser) return;
+async function autoSaveData(immediate = false) {
     const totalInvestment = document.getElementById('totalInvestment')?.value || 0;
-    const portfolioData = { assets, baseCurrency, totalInvestment, lastUpdated: new Date() };
-    // Always save to both Step 8 data and the shared 'portfolios' collection
-    await setDoc(doc(db, "portfolios", currentUser.uid), portfolioData, { merge: true });
-    await saveProgress(8, portfolioData);
+    const manualRate = parseFloat(document.getElementById('manualExchangeRate')?.value) || exchangeRate;
+    
+    const portfolioData = { 
+        assets, 
+        baseCurrency, 
+        totalInvestment, 
+        manualExchangeRate: manualRate,
+        lastUpdated: new Date() 
+    };
+    
+    // Save only to the centralized simulations document
+    await saveProgress(8, portfolioData, immediate);
 }
 
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
-    if (user) {
-        const step8Data = await getStepData(8);
-        const step1Data = await getStepData(1);
-        const portSnap = await getDoc(doc(db, "portfolios", user.uid));
+    liveExchangeRate = e.detail.exchangeRate || coreExchangeRate;
+    
+    // Update UI with latest exchange rate
+    const display = document.getElementById('exchangeRateDisplay');
+    if (display) display.innerText = `현재 환율: ₩${liveExchangeRate.toLocaleString()}`;
+    const input = document.getElementById('manualExchangeRate');
+    if (input && !input.value) input.value = Math.round(liveExchangeRate);
+    
+    const now = new Date();
+    const updateEl = document.getElementById('lastUpdateRebalance');
+    if (updateEl) updateEl.innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
 
-        if (step8Data) {
-            assets = step8Data.assets || [];
-            baseCurrency = step8Data.baseCurrency || 'USD';
-            setCurrency(baseCurrency);
-        } else if (portSnap.exists()) {
-            assets = portSnap.data().assets || [];
-            baseCurrency = portSnap.data().baseCurrency || 'USD';
-            setCurrency(baseCurrency);
-        }
+    // Restore data regardless of user login (localStorage support)
+    const step8Data = await getStepData(8);
+    const step1Data = await getStepData(1);
 
-        const totalInvestInput = document.getElementById('totalInvestment');
-        if (totalInvestInput && !totalInvestInput.value) {
-            totalInvestInput.value = (step8Data?.totalInvestment) || (step1Data?.initialSeed) || 3000;
-        }
-
-        renderAssets();
+    if (step8Data) {
+        assets = step8Data.assets || [];
+        baseCurrency = step8Data.baseCurrency || 'USD';
+        exchangeRate = step8Data.manualExchangeRate || liveExchangeRate;
+        if (input) input.value = Math.round(exchangeRate);
+        setCurrency(baseCurrency);
     }
+
+    const totalInvestInput = document.getElementById('totalInvestment');
+    if (totalInvestInput && (!totalInvestInput.value || totalInvestInput.value == 0)) {
+        totalInvestInput.value = (step8Data?.totalInvestment) || (step1Data?.initialSeed) || 3000;
+    }
+
+    if (assets.length === 0) addAsset();
+    renderAssets();
 });
 
 // --- Wizard Navigation ---
@@ -50,13 +66,7 @@ window.goToStep = function(step) {
     document.getElementById(`step-${step}`).classList.remove('hidden');
     
     document.querySelectorAll('.step-dot').forEach((dot, idx) => {
-        if (idx + 1 <= step) {
-            dot.classList.remove('bg-slate-200');
-            dot.classList.add('bg-blue-600');
-        } else {
-            dot.classList.remove('bg-blue-600');
-            dot.classList.add('bg-slate-200');
-        }
+        dot.className = `step-dot w-3 h-3 rounded-full transition-all ${idx + 1 <= step ? 'bg-blue-600' : 'bg-slate-200'}`;
     });
 
     if (step === 3) renderWeights();
@@ -74,12 +84,10 @@ window.setCurrency = function(code) {
     if (code === 'USD') {
         if (glider) glider.style.left = '4px';
         btnUsd?.classList.add('text-blue-600');
-        btnKrw?.classList.add('text-slate-400');
         btnKrw?.classList.remove('text-blue-600');
     } else {
         if (glider) glider.style.left = 'calc(50% - 4px)';
         btnKrw?.classList.add('text-blue-600');
-        btnUsd?.classList.add('text-slate-400');
         btnUsd?.classList.remove('text-blue-600');
     }
     autoSaveData();
@@ -92,6 +100,7 @@ window.resetToLiveExchangeRate = function() {
         exchangeRate = liveExchangeRate;
         const display = document.getElementById('exchangeRateDisplay');
         if (display) display.innerText = `현재 환율: ₩${liveExchangeRate.toLocaleString()}`;
+        autoSaveData(true);
     }
 };
 
@@ -192,7 +201,7 @@ function renderAssets() {
 function renderWeights() {
     const container = document.getElementById('weightContainer');
     container.innerHTML = '';
-    const avgWeight = Math.floor(100 / assets.length);
+    const avgWeight = assets.length > 0 ? Math.floor(100 / assets.length) : 0;
     assets.forEach((asset, idx) => {
         if (!asset.targetWeight) asset.targetWeight = idx === assets.length - 1 ? 100 - (avgWeight * (assets.length - 1)) : avgWeight;
         const div = document.createElement('div');
@@ -228,13 +237,13 @@ window.applyModel = function(modelType) {
     }
 
     let currentTotal = assets.reduce((sum, a) => sum + (a.targetWeight || 0), 0);
-    if (currentTotal !== 100) {
+    if (currentTotal !== 100 && assets.length > 0) {
         assets[assets.length - 1].targetWeight += (100 - currentTotal);
     }
 
     renderWeights();
     autoSaveData();
-    if (window.showToast) window.showToast(`'${modelType}' 모델 비중이 적용되었습니다. 🎯`);
+    showToast(`'${modelType}' 모델 비중이 적용되었습니다. 🎯`);
 };
 
 function updateTotalWeight() {
@@ -288,7 +297,7 @@ window.calculateRebalance = async function() {
         renderChart(processedAssets);
         updateHealthScore(processedAssets, totalValueInBase);
         goToStep(4);
-        autoSaveData();
+        autoSaveData(true);
         if (btnText && btnSpinner) { btnText.classList.remove('hidden'); btnSpinner.classList.add('hidden'); }
     }, 800);
 };
@@ -301,14 +310,14 @@ function formatValue(val) {
 window.downloadRebalanceImage = function() {
     const area = document.querySelector('.capture-area');
     if (!area) return;
-    if (window.showToast) window.showToast("진단 리포트 이미지를 생성하고 있습니다... 🖼️");
+    showToast("진단 리포트 이미지를 생성하고 있습니다... 🖼️");
     html2canvas(area, { useCORS: true, backgroundColor: null, scale: 2, logging: false }).then(canvas => {
         const link = document.createElement('a');
         link.download = `HedgeDochi_Portfolio_Report.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-        if (window.showToast) window.showToast("이미지 저장이 완료되었습니다! ✨");
-    }).catch(() => { if (window.showToast) window.showToast("이미지 생성 중 오류가 발생했습니다."); });
+        showToast("이미지 저장이 완료되었습니다! ✨");
+    }).catch(() => { showToast("이미지 생성 중 오류가 발생했습니다."); });
 };
 
 function renderChart(processedAssets) {
@@ -348,34 +357,8 @@ window.copyRebalanceResult = function() {
     navigator.clipboard.writeText(text).then(() => showToast("결과가 복사되었습니다! 🚀"));
 };
 
-window.showToast = function(msg) {
-    let t = document.getElementById('toast');
-    if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
-    t.innerText = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-};
-
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('input').forEach(input => {
-        input.addEventListener('change', autoSaveData);
+        input.addEventListener('change', () => autoSaveData(false));
     });
 });
-
-// --- Init ---
-(async () => {
-    try {
-        const res = await fetch('/api/price?ticker=USDKRW=X');
-        const data = await res.json();
-        const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice || 1350;
-        liveExchangeRate = rate;
-        exchangeRate = rate;
-        const display = document.getElementById('exchangeRateDisplay');
-        if (display) display.innerText = `현재 환율: ₩${rate.toLocaleString()}`;
-        const input = document.getElementById('manualExchangeRate');
-        if (input && !input.value) input.value = Math.round(rate);
-        const now = new Date();
-        const updateEl = document.getElementById('lastUpdateRebalance');
-        if (updateEl) updateEl.innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-    } catch (e) {}
-    if (assets.length === 0) addAsset();
-})();

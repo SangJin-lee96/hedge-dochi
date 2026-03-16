@@ -1,5 +1,5 @@
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db, currentUser, showToast, getStepData } from './core.js';
+import { db, currentUser, showToast, getStepData, exchangeRate as coreExchangeRate } from './core.js';
 
 let targetChart = null;
 let growthChart = null;
@@ -7,27 +7,17 @@ let globalExchangeRate = 1350;
 
 document.addEventListener('coreDataReady', async (e) => {
     const user = e.detail.user;
+    globalExchangeRate = e.detail.exchangeRate || coreExchangeRate;
+    
     if (user) {
         document.getElementById('dashUserName').innerText = user.displayName || '투자자';
         document.getElementById('dashUserPhoto').src = user.photoURL || '';
-        await initDashboard();
+        await refreshDashboard();
     } else {
         showToast("로그인이 필요합니다.");
         location.href = "index.html";
     }
 });
-
-async function initDashboard() {
-    // 실시간 환율 우선 확보
-    try {
-        const res = await fetch('/api/price?ticker=USDKRW=X');
-        const data = await res.json();
-        const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-        if (rate) globalExchangeRate = rate;
-    } catch (e) {}
-    
-    await refreshDashboard();
-}
 
 async function refreshDashboard() {
     try {
@@ -45,7 +35,9 @@ async function refreshDashboard() {
 
     } catch (e) {
         console.error("Dashboard Error:", e);
-        document.getElementById('aiComment').innerText = "데이터 분석 중 오류가 발생했습니다.";
+        if (document.getElementById('aiComment')) {
+            document.getElementById('aiComment').innerText = "데이터 분석 중 오류가 발생했습니다. 모든 단계를 완료하셨는지 확인해 주세요.";
+        }
     }
 }
 
@@ -85,7 +77,7 @@ function updateFireUI(s2) {
         </div>
         <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl mt-3">
             <span class="text-xs font-bold text-slate-400 uppercase">목표 수익률</span>
-            <span class="font-black">${s2.investmentReturn}%</span>
+            <span class="font-black">${s2.investmentReturn || 0}%</span>
         </div>
     `;
 }
@@ -244,8 +236,10 @@ async function renderMarketSentiment() {
         const res = await fetch('/api/price?ticker=^GSPC');
         const data = await res.json();
         const meta = data?.chart?.result?.[0]?.meta;
-        const sentiment = Math.max(5, Math.min(95, 50 + ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose * 1000)));
-        const indicator = document.getElementById('sentimentIndicator');
-        if (indicator) indicator.style.left = `${sentiment}%`;
+        if (meta) {
+            const sentiment = Math.max(5, Math.min(95, 50 + ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose * 1000)));
+            const indicator = document.getElementById('sentimentIndicator');
+            if (indicator) indicator.style.left = `${sentiment}%`;
+        }
     } catch (e) {}
 }
